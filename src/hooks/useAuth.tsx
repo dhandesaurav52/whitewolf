@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useContext, createContext, ReactNode, useCallback } from "react";
-import { onAuthStateChanged, User, signOut as firebaseSignOut } from "firebase/auth";
+import { onAuthStateChanged, User, signOut as firebaseSignOut, deleteUser } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 
@@ -14,6 +14,7 @@ interface AuthContextType {
   isAdmin: boolean;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -47,8 +48,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await firebaseSignOut(auth);
     router.push("/");
   };
+  
+  const deleteAccount = async () => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      await deleteUser(currentUser);
+      router.push("/");
+    } else {
+      throw new Error("No user is currently signed in.");
+    }
+  };
 
-  const value = { user, loading, isAdmin, signOut, refreshUser };
+  const value = { user, loading, isAdmin, signOut, refreshUser, deleteAccount };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

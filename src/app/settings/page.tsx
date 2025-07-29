@@ -2,15 +2,47 @@
 "use client";
 
 import { useState } from 'react';
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Trash2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function SettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [theme, setTheme] = useState('dark');
+  const { isAdmin, deleteAccount } = useAuth();
+  const { toast } = useToast();
+
+  const handleDelete = async () => {
+    try {
+        await deleteAccount();
+        toast({
+            title: "Account Deleted",
+            description: "Your account has been permanently deleted.",
+        });
+    } catch (error: any) {
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: error.message || "Failed to delete account.",
+        });
+    }
+  }
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -98,6 +130,40 @@ export default function SettingsPage() {
              </div>
           </CardContent>
         </Card>
+
+        {!isAdmin && (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-2xl font-headline text-destructive">Account Management</CardTitle>
+                    <CardDescription>
+                        Permanently delete your account and all associated data. This action cannot be undone.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                     <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="destructive">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete Account
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete your account
+                                and remove your data from our servers.
+                            </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </CardContent>
+            </Card>
+        )}
       </div>
 
       <div className="flex justify-end">
