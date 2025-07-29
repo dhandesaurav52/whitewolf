@@ -69,6 +69,9 @@ export default function Header() {
               </div>
             ) : user ? (
               <>
+                <Link href="/wishlist" className="text-muted-foreground hover:text-accent transition-colors">
+                    <Heart className="h-6 w-6 text-accent" />
+                </Link>
                 <Link href="/cart" className="text-muted-foreground hover:text-accent transition-colors">
                     <ShoppingBag className="h-6 w-6 text-accent" />
                 </Link>
