@@ -187,12 +187,15 @@ export default function Home() {
         setAccessories(allProducts.filter(p => p.displaySection === 'accessories').slice(0, 4));
         
         const uniqueCategories = [...new Set(allProducts.map(p => p.category.toLowerCase()))];
-        const categoryData = uniqueCategories.map(cat => ({
-            name: cat.charAt(0).toUpperCase() + cat.slice(1),
-            href: `/shop?category=${cat}`,
-            image: "https://placehold.co/400x500.png",
-            aiHint: `${cat} model`
-        }));
+        const categoryData = uniqueCategories.map(cat => {
+            const productForCategory = allProducts.find(p => p.category.toLowerCase() === cat && p.images && p.images.length > 0);
+            return {
+                name: cat.charAt(0).toUpperCase() + cat.slice(1),
+                href: `/shop?category=${cat}`,
+                image: productForCategory?.images[0] || "https://placehold.co/400x500.png",
+                aiHint: `${cat} model`
+            };
+        });
         setCategories(categoryData);
       }
     } catch (error) {
