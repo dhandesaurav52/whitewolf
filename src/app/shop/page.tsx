@@ -82,12 +82,11 @@ const ProductCard = ({ product }: { product: ProductType }) => {
 
 export default function ShopPage() {
     const [products, setProducts] = useState<ProductType[]>([]);
-    const [allProducts, setAllProducts] = useState<ProductType[]>([]);
     const [isMounted, setIsMounted] = useState(false);
     const searchParams = useSearchParams();
     const categoryQuery = searchParams.get('category');
 
-     const loadProducts = useCallback(() => {
+     const loadData = useCallback(() => {
         let storedProducts: ProductType[] = [];
         try {
             const productsFromStorage = localStorage.getItem(PRODUCTS_STORAGE_KEY);
@@ -97,79 +96,71 @@ export default function ShopPage() {
         } catch (error) {
             console.error("Failed to load products from storage, using initial products.", error);
         }
-        setAllProducts(storedProducts);
-    }, []);
+
+        try {
+            const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
+            const activeAds: Advertisement[] = storedAds ? JSON.parse(storedAds).filter((ad: Advertisement) => ad.status === 'Active') : [];
+            const categoryAds = activeAds.filter(ad => ad.appliesTo === 'categories' && ad.selectedCategories.length > 0);
+            
+            let shopProducts = storedProducts.filter(p => p.displaySection === 'shop');
+            
+            if (categoryQuery) {
+                shopProducts = shopProducts.filter(p => p.category.toLowerCase() === categoryQuery);
+            }
+
+            const updatedProducts = shopProducts.map(p => {
+                let productPrice = parseFloat(p.price);
+                let originalProductPrice = p.originalPrice ? parseFloat(p.originalPrice) : parseFloat(p.price);
+                let appliedDiscount = p.discount;
+                
+                const applicableAd = categoryAds.find(ad => ad.selectedCategories.includes(p.category));
+
+                if (applicableAd) {
+                     if (applicableAd.discountType === 'percentage') {
+                        productPrice = originalProductPrice * (1 - applicableAd.discountValue / 100);
+                        appliedDiscount = `${applicableAd.discountValue}% OFF`;
+                    } else { // fixed
+                        productPrice = originalProductPrice - applicableAd.discountValue;
+                        appliedDiscount = `₹${applicableAd.discountValue} OFF`;
+                    }
+                    return {
+                        ...p,
+                        price: Math.round(productPrice).toString(),
+                        originalPrice: originalProductPrice.toString(),
+                        discount: appliedDiscount,
+                    }
+                }
+
+                // Reset if no ad applies
+                return {
+                    ...p,
+                    price: p.price,
+                    originalPrice: p.originalPrice, // Keep original if it existed
+                    discount: p.discount, // Keep original discount
+                };
+            });
+            
+            setProducts(updatedProducts);
+
+        } catch (error) {
+            console.error("Failed to apply discounts", error);
+            let filteredProducts = storedProducts.filter(p => p.displaySection === 'shop');
+            if (categoryQuery) {
+                filteredProducts = filteredProducts.filter(p => p.category.toLowerCase() === categoryQuery);
+            }
+            setProducts(filteredProducts);
+        }
+    }, [categoryQuery]);
     
     useEffect(() => {
         setIsMounted(true);
-        loadProducts();
-        window.addEventListener('storage', loadProducts);
+        loadData();
+        window.addEventListener('storage', loadData);
         return () => {
-            window.removeEventListener('storage', loadProducts);
+            window.removeEventListener('storage', loadData);
         };
-    }, [loadProducts]);
+    }, [loadData]);
 
-    useEffect(() => {
-        if (!isMounted) return;
-        const applyDiscountsAndFilter = () => {
-            try {
-                const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
-                const activeAds: Advertisement[] = storedAds ? JSON.parse(storedAds).filter((ad: Advertisement) => ad.status === 'Active') : [];
-                const categoryAds = activeAds.filter(ad => ad.appliesTo === 'categories' && ad.selectedCategories.length > 0);
-                
-                let shopProducts = allProducts.filter(p => p.displaySection === 'shop');
-                
-                if (categoryQuery) {
-                    shopProducts = shopProducts.filter(p => p.category.toLowerCase() === categoryQuery);
-                }
-
-                const updatedProducts = shopProducts.map(p => {
-                    let productPrice = parseFloat(p.price);
-                    let originalProductPrice = p.originalPrice ? parseFloat(p.originalPrice) : parseFloat(p.price);
-                    let appliedDiscount = p.discount;
-                    
-                    const applicableAd = categoryAds.find(ad => ad.selectedCategories.includes(p.category));
-
-                    if (applicableAd) {
-                         if (applicableAd.discountType === 'percentage') {
-                            productPrice = originalProductPrice * (1 - applicableAd.discountValue / 100);
-                            appliedDiscount = `${applicableAd.discountValue}% OFF`;
-                        } else { // fixed
-                            productPrice = originalProductPrice - applicableAd.discountValue;
-                            appliedDiscount = `₹${applicableAd.discountValue} OFF`;
-                        }
-                        return {
-                            ...p,
-                            price: Math.round(productPrice).toString(),
-                            originalPrice: originalProductPrice.toString(),
-                            discount: appliedDiscount,
-                        }
-                    }
-
-                    // Reset if no ad applies
-                    return {
-                        ...p,
-                        price: p.price,
-                        originalPrice: p.originalPrice, // Keep original if it existed
-                        discount: p.discount, // Keep original discount
-                    };
-                });
-                
-                setProducts(updatedProducts);
-
-            } catch (error) {
-                console.error("Failed to apply discounts", error);
-                let filteredProducts = allProducts.filter(p => p.displaySection === 'shop');
-                if (categoryQuery) {
-                    filteredProducts = filteredProducts.filter(p => p.category.toLowerCase() === categoryQuery);
-                }
-                setProducts(filteredProducts);
-            }
-        };
-
-        applyDiscountsAndFilter();
-
-    }, [allProducts, categoryQuery, isMounted]);
 
     const filters = [
         { placeholder: 'All Categories', options: ['T-Shirts', 'Shirts', 'Pants', 'Jeans'] },
@@ -248,5 +239,3 @@ export default function ShopPage() {
     </div>
   );
 }
-
-    

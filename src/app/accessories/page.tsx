@@ -85,7 +85,7 @@ export default function AccessoriesPage() {
     const [allProducts, setAllProducts] = useState<ProductType[]>([]);
     const [isMounted, setIsMounted] = useState(false);
 
-    const loadProducts = useCallback(() => {
+    const loadData = useCallback(() => {
         let storedProducts: ProductType[] = [];
         try {
             const productsFromStorage = localStorage.getItem(PRODUCTS_STORAGE_KEY);
@@ -95,70 +95,65 @@ export default function AccessoriesPage() {
         } catch (error) {
             console.error("Failed to load products from storage, using initial products.", error);
         }
+        
         setAllProducts(storedProducts);
+
+        try {
+            const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
+            const activeAds: Advertisement[] = storedAds ? JSON.parse(storedAds).filter((ad: Advertisement) => ad.status === 'Active') : [];
+            const categoryAds = activeAds.filter(ad => ad.appliesTo === 'categories' && ad.selectedCategories.length > 0);
+            
+            const accessoryProducts = storedProducts.filter(p => p.displaySection === 'accessories');
+
+            const updatedProducts = accessoryProducts.map(p => {
+                let productPrice = parseFloat(p.price);
+                let originalProductPrice = p.originalPrice ? parseFloat(p.originalPrice) : parseFloat(p.price);
+                let appliedDiscount = p.discount;
+                
+                const applicableAd = categoryAds.find(ad => ad.selectedCategories.includes(p.category));
+
+                if (applicableAd) {
+                     if (applicableAd.discountType === 'percentage') {
+                        productPrice = originalProductPrice * (1 - applicableAd.discountValue / 100);
+                        appliedDiscount = `${applicableAd.discountValue}% OFF`;
+                    } else { // fixed
+                        productPrice = originalProductPrice - applicableAd.discountValue;
+                        appliedDiscount = `₹${applicableAd.discountValue} OFF`;
+                    }
+                    return {
+                        ...p,
+                        price: Math.round(productPrice).toString(),
+                        originalPrice: originalProductPrice.toString(),
+                        discount: appliedDiscount,
+                    }
+                }
+                
+                // Reset if no ad applies
+                return {
+                    ...p,
+                    price: p.price,
+                    originalPrice: p.originalPrice, // Keep original if it existed
+                    discount: p.discount, // Keep original discount
+                };
+            });
+
+            setProducts(updatedProducts);
+
+        } catch (error) {
+            console.error("Failed to apply discounts", error);
+            setProducts(storedProducts.filter(p => p.displaySection === 'accessories'));
+        }
     }, []);
 
     useEffect(() => {
         setIsMounted(true);
-        loadProducts();
-        window.addEventListener('storage', loadProducts);
+        loadData();
+        window.addEventListener('storage', loadData);
         return () => {
-            window.removeEventListener('storage', loadProducts);
+            window.removeEventListener('storage', loadData);
         };
-    }, [loadProducts]);
+    }, [loadData]);
 
-    useEffect(() => {
-        if (!isMounted) return;
-        const applyDiscountsAndFilter = () => {
-            try {
-                const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
-                const activeAds: Advertisement[] = storedAds ? JSON.parse(storedAds).filter((ad: Advertisement) => ad.status === 'Active') : [];
-                const categoryAds = activeAds.filter(ad => ad.appliesTo === 'categories' && ad.selectedCategories.length > 0);
-                
-                const accessoryProducts = allProducts.filter(p => p.displaySection === 'accessories');
-
-                const updatedProducts = accessoryProducts.map(p => {
-                    let productPrice = parseFloat(p.price);
-                    let originalProductPrice = p.originalPrice ? parseFloat(p.originalPrice) : parseFloat(p.price);
-                    let appliedDiscount = p.discount;
-                    
-                    const applicableAd = categoryAds.find(ad => ad.selectedCategories.includes(p.category));
-
-                    if (applicableAd) {
-                         if (applicableAd.discountType === 'percentage') {
-                            productPrice = originalProductPrice * (1 - applicableAd.discountValue / 100);
-                            appliedDiscount = `${applicableAd.discountValue}% OFF`;
-                        } else { // fixed
-                            productPrice = originalProductPrice - applicableAd.discountValue;
-                            appliedDiscount = `₹${applicableAd.discountValue} OFF`;
-                        }
-                        return {
-                            ...p,
-                            price: Math.round(productPrice).toString(),
-                            originalPrice: originalProductPrice.toString(),
-                            discount: appliedDiscount,
-                        }
-                    }
-                    
-                    // Reset if no ad applies
-                    return {
-                        ...p,
-                        price: p.price,
-                        originalPrice: p.originalPrice, // Keep original if it existed
-                        discount: p.discount, // Keep original discount
-                    };
-                });
-
-                setProducts(updatedProducts);
-
-            } catch (error) {
-                console.error("Failed to apply discounts", error);
-                setProducts(allProducts.filter(p => p.displaySection === 'accessories'));
-            }
-        };
-
-        applyDiscountsAndFilter();
-    }, [allProducts, isMounted]);
 
     const filters = [
         { placeholder: 'All Categories', options: ['Belts', 'Wallets', 'Watches', 'Ties'] },
@@ -237,5 +232,3 @@ export default function AccessoriesPage() {
     </div>
   );
 }
-
-    

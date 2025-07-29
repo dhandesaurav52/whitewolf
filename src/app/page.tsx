@@ -174,7 +174,6 @@ export default function Home() {
   const [categories, setCategories] = useState<{name: string, href: string, image: string, aiHint: string}[]>([]);
   const [isMounted, setIsMounted] = useState(false);
 
-
   const loadData = useCallback(() => {
     try {
       const storedReels = localStorage.getItem(REELS_STORAGE_KEY);
@@ -208,9 +207,8 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    setIsMounted(true);
     loadData();
-    setIsMounted(true); // Set mounted after first data load attempt
-    
     window.addEventListener('storage', loadData);
     return () => {
       window.removeEventListener('storage', loadData);
@@ -472,7 +470,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
-
-    
