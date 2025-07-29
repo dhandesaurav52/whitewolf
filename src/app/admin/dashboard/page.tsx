@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,6 +52,16 @@ const initialCategories = [
     { value: 'accessories', label: 'Accessories' },
 ];
 
+const fileToDataUri = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+};
+
+
 export default function AdminDashboardPage() {
     const { toast } = useToast();
     const [products, setProducts] = useState<ProductType[]>([]);
@@ -73,37 +83,36 @@ export default function AdminDashboardPage() {
     const [newNumericSizes, setNewNumericSizes] = useState('');
     const [isNewArrival, setIsNewArrival] = useState(false);
     const [newStock, setNewStock] = useState(0);
-    const [newImageUrls, setNewImageUrls] = useState('');
-    const [newVideoUrl, setNewVideoUrl] = useState('');
+    const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
+    const [newVideoFile, setNewVideoFile] = useState<File | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    useEffect(() => {
-        const loadData = () => {
-            let storedProducts: ProductType[] = [];
-            try {
-                const productsFromStorage = localStorage.getItem(PRODUCTS_STORAGE_KEY);
-                storedProducts = productsFromStorage ? JSON.parse(productsFromStorage) : initialProducts;
-            } catch (error) {
-                console.error("Failed to load products from storage, using initial products.", error);
-                storedProducts = initialProducts;
-            }
-            setProducts(storedProducts);
+    const loadData = useCallback(() => {
+        let storedProducts: ProductType[] = [];
+        try {
+            const productsFromStorage = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+            storedProducts = productsFromStorage ? JSON.parse(productsFromStorage) : initialProducts;
+        } catch (error) {
+            console.error("Failed to load products from storage, using initial products.", error);
+            storedProducts = initialProducts;
+        }
+        setProducts(storedProducts);
 
-            let storedOrders: Order[] = [];
-            try {
-                const ordersFromStorage = localStorage.getItem(ORDERS_STORAGE_KEY);
-                storedOrders = ordersFromStorage ? JSON.parse(ordersFromStorage) : [];
-            } catch (error) {
-                console.error("Failed to load orders from storage.", error);
-            }
-            setOrders(storedOrders);
-        };
-        
+        let storedOrders: Order[] = [];
+        try {
+            const ordersFromStorage = localStorage.getItem(ORDERS_STORAGE_KEY);
+            storedOrders = ordersFromStorage ? JSON.parse(ordersFromStorage) : [];
+        } catch (error) {
+            console.error("Failed to load orders from storage.", error);
+        }
+        setOrders(storedOrders);
+    }, []);
+
+    useEffect(() => {
         loadData();
         window.addEventListener('storage', loadData);
         return () => window.removeEventListener('storage', loadData);
-
-    }, []);
+    }, [loadData]);
 
     const updateProducts = (newProducts: ProductType[]) => {
         setProducts(newProducts);
@@ -185,15 +194,15 @@ export default function AdminDashboardPage() {
         setNewNumericSizes('');
         setIsNewArrival(false);
         setNewStock(0);
-        setNewImageUrls('');
-        setNewVideoUrl('');
+        setNewImageFiles([]);
+        setNewVideoFile(null);
     };
 
-    const handleAddProduct = () => {
-        if (!newProductName || !newPrice || !newSelectedCategory || !newImageUrls) {
+    const handleAddProduct = async () => {
+        if (!newProductName || !newPrice || !newSelectedCategory || newImageFiles.length === 0) {
             toast({
                 title: "Missing Information",
-                description: "Product Name, Price, Category, and at least one image URL are required.",
+                description: "Product Name, Price, Category, and at least one image are required.",
                 variant: "destructive",
             });
             return;
@@ -202,7 +211,9 @@ export default function AdminDashboardPage() {
         setIsLoading(true);
 
         try {
-            const imageUrls = newImageUrls.split(',').map(url => url.trim()).filter(url => url);
+            const imageUrls = await Promise.all(newImageFiles.map(fileToDataUri));
+            const videoUrl = newVideoFile ? await fileToDataUri(newVideoFile) : '';
+
             const categoryLabel = categories.find(c => c.value === newSelectedCategory)?.label || newSelectedCategory;
 
             const newProduct: ProductType = {
@@ -219,7 +230,7 @@ export default function AdminDashboardPage() {
                 new: isNewArrival,
                 stock: newStock,
                 images: imageUrls,
-                videoUrl: newVideoUrl,
+                videoUrl: videoUrl,
                 aiHint: newProductName.toLowerCase(),
                 originalPrice: null,
                 discount: null,
@@ -394,13 +405,13 @@ export default function AdminDashboardPage() {
                         </div>
 
                          <div className="space-y-2">
-                            <Label htmlFor="product-images" className="text-accent">Product Image URLs (comma-separated)</Label>
-                             <Textarea id="product-images" placeholder="https://..., https://..." value={newImageUrls} onChange={(e) => setNewImageUrls(e.target.value)} />
+                            <Label htmlFor="product-images" className="text-accent">Product Images</Label>
+                            <Input id="product-images" type="file" multiple onChange={(e) => setNewImageFiles(Array.from(e.target.files || []))} />
                         </div>
                         
                         <div className="space-y-2">
-                            <Label htmlFor="product-video" className="text-accent">Product Video URL</Label>
-                            <Input id="product-video" placeholder="https://..." value={newVideoUrl} onChange={(e) => setNewVideoUrl(e.target.value)} />
+                            <Label htmlFor="product-video" className="text-accent">Product Video</Label>
+                            <Input id="product-video" type="file" onChange={(e) => setNewVideoFile(e.target.files?.[0] || null)} />
                         </div>
 
 

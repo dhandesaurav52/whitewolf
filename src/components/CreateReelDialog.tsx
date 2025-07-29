@@ -11,7 +11,6 @@ import type { Product, Reel } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
-
 interface CreateReelDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -19,18 +18,27 @@ interface CreateReelDialogProps {
   products: Product[];
 }
 
+const fileToDataUri = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+};
+
 export default function CreateReelDialog({ isOpen, onClose, onSave, products }: CreateReelDialogProps) {
   const [reelTitle, setReelTitle] = useState("");
-  const [videoUrl, setVideoUrl] = useState("");
+  const [videoFile, setVideoFile] = useState<File | null>(null);
   const [linkedProduct, setLinkedProduct] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const handleSave = async () => {
-    if (!reelTitle || !videoUrl || !linkedProduct) {
+    if (!reelTitle || !videoFile || !linkedProduct) {
       toast({
         title: "Missing Information",
-        description: "Please fill out all fields.",
+        description: "Please fill out all fields and select a video.",
         variant: "destructive",
       });
       return;
@@ -38,12 +46,13 @@ export default function CreateReelDialog({ isOpen, onClose, onSave, products }: 
 
     setIsLoading(true);
     try {
+      const videoUrl = await fileToDataUri(videoFile);
       onSave({ reelTitle, linkedProduct, videoUrl });
     } catch (error) {
       console.error("Error creating reel: ", error);
       toast({
         title: "Save Failed",
-        description: "There was an error saving your reel. Please try again.",
+        description: "There was an error processing your video. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -57,7 +66,7 @@ export default function CreateReelDialog({ isOpen, onClose, onSave, products }: 
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-accent">Create New Reel</DialogTitle>
            <DialogDescription>
-            Provide a video URL and link it to a product to feature in the "Watch & Shop" section.
+            Provide a video and link it to a product to feature in the "Watch & Shop" section.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-6 py-4">
@@ -72,12 +81,12 @@ export default function CreateReelDialog({ isOpen, onClose, onSave, products }: 
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="video-url" className="text-accent">Video URL</Label>
+            <Label htmlFor="video-file" className="text-accent">Video File</Label>
             <Input
-              id="video-url"
-              value={videoUrl}
-              onChange={(e) => setVideoUrl(e.target.value)}
-              placeholder="https://example.com/video.mp4"
+              id="video-file"
+              type="file"
+              accept="video/*"
+              onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
               disabled={isLoading}
             />
           </div>
