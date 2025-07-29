@@ -45,9 +45,11 @@ const ProductCard = ({ product }: { product: ProductType }) => {
           <ShoppingBag className="h-4 w-4" />
         </Button>
       </div>
-      <CardContent className="p-4">
+      <CardContent className="p-4 space-y-1">
+        {product.brand && <p className="text-sm text-muted-foreground">{product.brand}</p>}
         <h3 className="font-headline text-lg text-primary truncate">{product.name}</h3>
-        <div className="flex items-baseline gap-2 mt-1">
+        <p className="text-sm text-muted-foreground">{product.category}</p>
+        <div className="flex items-baseline gap-2 pt-1">
           <p className="text-accent font-semibold text-base">{product.price}</p>
           {product.originalPrice && (
             <p className="text-muted-foreground text-sm line-through">{product.originalPrice}</p>
@@ -307,5 +309,3 @@ export default function ProductDetailPage() {
     </>
   );
 }
-
-    

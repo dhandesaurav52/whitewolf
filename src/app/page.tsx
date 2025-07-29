@@ -263,8 +263,12 @@ export default function Home() {
                       data-ai-hint={product.aiHint}
                     />
                   </div>
-                  <h3 className="mt-4 text-lg font-headline">{product.name}</h3>
-                  <p className="text-accent font-semibold">{product.price}</p>
+                  <div className="p-2 space-y-1">
+                     {product.brand && <p className="text-sm text-muted-foreground">{product.brand}</p>}
+                    <h3 className="font-headline text-lg text-primary truncate">{product.name}</h3>
+                    <p className="text-sm text-muted-foreground">{product.category}</p>
+                    <p className="text-accent font-semibold pt-1">{product.price}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -307,11 +311,11 @@ export default function Home() {
                                 data-ai-hint={tee.aiHint}
                               />
                           </div>
-                           <div className="p-4">
-                              <p className="text-sm text-muted-foreground">{tee.brand || 'White Wolf'}</p>
-                              <h3 className="text-lg font-headline text-primary">{tee.name}</h3>
+                           <div className="p-4 space-y-1">
+                              {tee.brand && <p className="text-sm text-muted-foreground">{tee.brand}</p>}
+                              <h3 className="text-lg font-headline text-primary truncate">{tee.name}</h3>
                               <p className="text-sm text-muted-foreground">{tee.category}</p>
-                              <p className="text-accent font-bold mt-2">{tee.price}</p>
+                              <p className="text-accent font-bold pt-1">{tee.price}</p>
                            </div>
                         </CardContent>
                       </Card>
@@ -344,8 +348,12 @@ export default function Home() {
                       data-ai-hint={item.aiHint}
                     />
                   </div>
-                  <h3 className="mt-4 text-lg font-headline">{item.name}</h3>
-                  <p className="text-accent font-semibold">{item.price}</p>
+                  <div className="p-2 space-y-1">
+                     {item.brand && <p className="text-sm text-muted-foreground">{item.brand}</p>}
+                    <h3 className="font-headline text-lg text-primary truncate">{item.name}</h3>
+                    <p className="text-sm text-muted-foreground">{item.category}</p>
+                    <p className="text-accent font-semibold pt-1">{item.price}</p>
+                  </div>
                 </div>
               ))}
             </div>
