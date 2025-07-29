@@ -30,7 +30,7 @@ const initialProducts: ProductType[] = [
       {
         id: 'prod1',
         name: "Vintage Wash Tee",
-        image: "https://placehold.co/100x100.png",
+        images: ["https://placehold.co/100x100.png"],
         aiHint: "streetwear fashion",
         category: "T-Shirts",
         price: "1299",
@@ -45,7 +45,7 @@ const initialProducts: ProductType[] = [
       {
         id: 'prod2',
         name: "Slim-Fit Chinos",
-        image: "https://placehold.co/100x100.png",
+        images: ["https://placehold.co/100x100.png"],
         aiHint: "mens trousers",
         category: "Trousers",
         price: "1599",
@@ -60,7 +60,7 @@ const initialProducts: ProductType[] = [
       {
         id: 'prod3',
         name: "Linen Button-Down",
-        image: "https://placehold.co/100x100.png",
+        images: ["https://placehold.co/100x100.png"],
         aiHint: "summer shirt",
         category: "Shirts",
         price: "1499",
@@ -75,7 +75,7 @@ const initialProducts: ProductType[] = [
        {
         id: 'prod4',
         name: "Dark Wash Jeans",
-        image: "https://placehold.co/100x100.png",
+        images: ["https://placehold.co/100x100.png"],
         aiHint: "denim jeans",
         category: "Jeans",
         price: "1899",
@@ -90,7 +90,7 @@ const initialProducts: ProductType[] = [
        {
         id: 'acc1',
         name: "Classic Leather Belt",
-        image: "https://placehold.co/100x100.png",
+        images: ["https://placehold.co/100x100.png"],
         aiHint: "leather belt",
         category: "Accessories",
         price: "499",
@@ -132,7 +132,7 @@ export default function AdminDashboardPage() {
     const [newNumericSizes, setNewNumericSizes] = useState('');
     const [isNewArrival, setIsNewArrival] = useState(false);
     const [newStock, setNewStock] = useState(0);
-    const [newImageFile, setNewImageFile] = useState<File | null>(null);
+    const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
     const [newVideoFile, setNewVideoFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
 
@@ -204,7 +204,7 @@ export default function AdminDashboardPage() {
         setNewNumericSizes('');
         setIsNewArrival(false);
         setNewStock(0);
-        setNewImageFile(null);
+        setNewImageFiles([]);
         setNewVideoFile(null);
     };
 
@@ -216,10 +216,10 @@ export default function AdminDashboardPage() {
     }
 
     const handleAddProduct = async () => {
-        if (!newProductName || !newPrice || !newSelectedCategory) {
+        if (!newProductName || !newPrice || !newSelectedCategory || newImageFiles.length === 0) {
             toast({
                 title: "Missing Information",
-                description: "Product Name, Price, and Category are required.",
+                description: "Product Name, Price, Category, and at least one image are required.",
                 variant: "destructive",
             });
             return;
@@ -228,13 +228,14 @@ export default function AdminDashboardPage() {
         setIsUploading(true);
 
         try {
-            let imageUrl = 'https://placehold.co/400x500.png';
-            let videoUrl = '';
-
-            if (newImageFile) {
-                const imagePath = `products/${Date.now()}_${newImageFile.name}`;
-                imageUrl = await uploadFile(newImageFile, imagePath);
+            const imageUrls: string[] = [];
+            for (const file of newImageFiles) {
+                const imagePath = `products/${Date.now()}_${file.name}`;
+                const imageUrl = await uploadFile(file, imagePath);
+                imageUrls.push(imageUrl);
             }
+
+            let videoUrl = '';
             if (newVideoFile) {
                 const videoPath = `videos/${Date.now()}_${newVideoFile.name}`;
                 videoUrl = await uploadFile(newVideoFile, videoPath);
@@ -253,7 +254,7 @@ export default function AdminDashboardPage() {
                 numericSizes: newNumericSizes,
                 new: isNewArrival,
                 stock: newStock,
-                image: imageUrl,
+                images: imageUrls,
                 videoUrl: videoUrl,
                 aiHint: newProductName.toLowerCase(),
                 originalPrice: null,
@@ -280,6 +281,13 @@ export default function AdminDashboardPage() {
             setIsUploading(false);
         }
     };
+    
+    const handleImageFilesSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            setNewImageFiles(Array.from(e.target.files));
+        }
+    };
+
 
     return (
         <div className="container mx-auto py-10 space-y-8">
@@ -405,18 +413,18 @@ export default function AdminDashboardPage() {
                         </div>
 
                          <div className="space-y-2">
-                            <Label htmlFor="product-images" className="text-accent">Product Image</Label>
+                            <Label htmlFor="product-images" className="text-accent">Product Images</Label>
                             <div className="flex items-center justify-center w-full">
                                 <Label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-muted">
                                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                         <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
-                                        {newImageFile ? (
-                                            <p className="font-semibold text-primary">{newImageFile.name}</p>
+                                        {newImageFiles.length > 0 ? (
+                                            <p className="font-semibold text-primary">{newImageFiles.length} file(s) selected</p>
                                         ) : (
-                                            <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Drag & drop image here,</span> or click to select</p>
+                                            <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Drag & drop images here,</span> or click to select</p>
                                         )}
                                     </div>
-                                    <Input id="dropzone-file" type="file" className="hidden" accept="image/*" onChange={(e) => setNewImageFile(e.target.files ? e.target.files[0] : null)} />
+                                    <Input id="dropzone-file" type="file" className="hidden" accept="image/*" multiple onChange={handleImageFilesSelect} />
                                 </Label>
                             </div> 
                         </div>
@@ -497,7 +505,7 @@ export default function AdminDashboardPage() {
                                     <TableRow key={product.id || index}>
                                         <TableCell>
                                             <div className="relative h-12 w-12 rounded-md overflow-hidden">
-                                                <Image src={product.image} alt={product.name} fill className="object-cover" data-ai-hint={product.aiHint} />
+                                                <Image src={product.images[0]} alt={product.name} fill className="object-cover" data-ai-hint={product.aiHint} />
                                             </div>
                                         </TableCell>
                                         <TableCell className="font-medium">{product.name}</TableCell>

@@ -33,7 +33,7 @@ export type Advertisement = {
 export type Product = {
   id: string;
   name: string;
-  image: string;
+  images: string[];
   aiHint: string;
   category: string;
   price: string;

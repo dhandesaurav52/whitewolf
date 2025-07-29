@@ -43,7 +43,7 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
     }
   }, [product]);
 
-  const handleChange = (field: keyof Product, value: string | number | boolean | null) => {
+  const handleChange = (field: keyof Product, value: any) => {
     setEditedProduct(prev => ({ ...prev, [field]: value }));
   };
 
@@ -151,6 +151,10 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
                 <Label htmlFor="description" className="text-accent">Description</Label>
                 <Textarea id="description" value={editedProduct.description || ''} onChange={(e) => handleChange('description', e.target.value)} />
               </div>
+               <div className="space-y-2">
+                <Label htmlFor="images" className="text-accent">Image URLs (comma-separated)</Label>
+                <Textarea id="images" value={editedProduct.images.join(', ')} onChange={(e) => handleChange('images', e.target.value.split(',').map(url => url.trim()))} />
+              </div>
               <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="colors" className="text-accent">Colors (comma-separated)</Label>
@@ -170,7 +174,7 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
                     <Input id="product-video" value={editedProduct.videoUrl || ''} onChange={(e) => handleChange('videoUrl', e.target.value)} placeholder="Enter video URL..."/>
                 </div>
               <div className="flex items-center space-x-2">
-                <Switch id="new-arrival" checked={editedProduct.new} onCheckedChange={(checked) => handleChange('new', checked)} />
+                <Switch id="new-arrival" checked={!!editedProduct.new} onCheckedChange={(checked) => handleChange('new', checked)} />
                 <Label htmlFor="new-arrival">Mark as New Arrival</Label>
               </div>
             </div>

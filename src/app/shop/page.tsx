@@ -29,7 +29,7 @@ const initialProducts: ProductType[] = [
     category: 't-shirts',
     price: '1299',
     originalPrice: null,
-    image: 'https://placehold.co/400x500.png',
+    images: ['https://placehold.co/400x500.png'],
     aiHint: 'streetwear fashion',
     discount: null,
     stock: 50,
@@ -42,7 +42,7 @@ const initialProducts: ProductType[] = [
     category: 'trousers',
     price: '1599',
     originalPrice: '1999',
-    image: 'https://placehold.co/400x500.png',
+    images: ['https://placehold.co/400x500.png'],
     aiHint: 'mens trousers',
     discount: '20% OFF',
     stock: 30,
@@ -55,7 +55,7 @@ const initialProducts: ProductType[] = [
     category: 'shirts',
     price: '1499',
     originalPrice: null,
-    image: 'https://placehold.co/400x500.png',
+    images: ['https://placehold.co/400x500.png'],
     aiHint: 'summer shirt',
     discount: null,
     stock: 45,
@@ -68,7 +68,7 @@ const initialProducts: ProductType[] = [
     category: 'jeans',
     price: '1899',
     originalPrice: null,
-    image: 'https://placehold.co/400x500.png',
+    images: ['https://placehold.co/400x500.png'],
     aiHint: 'denim jeans',
     discount: null,
     stock: 25,
@@ -81,7 +81,7 @@ const initialProducts: ProductType[] = [
     category: 't-shirts',
     price: '1399',
     originalPrice: null,
-    image: 'https://placehold.co/400x500.png',
+    images: ['https://placehold.co/400x500.png'],
     aiHint: 'urban style',
     discount: null,
     stock: 40,
@@ -94,7 +94,7 @@ const initialProducts: ProductType[] = [
     category: 'trousers',
     price: '2199',
     originalPrice: null,
-    image: 'https://placehold.co/400x500.png',
+    images: ['https://placehold.co/400x500.png'],
     aiHint: 'cargo pants',
     discount: null,
     stock: 20,
@@ -107,7 +107,7 @@ const initialProducts: ProductType[] = [
     category: 't-shirts',
     price: '1199',
     originalPrice: null,
-    image: 'https://placehold.co/400x500.png',
+    images: ['https://placehold.co/400x500.png'],
     aiHint: 'graphic tee fashion',
     discount: null,
     stock: 60,
@@ -120,7 +120,7 @@ const initialProducts: ProductType[] = [
     category: 't-shirts',
     price: '999',
     originalPrice: '1199',
-    image: 'https://placehold.co/400x500.png',
+    images: ['https://placehold.co/400x500.png'],
     aiHint: 'mens fashion',
     discount: '17% OFF',
     stock: 80,
@@ -135,7 +135,7 @@ const ProductCard = ({ product }: { product: ProductType }) => {
        <Link href="#" className="block">
         <div className="relative aspect-[4/5] bg-muted">
           <Image
-            src={product.image}
+            src={product.images[0]}
             alt={product.name}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
