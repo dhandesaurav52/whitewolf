@@ -188,48 +188,6 @@ export default function Home() {
             </Carousel>
           </div>
         </section>
-
-        {/* Categories Section */}
-        <section className="bg-muted py-20">
-            <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                <div className="relative h-96 rounded-lg overflow-hidden group">
-                     <Image
-                      src={`https://placehold.co/800x600.png`}
-                      alt="Casual Wear"
-                      layout="fill"
-                      objectFit="cover"
-                      className="transition-transform duration-300 group-hover:scale-105"
-                      data-ai-hint="mens casual"
-                    />
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <div className="text-center text-white">
-                            <h3 className="text-3xl font-headline font-bold">Casual Wear</h3>
-                            <Button asChild variant="secondary" className="mt-4">
-                                <Link href="/shop/casual">Shop Now</Link>
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-                 <div className="relative h-96 rounded-lg overflow-hidden group">
-                     <Image
-                      src={`https://placehold.co/800x600.png`}
-                      alt="Formal Collection"
-                      layout="fill"
-                      objectFit="cover"
-                      className="transition-transform duration-300 group-hover:scale-105"
-                      data-ai-hint="mens formal"
-                    />
-                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <div className="text-center text-white">
-                            <h3 className="text-3xl font-headline font-bold">Formal Collection</h3>
-                            <Button asChild variant="secondary" className="mt-4">
-                                <Link href="/shop/formal">Shop Now</Link>
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
       </main>
     </div>
   );
