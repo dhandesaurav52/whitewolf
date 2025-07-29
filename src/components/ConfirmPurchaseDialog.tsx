@@ -123,12 +123,6 @@ export default function ConfirmPurchaseDialog({
           <DialogDescription>
             Confirm your shipping details for "{productNames}".
           </DialogDescription>
-           <DialogClose asChild>
-                <Button variant="ghost" size="icon" className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground" onClick={onClose}>
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">Close</span>
-                </Button>
-            </DialogClose>
         </DialogHeader>
         <div className="px-6 space-y-4 max-h-[60vh] overflow-y-auto">
             <RadioGroup value={addressOption} onValueChange={(val: "default" | "new") => setAddressOption(val)}>
