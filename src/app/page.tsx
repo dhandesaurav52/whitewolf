@@ -51,6 +51,33 @@ export default function Home() {
     },
   ];
 
+  const accessories = [
+    {
+      name: "Silver Chain",
+      price: "89.99",
+      image: "https://placehold.co/400x500.png",
+      aiHint: "mens jewelry"
+    },
+    {
+      name: "Leather Belt",
+      price: "45.00",
+      image: "https://placehold.co/400x500.png",
+      aiHint: "leather good"
+    },
+    {
+      name: "Classic Watch",
+      price: "199.99",
+      image: "https://placehold.co/400x500.png",
+      aiHint: "timepiece watch"
+    },
+    {
+      name: "Wool Beanie",
+      price: "35.00",
+      image: "https://placehold.co/400x500.png",
+      aiHint: "winter hat"
+    }
+  ];
+
   return (
     <div className="flex flex-col">
       <main className="flex-grow">
@@ -188,6 +215,40 @@ export default function Home() {
             </Carousel>
           </div>
         </section>
+
+        {/* Our Accessories Section */}
+        <section className="py-16">
+          <div className="container mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-headline font-bold">Our Accessories</h2>
+              <p className="text-muted-foreground mt-2">Complete your look with our curated selection of accessories.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {accessories.map((item, i) => (
+                <div key={i} className="group">
+                  <div className="relative aspect-[4/5] bg-muted rounded-lg overflow-hidden">
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      layout="fill"
+                      objectFit="cover"
+                      className="transition-transform duration-300 group-hover:scale-105"
+                      data-ai-hint={item.aiHint}
+                    />
+                  </div>
+                  <h3 className="mt-4 text-lg font-headline">{item.name}</h3>
+                  <p className="text-accent font-semibold">${item.price}</p>
+                </div>
+              ))}
+            </div>
+            <div className="text-center mt-12">
+              <Button asChild variant="outline">
+                <Link href="/accessories">View All <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+
       </main>
     </div>
   );
