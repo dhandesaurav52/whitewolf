@@ -131,7 +131,7 @@ const initialProducts: ProductType[] = [
 const ProductCard = ({ product }: { product: ProductType }) => {
   return (
     <Card className="group overflow-hidden rounded-lg bg-card text-card-foreground border-border relative">
-       <Link href="#" className="block">
+       <Link href={`/product/${product.id}`} className="block">
         <div className="relative aspect-[4/5] bg-muted">
           <Image
             src={product.images && product.images.length > 0 ? product.images[0] : "https://placehold.co/400x500.png"}
