@@ -3,15 +3,27 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import type { Order } from "@/lib/types";
+import type { Order, OrderStatus } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Truck, Package, CheckCircle, Ban } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+
 
 const ORDERS_STORAGE_KEY = 'orders';
 
@@ -27,6 +39,7 @@ export default function OrdersPage() {
     const { user, loading } = useAuth();
     const [orders, setOrders] = useState<Order[]>([]);
     const [isClient, setIsClient] = useState(false);
+    const { toast } = useToast();
 
     const loadUserOrders = useCallback(() => {
         if (user) {
@@ -51,6 +64,30 @@ export default function OrdersPage() {
             window.removeEventListener('storage', loadUserOrders);
         }
     }, [loadUserOrders]);
+    
+    const handleCancelOrder = (orderId: string) => {
+        try {
+            const allOrdersRaw = localStorage.getItem(ORDERS_STORAGE_KEY);
+            const allOrders: Order[] = allOrdersRaw ? JSON.parse(allOrdersRaw) : [];
+            const updatedOrders = allOrders.map(order => 
+                order.id === orderId ? { ...order, status: 'Cancelled' as OrderStatus } : order
+            );
+            localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(updatedOrders));
+            window.dispatchEvent(new Event('storage'));
+            toast({
+                title: "Order Cancelled",
+                description: "Your order has been successfully cancelled.",
+            });
+        } catch (error) {
+            console.error("Failed to cancel order", error);
+             toast({
+                title: "Error",
+                description: "Failed to cancel the order. Please try again.",
+                variant: "destructive",
+            });
+        }
+    };
+
 
     if (loading || !isClient) {
         return <div>Loading orders...</div>;
@@ -112,8 +149,30 @@ export default function OrdersPage() {
                                     ))}
                                 </div>
                             </CardContent>
-                            <CardFooter className="flex justify-end font-semibold text-lg">
-                                Total: ₹{order.total.toFixed(2)}
+                            <CardFooter className="flex justify-between items-center">
+                                <span className="font-semibold text-lg">Total: ₹{order.total.toFixed(2)}</span>
+                                {order.status === 'Pending' && (
+                                     <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="destructive">Cancel Order</Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action cannot be undone. This will cancel your order.
+                                                You will not be charged.
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>Go Back</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleCancelOrder(order.id)}>
+                                                Yes, Cancel Order
+                                            </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                )}
                             </CardFooter>
                         </Card>
                     )
@@ -122,5 +181,3 @@ export default function OrdersPage() {
         </div>
     );
 }
-
-    
