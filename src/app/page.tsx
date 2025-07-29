@@ -126,6 +126,16 @@ export default function Home() {
     }
   ];
 
+  const categories = [
+    { name: "T-Shirts", href: "/t-shirts", image: "https://placehold.co/400x500.png", aiHint: "t-shirt model" },
+    { name: "Shirts", href: "/shirts", image: "https://placehold.co/400x500.png", aiHint: "button-up shirt" },
+    { name: "Jeans", href: "/jeans", image: "https://placehold.co/400x500.png", aiHint: "denim jeans" },
+    { name: "Trousers", href: "/trousers", image: "https://placehold.co/400x500.png", aiHint: "formal trousers" },
+    { name: "Slippers", href: "/slippers", image: "https://placehold.co/400x500.png", aiHint: "sandals footwear" },
+    { name: "Oversized T-shirts", href: "/oversized-t-shirts", image: "https://placehold.co/400x500.png", aiHint: "baggy shirt" },
+    { name: "Shoes", href: "/shoes", image: "https://placehold.co/400x500.png", aiHint: "sneakers shoes" },
+  ];
+
   return (
     <div className="flex flex-col">
       <main className="flex-grow">
@@ -361,6 +371,52 @@ export default function Home() {
               <CarouselPrevious className="hidden md:flex" />
               <CarouselNext className="hidden md:flex" />
             </Carousel>
+          </div>
+        </section>
+
+        {/* Shop by Category Section */}
+        <section className="py-16">
+          <div className="container mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-headline font-bold text-accent">Shop by Category</h2>
+              <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
+                Explore our diverse range of apparel and accessories, categorized for your convenience.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+              {categories.slice(0, 5).map((category) => (
+                <Link href={category.href} key={category.name} className="group relative aspect-[4/5] overflow-hidden rounded-lg">
+                  <Image
+                    src={category.image}
+                    alt={category.name}
+                    layout="fill"
+                    objectFit="cover"
+                    className="transition-transform duration-300 group-hover:scale-105"
+                    data-ai-hint={category.aiHint}
+                  />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <h3 className="text-white font-headline text-2xl font-bold drop-shadow-md">{category.name}</h3>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 mt-4 md:mt-6">
+              {categories.slice(5).map((category) => (
+                <Link href={category.href} key={category.name} className="group relative aspect-[4/5] overflow-hidden rounded-lg lg:col-start-2 xl:col-start-auto">
+                  <Image
+                    src={category.image}
+                    alt={category.name}
+                    layout="fill"
+                    objectFit="cover"
+                    className="transition-transform duration-300 group-hover:scale-105"
+                    data-ai-hint={category.aiHint}
+                  />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <h3 className="text-white font-headline text-2xl font-bold drop-shadow-md">{category.name}</h3>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         </section>
 
