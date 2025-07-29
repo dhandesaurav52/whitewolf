@@ -14,11 +14,17 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormField, FormItem, FormControl, FormMessage, FormLabel } from "@/components/ui/form";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 
 const signupSchema = z.object({
+  fullName: z.string().min(1, { message: "Full name is required." }),
   email: z.string().email({ message: "Please enter a valid email address." }),
+  mobileNumber: z.string().min(10, { message: "Please enter a valid mobile number." }),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+  confirmPassword: z.string().min(6, { message: "Password must be at least 6 characters." }),
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
 });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
@@ -27,12 +33,18 @@ export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
+      fullName: "",
       email: "",
+      mobileNumber: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
@@ -59,21 +71,47 @@ export default function SignupPage() {
   return (
     <div className="flex items-center justify-center py-12">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
-          <CardDescription>Join us and start your style journey today.</CardDescription>
+        <CardHeader>
+          <CardTitle className="text-3xl font-bold text-accent">Sign Up</CardTitle>
+          <CardDescription>Create an account to start shopping.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+               <FormField
+                control={form.control}
+                name="fullName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-accent">Full Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="John Doe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="text-accent">Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="name@example.com" {...field} />
+                      <Input placeholder="m@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="mobileNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-accent">Mobile Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="+1 234 567 890" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -84,16 +122,39 @@ export default function SignupPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel className="text-accent">Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
+                        <div className="relative">
+                            <Input type={showPassword ? "text" : "password"} placeholder="••••••••" {...field} />
+                             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground">
+                                {showPassword ? <EyeOff /> : <Eye />}
+                            </button>
+                        </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? <Loader2 className="animate-spin" /> : "Sign Up"}
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-accent">Confirm Password</FormLabel>
+                     <FormControl>
+                        <div className="relative">
+                            <Input type={showConfirmPassword ? "text" : "password"} placeholder="••••••••" {...field} />
+                             <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground">
+                                {showConfirmPassword ? <EyeOff /> : <Eye />}
+                            </button>
+                        </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={isLoading}>
+                {isLoading ? <Loader2 className="animate-spin" /> : "Create Account"}
               </Button>
             </form>
           </Form>
@@ -110,3 +171,4 @@ export default function SignupPage() {
     </div>
   );
 }
+
