@@ -47,97 +47,95 @@ export default function CreateOfferDialog({ isOpen, onClose, onSave, categories 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[525px]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[525px] p-0">
+        <DialogHeader className="p-6 pb-4">
           <DialogTitle className="text-xl font-bold">Create New Offer</DialogTitle>
           <DialogDescription>
             Fill out the form to create a new promotional offer.
           </DialogDescription>
         </DialogHeader>
-        <div className="py-4">
-          <div className="space-y-6">
+        <div className="space-y-6 p-6">
+          <div className="space-y-2">
+            <Label htmlFor="offer-name">Offer Name</Label>
+            <Input
+              id="offer-name"
+              placeholder="e.g., 20% Off T-Shirts"
+              value={offerName}
+              onChange={(e) => setOfferName(e.target.value)}
+            />
+          </div>
+          
+          <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="offer-name">Offer Name</Label>
+              <Label>Discount Type</Label>
+              <RadioGroup
+                className="flex items-center space-x-4 pt-2"
+                onValueChange={setDiscountType}
+                value={discountType}
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="percentage" id="r1" />
+                  <Label htmlFor="r1" className="font-normal">Percentage</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="fixed" id="r2" />
+                  <Label htmlFor="r2" className="font-normal">Fixed</Label>
+                </div>
+              </RadioGroup>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="discount-value">Discount Value</Label>
               <Input
-                id="offer-name"
-                placeholder="e.g., 20% Off T-Shirts"
-                value={offerName}
-                onChange={(e) => setOfferName(e.target.value)}
+                id="discount-value"
+                type="number"
+                placeholder="0"
+                value={discountValue}
+                onChange={(e) => setDiscountValue(e.target.value)}
               />
             </div>
-            
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label>Discount Type</Label>
-                <RadioGroup
-                  className="flex items-center space-x-4 pt-2"
-                  onValueChange={setDiscountType}
-                  value={discountType}
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="percentage" id="r1" />
-                    <Label htmlFor="r1" className="font-normal">Percentage</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="fixed" id="r2" />
-                    <Label htmlFor="r2" className="font-normal">Fixed</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="discount-value">Discount Value</Label>
-                <Input
-                  id="discount-value"
-                  type="number"
-                  placeholder="0"
-                  value={discountValue}
-                  onChange={(e) => setDiscountValue(e.target.value)}
-                />
-              </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label>Applies To</Label>
+              <RadioGroup
+                className="flex items-center space-x-4 pt-2"
+                onValueChange={setAppliesTo}
+                value={appliesTo}
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="categories" id="r3" />
+                  <Label htmlFor="r3" className="font-normal">Categories</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="products" id="r4" />
+                  <Label htmlFor="r4" className="font-normal">Products</Label>
+                </div>
+              </RadioGroup>
             </div>
-            
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label>Applies To</Label>
-                <RadioGroup
-                  className="flex items-center space-x-4 pt-2"
-                  onValueChange={setAppliesTo}
-                  value={appliesTo}
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="categories" id="r3" />
-                    <Label htmlFor="r3" className="font-normal">Categories</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="products" id="r4" />
-                    <Label htmlFor="r4" className="font-normal">Products</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div className="space-y-2">
-                <Label>
-                  {appliesTo === 'categories' ? 'Select Categories' : 'Select Products'}
-                </Label>
-                <Select onValueChange={(value) => setSelectedCategories([value])}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={`Select ${appliesTo.slice(0, -1)}...`} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-3 pt-2">
-              <Switch id="offer-active" checked={isActive} onCheckedChange={setIsActive} />
-              <Label htmlFor="offer-active" className="font-normal">Offer is active</Label>
+            <div className="space-y-2">
+              <Label>
+                {appliesTo === 'categories' ? 'Select Categories' : 'Select Products'}
+              </Label>
+              <Select onValueChange={(value) => setSelectedCategories([value])}>
+                <SelectTrigger>
+                  <SelectValue placeholder={`Select ${appliesTo.slice(0, -1)}...`} />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
+
+          <div className="flex items-center space-x-3 pt-2">
+            <Switch id="offer-active" checked={isActive} onCheckedChange={setIsActive} />
+            <Label htmlFor="offer-active" className="font-normal">Offer is active</Label>
+          </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="p-6 pt-4 border-t">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={handleSave}>Save Offer</Button>
         </DialogFooter>
