@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import Header from "@/components/Header"
+import Footer from "@/components/Footer"
 import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
@@ -27,6 +28,7 @@ export default function RootLayout({
           <main className="flex-grow container mx-auto px-4 py-8">
             {children}
           </main>
+          <Footer />
           <Toaster />
         </div>
       </body>
