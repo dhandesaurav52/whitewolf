@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import type { Product as ProductType, Order } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { uploadFile } from "@/lib/firebase";
 
 
 const PRODUCTS_STORAGE_KEY = 'products';
@@ -51,15 +52,6 @@ const initialCategories = [
     { value: 'socks', label: 'Socks' },
     { value: 'accessories', label: 'Accessories' },
 ];
-
-const fileToDataUri = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-};
 
 
 export default function AdminDashboardPage() {
@@ -121,6 +113,11 @@ export default function AdminDashboardPage() {
             window.dispatchEvent(new Event('storage'));
         } catch (error) {
             console.error("Failed to save products to localStorage", error);
+            toast({
+                title: "Storage Error",
+                description: "Could not save product data. The browser storage might be full.",
+                variant: "destructive",
+            });
         }
     };
 
@@ -211,8 +208,20 @@ export default function AdminDashboardPage() {
         setIsLoading(true);
 
         try {
-            const imageUrls = await Promise.all(newImageFiles.map(fileToDataUri));
-            const videoUrl = newVideoFile ? await fileToDataUri(newVideoFile) : '';
+            const uploadPromises: Promise<string>[] = [];
+            
+            newImageFiles.forEach(file => {
+                uploadPromises.push(uploadFile(file, `products/${Date.now()}-${file.name}`));
+            });
+
+            if (newVideoFile) {
+                uploadPromises.push(uploadFile(newVideoFile, `videos/${Date.now()}-${newVideoFile.name}`));
+            }
+
+            const uploadedUrls = await Promise.all(uploadPromises);
+            
+            const imageUrls = uploadedUrls.slice(0, newImageFiles.length);
+            const videoUrl = newVideoFile ? uploadedUrls[uploadedUrls.length - 1] : '';
 
             const categoryLabel = categories.find(c => c.value === newSelectedCategory)?.label || newSelectedCategory;
 
@@ -514,5 +523,3 @@ export default function AdminDashboardPage() {
         </div>
     );
 }
-
-    

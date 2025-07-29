@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { Product, Reel } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { uploadFile } from "@/lib/firebase";
 
 interface CreateReelDialogProps {
   isOpen: boolean;
@@ -17,15 +18,6 @@ interface CreateReelDialogProps {
   onSave: (reel: Omit<Reel, 'id'>) => void;
   products: Product[];
 }
-
-const fileToDataUri = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-};
 
 export default function CreateReelDialog({ isOpen, onClose, onSave, products }: CreateReelDialogProps) {
   const [reelTitle, setReelTitle] = useState("");
@@ -46,7 +38,7 @@ export default function CreateReelDialog({ isOpen, onClose, onSave, products }: 
 
     setIsLoading(true);
     try {
-      const videoUrl = await fileToDataUri(videoFile);
+      const videoUrl = await uploadFile(videoFile, `reels/${Date.now()}-${videoFile.name}`);
       onSave({ reelTitle, linkedProduct, videoUrl });
     } catch (error) {
       console.error("Error creating reel: ", error);
@@ -116,5 +108,3 @@ export default function CreateReelDialog({ isOpen, onClose, onSave, products }: 
     </Dialog>
   );
 }
-
-    
