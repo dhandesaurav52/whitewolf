@@ -81,7 +81,7 @@ export default function AdvertiseOffersPage() {
 
     const handleCreateOffer = (newOfferData: { text: string; discountType: string; discountValue: string; appliesTo: string; selectedCategories: string[]; isActive: boolean; }) => {
         const newAd: Advertisement = {
-            id: (ads.length + 1).toString(),
+            id: Date.now().toString(),
             text: newOfferData.text,
             discount: newOfferData.discountValue ? `${newOfferData.discountValue}${newOfferData.discountType === 'percentage' ? '%' : ''}` : 'N/A',
             appliesTo: newOfferData.appliesTo === 'categories' ? `Categories (${newOfferData.selectedCategories.length})` : 'Products', // Simplified for now
