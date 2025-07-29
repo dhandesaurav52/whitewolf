@@ -21,10 +21,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useTheme } from 'next-themes';
 
 export default function SettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(true);
-  const [theme, setTheme] = useState('dark');
+  const { theme, setTheme } = useTheme();
   const { isAdmin, deleteAccount } = useAuth();
   const { toast } = useToast();
 
