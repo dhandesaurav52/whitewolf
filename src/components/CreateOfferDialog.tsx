@@ -31,8 +31,8 @@ export default function CreateOfferDialog({ isOpen, onClose, onSave, categories 
   const [isActive, setIsActive] = useState(true);
 
   const handleSave = () => {
-    if (!offerName || !discountValue) {
-      alert("Please fill in Offer Name and Discount Value.");
+    if (!offerName) {
+      alert("Please fill in the Offer Name.");
       return;
     }
     onSave({
@@ -69,7 +69,6 @@ export default function CreateOfferDialog({ isOpen, onClose, onSave, categories 
             <div className="space-y-2">
               <Label className="text-accent">Discount Type</Label>
               <RadioGroup
-                defaultValue="percentage"
                 className="flex items-center space-x-4 pt-2"
                 onValueChange={setDiscountType}
                 value={discountType}
@@ -100,7 +99,6 @@ export default function CreateOfferDialog({ isOpen, onClose, onSave, categories 
             <div className="space-y-2">
               <Label className="text-accent">Applies To</Label>
               <RadioGroup
-                defaultValue="categories"
                 className="flex items-center space-x-4 pt-2"
                 onValueChange={setAppliesTo}
                 value={appliesTo}
