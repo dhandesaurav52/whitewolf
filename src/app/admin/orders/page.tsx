@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import CollapsibleTableRow from "@/components/CollapsibleTableRow";
 import Link from "next/link";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const ORDERS_STORAGE_KEY = 'orders';
 
@@ -210,7 +210,10 @@ export default function ManageOrdersPage() {
             {imageInView && (
                 <Dialog open={!!imageInView} onOpenChange={(open) => !open && setImageInView(null)}>
                     <DialogContent className="max-w-xl">
-                        <div className="relative aspect-square">
+                        <DialogHeader>
+                            <DialogTitle>Product Image</DialogTitle>
+                        </DialogHeader>
+                        <div className="relative aspect-square mt-4">
                             <Image src={imageInView} alt="Product view" fill className="object-contain" />
                         </div>
                     </DialogContent>
