@@ -3,8 +3,54 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Shirt, ShieldCheck, Truck } from "lucide-react";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function Home() {
+  const oversizeTees = [
+    {
+      name: "Anxious Tshirt",
+      category: "Oversized T Shirts",
+      price: "25.00",
+      image: "https://placehold.co/400x500.png",
+      aiHint: "graphic tee fashion"
+    },
+    {
+      name: "Classic Tee",
+      category: "Oversized T Shirts",
+      price: "22.00",
+      image: "https://placehold.co/400x500.png",
+      aiHint: "mens fashion"
+    },
+    {
+      name: "Vintage Wash Tee",
+      category: "Oversized T Shirts",
+      price: "28.00",
+      image: "https://placehold.co/400x500.png",
+      aiHint: "streetwear fashion"
+    },
+    {
+      name: "Graphic Print Tee",
+      category: "Oversized T Shirts",
+      price: "30.00",
+      image: "https://placehold.co/400x500.png",
+      aiHint: "urban style"
+    },
+     {
+      name: "Minimalist Tee",
+      category: "Oversized T Shirts",
+      price: "24.00",
+      image: "https://placehold.co/400x500.png",
+      aiHint: "simple fashion"
+    },
+  ];
+
   return (
     <div className="flex flex-col">
       <main className="flex-grow">
@@ -90,6 +136,56 @@ export default function Home() {
                 <Link href="/shop">View All <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
             </div>
+          </div>
+        </section>
+
+        {/* Oversize Tees Section */}
+        <section className="py-16 bg-background">
+          <div className="container mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-headline font-bold text-accent">Oversize Tees</h2>
+              <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
+                Discover our collection of relaxed, comfortable, and stylish oversized t-shirts.
+              </p>
+            </div>
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent>
+                {oversizeTees.map((tee, index) => (
+                  <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                    <div className="p-1">
+                      <Card className="bg-card border-border overflow-hidden group">
+                        <CardContent className="p-0">
+                          <div className="relative aspect-[4/5] overflow-hidden">
+                             <Image
+                                src={tee.image}
+                                alt={tee.name}
+                                layout="fill"
+                                objectFit="cover"
+                                className="transition-transform duration-300 group-hover:scale-105"
+                                data-ai-hint={tee.aiHint}
+                              />
+                          </div>
+                           <div className="p-4">
+                              <p className="text-sm text-muted-foreground">White Wolf</p>
+                              <h3 className="text-lg font-headline text-primary">{tee.name}</h3>
+                              <p className="text-sm text-muted-foreground">{tee.category}</p>
+                              <p className="text-accent font-bold mt-2">${tee.price}</p>
+                           </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex" />
+              <CarouselNext className="hidden md:flex" />
+            </Carousel>
           </div>
         </section>
 
