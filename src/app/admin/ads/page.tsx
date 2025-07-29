@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -14,6 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import CreateOfferDialog from "@/components/CreateOfferDialog";
 
 const initialAds: Advertisement[] = [
     { id: '1', text: '20% off all T-Shirts for a limited time!', discount: '20%', appliesTo: 'Categories (1)', status: 'Active' },
@@ -21,9 +23,19 @@ const initialAds: Advertisement[] = [
     { id: '3', text: 'New summer collection just dropped. Shop now!', discount: 'N/A', appliesTo: 'All Visitors', status: 'Inactive' },
 ];
 
+const productCategories = [
+    { value: 't-shirts', label: 'T-Shirts' },
+    { value: 'shirts', label: 'Shirts' },
+    { value: 'jeans', label: 'Jeans' },
+    { value: 'trousers', label: 'Trousers' },
+    { value: 'accessories', label: 'Accessories' },
+];
+
+
 export default function AdvertiseOffersPage() {
     const [ads, setAds] = useState<Advertisement[]>(initialAds);
     const { toast } = useToast();
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
     const handleDeleteAd = (id: string) => {
         setAds(prev => prev.filter(ad => ad.id !== id));
@@ -33,11 +45,29 @@ export default function AdvertiseOffersPage() {
         });
     };
 
+    const handleCreateOffer = (newOfferData: Omit<Advertisement, 'id' | 'status'> & { isActive: boolean; discountValue: string; appliesTo: string; selectedCategories: string[] }) => {
+        const newAd: Advertisement = {
+            id: (ads.length + 1).toString(),
+            text: newOfferData.text,
+            discount: newOfferData.discountValue ? `${newOfferData.discountValue}${newOfferData.discountType === 'percentage' ? '%' : ''}` : 'N/A',
+            appliesTo: newOfferData.appliesTo === 'categories' ? `Categories (${newOfferData.selectedCategories.length})` : 'Products', // Simplified for now
+            status: newOfferData.isActive ? 'Active' : 'Inactive',
+        };
+
+        setAds(prev => [...prev, newAd]);
+        toast({
+            title: "Offer Created",
+            description: "The new promotional offer has been successfully added.",
+        });
+        setIsCreateDialogOpen(false);
+    };
+
+
     return (
         <div className="container mx-auto py-10 space-y-8">
             <div className="flex justify-between items-center">
                 <h1 className="text-4xl font-bold font-headline text-accent">Advertise & Offers</h1>
-                <Button>
+                <Button onClick={() => setIsCreateDialogOpen(true)}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Create New Offer
                 </Button>
@@ -66,7 +96,7 @@ export default function AdvertiseOffersPage() {
                                     <TableCell>{ad.discount}</TableCell>
                                     <TableCell>{ad.appliesTo}</TableCell>
                                     <TableCell>
-                                        <Badge variant={ad.status === 'Active' ? "default" : "outline"} className={ad.status === 'Active' ? 'bg-primary' : ''}>
+                                        <Badge variant={ad.status === 'Active' ? "default" : "outline"} className={ad.status === 'Active' ? 'bg-primary text-primary-foreground' : ''}>
                                             {ad.status}
                                         </Badge>
                                     </TableCell>
@@ -100,6 +130,15 @@ export default function AdvertiseOffersPage() {
                     </Table>
                 </CardContent>
             </Card>
+
+            {isCreateDialogOpen && (
+                <CreateOfferDialog
+                    isOpen={isCreateDialogOpen}
+                    onClose={() => setIsCreateDialogOpen(false)}
+                    onSave={handleCreateOffer}
+                    categories={productCategories}
+                />
+            )}
         </div>
     );
 }
