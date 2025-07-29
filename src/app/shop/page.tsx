@@ -17,10 +17,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import type { Advertisement } from '@/lib/types';
+import type { Product as ProductType } from '@/lib/types';
 
 const ADS_STORAGE_KEY = 'advertisements';
+const PRODUCTS_STORAGE_KEY = 'products';
 
-const initialProducts = [
+const initialProducts: ProductType[] = [
   {
     id: 'prod1',
     name: 'Vintage Wash Tee',
@@ -30,7 +32,9 @@ const initialProducts = [
     image: 'https://placehold.co/400x500.png',
     aiHint: 'streetwear fashion',
     discount: null,
+    stock: 50,
     new: true,
+    displaySection: 'shop'
   },
   {
     id: 'prod2',
@@ -41,7 +45,9 @@ const initialProducts = [
     image: 'https://placehold.co/400x500.png',
     aiHint: 'mens trousers',
     discount: '20% OFF',
+    stock: 30,
     new: false,
+     displaySection: 'shop'
   },
   {
     id: 'prod3',
@@ -52,7 +58,9 @@ const initialProducts = [
     image: 'https://placehold.co/400x500.png',
     aiHint: 'summer shirt',
     discount: null,
+    stock: 45,
     new: false,
+     displaySection: 'shop'
   },
   {
     id: 'prod4',
@@ -63,7 +71,9 @@ const initialProducts = [
     image: 'https://placehold.co/400x500.png',
     aiHint: 'denim jeans',
     discount: null,
+    stock: 25,
     new: false,
+     displaySection: 'shop'
   },
     {
     id: 'prod5',
@@ -74,7 +84,9 @@ const initialProducts = [
     image: 'https://placehold.co/400x500.png',
     aiHint: 'urban style',
     discount: null,
+    stock: 40,
     new: true,
+     displaySection: 'shop'
   },
   {
     id: 'prod6',
@@ -85,7 +97,9 @@ const initialProducts = [
     image: 'https://placehold.co/400x500.png',
     aiHint: 'cargo pants',
     discount: null,
+    stock: 20,
     new: false,
+     displaySection: 'shop'
   },
   {
     id: 'prod7',
@@ -96,7 +110,9 @@ const initialProducts = [
     image: 'https://placehold.co/400x500.png',
     aiHint: 'graphic tee fashion',
     discount: null,
+    stock: 60,
     new: false,
+     displaySection: 'shop'
   },
     {
     id: 'prod8',
@@ -107,13 +123,13 @@ const initialProducts = [
     image: 'https://placehold.co/400x500.png',
     aiHint: 'mens fashion',
     discount: '17% OFF',
+    stock: 80,
     new: false,
+     displaySection: 'shop'
   },
 ];
 
-type Product = typeof initialProducts[0];
-
-const ProductCard = ({ product }: { product: Product }) => {
+const ProductCard = ({ product }: { product: ProductType }) => {
   return (
     <Card className="group overflow-hidden rounded-lg bg-card text-card-foreground border-border relative">
        <Link href="#" className="block">
@@ -165,23 +181,46 @@ const ProductCard = ({ product }: { product: Product }) => {
 
 
 export default function ShopPage() {
-    const [products, setProducts] = useState<Product[]>(initialProducts);
+    const [products, setProducts] = useState<ProductType[]>([]);
+    const [allProducts, setAllProducts] = useState<ProductType[]>([]);
+
+     useEffect(() => {
+        let storedProducts: ProductType[] = [];
+        try {
+            const productsFromStorage = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+            if (productsFromStorage) {
+                storedProducts = JSON.parse(productsFromStorage);
+            } else {
+                storedProducts = initialProducts;
+                localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(initialProducts));
+            }
+        } catch (error) {
+            console.error("Failed to load products from storage, using initial products.", error);
+            storedProducts = initialProducts;
+        }
+        setAllProducts(storedProducts);
+    }, []);
 
     useEffect(() => {
         const applyDiscounts = () => {
             try {
                 const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
-                if (!storedAds) return;
+                if (!storedAds) {
+                     setProducts(allProducts.filter(p => p.displaySection === 'shop'));
+                    return;
+                };
 
                 const activeAds: Advertisement[] = JSON.parse(storedAds).filter((ad: Advertisement) => ad.status === 'Active');
                 const categoryAds = activeAds.filter(ad => ad.appliesTo === 'categories' && ad.selectedCategories.length > 0);
+                
+                const shopProducts = allProducts.filter(p => p.displaySection === 'shop');
 
                 if (categoryAds.length === 0) {
-                    setProducts(initialProducts); // Reset to original if no offers
+                    setProducts(shopProducts); // Reset to original if no offers
                     return;
                 }
                 
-                const updatedProducts = initialProducts.map(p => {
+                const updatedProducts = shopProducts.map(p => {
                     let productPrice = parseFloat(p.price);
                     let originalProductPrice = p.originalPrice ? parseFloat(p.originalPrice) : productPrice;
                     let appliedDiscount = null;
@@ -210,21 +249,23 @@ export default function ShopPage() {
 
             } catch (error) {
                 console.error("Failed to apply discounts", error);
-                setProducts(initialProducts);
+                setProducts(allProducts.filter(p => p.displaySection === 'shop'));
             }
         };
 
         applyDiscounts();
 
-        const handleStorageChange = () => {
-            applyDiscounts();
+        const handleStorageChange = (event: StorageEvent) => {
+             if (event.key === ADS_STORAGE_KEY || event.key === PRODUCTS_STORAGE_KEY) {
+                window.location.reload();
+            }
         };
 
         window.addEventListener('storage', handleStorageChange);
         return () => {
             window.removeEventListener('storage', handleStorageChange);
         };
-    }, []);
+    }, [allProducts]);
 
     const filters = [
         { placeholder: 'All Categories', options: ['T-Shirts', 'Shirts', 'Pants', 'Jeans'] },

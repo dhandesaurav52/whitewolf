@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,58 +17,14 @@ import EditProductDialog from "@/components/EditProductDialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
+import type { Product as ProductType } from "@/lib/types";
+import { useToast } from "@/hooks/use-toast";
 
-type Product = {
-  name: string;
-  image: string;
-  aiHint: string;
-  category: string;
-  price: string;
-  stock: number;
-  brand?: string;
-  description?: string;
-  colors?: string;
-  textSizes?: string;
-  numericSizes?: string;
-  isNew?: boolean;
-  displaySection?: 'shop' | 'accessories';
-};
+const PRODUCTS_STORAGE_KEY = 'products';
 
-const categoriesList = [
-    { value: 't-shirts', label: 'T-Shirts' },
-    { value: 'shirts', label: 'Shirts' },
-    { value: 'jeans', label: 'Jeans' },
-    { value: 'trousers', label: 'Trousers' },
-    { value: 'accessories', label: 'Accessories' },
-];
-
-export default function AdminDashboardPage() {
-    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-    const [categories, setCategories] = useState(categoriesList);
-    const [openCategoryPopover, setOpenCategoryPopover] = useState(false)
-    const [selectedCategory, setSelectedCategory] = useState('')
-
-
-    const handleEdit = (product: Product) => {
-        setEditingProduct(product);
-    };
-
-    const handleSave = (updatedProduct: Product) => {
-        // Here you would typically update the product in your database
-        console.log("Saving product:", updatedProduct);
-        setEditingProduct(null);
-    };
-
-
-    const stats = [
-        { title: "Total Revenue", value: "₹4,800", description: "Based on delivered orders", icon: BarChart },
-        { title: "New Orders", value: "15", description: "Orders pending fulfillment", icon: ShoppingCart },
-        { title: "Products in Stock", value: "13", description: "Total active products", icon: Package },
-        { title: "Total Users", value: "2", description: "Unique customers with orders", icon: Users },
-    ];
-
-    const products: Product[] = [
+const initialProducts: ProductType[] = [
       {
+        id: 'prod1',
         name: "Vintage Wash Tee",
         image: "https://placehold.co/100x100.png",
         aiHint: "streetwear fashion",
@@ -79,10 +35,11 @@ export default function AdminDashboardPage() {
         description: "A classic oversized tee with a vintage wash.",
         colors: "Charcoal, Black",
         textSizes: "S, M, L, XL",
-        isNew: true,
+        new: true,
         displaySection: 'shop'
       },
       {
+        id: 'prod2',
         name: "Slim-Fit Chinos",
         image: "https://placehold.co/100x100.png",
         aiHint: "mens trousers",
@@ -93,10 +50,11 @@ export default function AdminDashboardPage() {
         description: "Versatile slim-fit chinos for any occasion.",
         colors: "Beige, Navy",
         numericSizes: "30, 32, 34, 36",
-        isNew: false,
+        new: false,
         displaySection: 'shop'
       },
       {
+        id: 'prod3',
         name: "Linen Button-Down",
         image: "https://placehold.co/100x100.png",
         aiHint: "summer shirt",
@@ -107,10 +65,11 @@ export default function AdminDashboardPage() {
         description: "A breathable linen shirt, perfect for summer.",
         colors: "White, Sky Blue",
         textSizes: "M, L, XL",
-        isNew: false,
+        new: false,
         displaySection: 'shop'
       },
        {
+        id: 'prod4',
         name: "Dark Wash Jeans",
         image: "https://placehold.co/100x100.png",
         aiHint: "denim jeans",
@@ -121,10 +80,11 @@ export default function AdminDashboardPage() {
         description: "Classic dark wash jeans with a modern fit.",
         colors: "Indigo",
         numericSizes: "28, 30, 32, 34, 36",
-        isNew: false,
+        new: false,
         displaySection: 'shop'
       },
        {
+        id: 'acc1',
         name: "Classic Leather Belt",
         image: "https://placehold.co/100x100.png",
         aiHint: "leather belt",
@@ -134,20 +94,150 @@ export default function AdminDashboardPage() {
         brand: "Urban Threads",
         description: "A timeless leather belt.",
         colors: "Black, Brown",
-        isNew: false,
+        new: false,
         displaySection: 'accessories'
       },
+];
+
+const generateUniqueId = () => `prod_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 9)}`;
+
+const categoriesList = [
+    { value: 't-shirts', label: 'T-Shirts' },
+    { value: 'shirts', label: 'Shirts' },
+    { value: 'jeans', label: 'Jeans' },
+    { value: 'trousers', label: 'Trousers' },
+    { value: 'accessories', label: 'Accessories' },
+];
+
+export default function AdminDashboardPage() {
+    const { toast } = useToast();
+    const [products, setProducts] = useState<ProductType[]>([]);
+    const [editingProduct, setEditingProduct] = useState<ProductType | null>(null);
+    const [categories, setCategories] = useState(categoriesList);
+    const [openCategoryPopover, setOpenCategoryPopover] = useState(false);
+    
+    // Form state
+    const [newProductName, setNewProductName] = useState('');
+    const [newBrandName, setNewBrandName] = useState('');
+    const [newPrice, setNewPrice] = useState('');
+    const [newSelectedCategory, setNewSelectedCategory] = useState('');
+    const [newDisplaySection, setNewDisplaySection] = useState<'shop' | 'accessories'>('shop');
+    const [newDescription, setNewDescription] = useState('');
+    const [newColors, setNewColors] = useState('');
+    const [newTextSizes, setNewTextSizes] = useState('');
+    const [newNumericSizes, setNewNumericSizes] = useState('');
+    const [isNewArrival, setIsNewArrival] = useState(false);
+    const [newStock, setNewStock] = useState(0);
+
+    useEffect(() => {
+        let storedProducts: ProductType[] = [];
+        try {
+            const productsFromStorage = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+            if (productsFromStorage) {
+                storedProducts = JSON.parse(productsFromStorage);
+            } else {
+                storedProducts = initialProducts;
+                localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(initialProducts));
+            }
+        } catch (error) {
+            console.error("Failed to load products from storage, using initial products.", error);
+            storedProducts = initialProducts;
+        }
+        setProducts(storedProducts);
+    }, []);
+
+    const updateProducts = (newProducts: ProductType[]) => {
+        setProducts(newProducts);
+        try {
+            localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(newProducts));
+            window.dispatchEvent(new Event('storage'));
+        } catch (error) {
+            console.error("Failed to save products to localStorage", error);
+        }
+    };
+
+    const handleEdit = (product: ProductType) => {
+        setEditingProduct(product);
+    };
+
+    const handleSave = (updatedProduct: ProductType) => {
+        // Here you would typically update the product in your database
+        console.log("Saving product:", updatedProduct);
+        const newProducts = products.map(p => p.id === updatedProduct.id ? updatedProduct : p);
+        updateProducts(newProducts);
+        setEditingProduct(null);
+    };
+
+    const stats = [
+        { title: "Total Revenue", value: "₹4,800", description: "Based on delivered orders", icon: BarChart },
+        { title: "New Orders", value: "15", description: "Orders pending fulfillment", icon: ShoppingCart },
+        { title: "Products in Stock", value: products.length, description: "Total active products", icon: Package },
+        { title: "Total Users", value: "2", description: "Unique customers with orders", icon: Users },
     ];
 
     const handleCategorySelect = (currentValue: string) => {
         const lowerCaseValue = currentValue.toLowerCase();
-        setSelectedCategory(lowerCaseValue === selectedCategory ? '' : lowerCaseValue);
+        setNewSelectedCategory(lowerCaseValue === newSelectedCategory ? '' : lowerCaseValue);
         const exists = categories.some(cat => cat.value === lowerCaseValue);
         if (!exists && currentValue) {
             setCategories([...categories, { value: lowerCaseValue, label: currentValue }]);
         }
         setOpenCategoryPopover(false);
     }
+
+    const resetForm = () => {
+        setNewProductName('');
+        setNewBrandName('');
+        setNewPrice('');
+        setNewSelectedCategory('');
+        setNewDisplaySection('shop');
+        setNewDescription('');
+        setNewColors('');
+        setNewTextSizes('');
+        setNewNumericSizes('');
+        setIsNewArrival(false);
+        setNewStock(0);
+    };
+
+    const handleAddProduct = () => {
+        if (!newProductName || !newPrice || !newSelectedCategory) {
+            toast({
+                title: "Missing Information",
+                description: "Product Name, Price, and Category are required.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        const newProduct: ProductType = {
+            id: generateUniqueId(),
+            name: newProductName,
+            brand: newBrandName,
+            price: newPrice,
+            category: newSelectedCategory,
+            displaySection: newDisplaySection,
+            description: newDescription,
+            colors: newColors,
+            textSizes: newTextSizes,
+            numericSizes: newNumericSizes,
+            new: isNewArrival,
+            stock: newStock,
+            image: 'https://placehold.co/400x500.png',
+            aiHint: newProductName.toLowerCase(),
+            originalPrice: null,
+            discount: null,
+        };
+
+        const newProducts = [...products, newProduct];
+        updateProducts(newProducts);
+
+        toast({
+            title: "Product Added",
+            description: `${newProduct.name} has been added to the store.`,
+        });
+
+        resetForm();
+    };
 
     return (
         <div className="container mx-auto py-10 space-y-8">
@@ -177,17 +267,17 @@ export default function AdminDashboardPage() {
                     <CardContent className="space-y-6">
                          <div className="space-y-2">
                             <Label htmlFor="product-name" className="text-accent">Product Name</Label>
-                            <Input id="product-name" placeholder="e.g. Charcoal Crew-Neck Tee" />
+                            <Input id="product-name" placeholder="e.g. Charcoal Crew-Neck Tee" value={newProductName} onChange={(e) => setNewProductName(e.target.value)} />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="brand-name" className="text-accent">Brand Name</Label>
-                            <Input id="brand-name" placeholder="e.g. White Wolf" />
+                            <Input id="brand-name" placeholder="e.g. White Wolf" value={newBrandName} onChange={(e) => setNewBrandName(e.target.value)} />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <Label htmlFor="price" className="text-accent">Price</Label>
-                                <Input id="price" type="number" placeholder="e.g. 999" />
+                                <Input id="price" type="number" placeholder="e.g. 999" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} />
                             </div>
                              <div className="space-y-2">
                                 <Label className="text-accent">Category</Label>
@@ -199,14 +289,14 @@ export default function AdminDashboardPage() {
                                         aria-expanded={openCategoryPopover}
                                         className="w-full justify-between"
                                         >
-                                        {selectedCategory
-                                            ? categories.find((cat) => cat.value === selectedCategory)?.label
+                                        {newSelectedCategory
+                                            ? categories.find((cat) => cat.value === newSelectedCategory)?.label
                                             : "Select or add category..."}
                                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                         </Button>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                                        <Command onValueChange={setSelectedCategory}>
+                                        <Command onValueChange={setNewSelectedCategory}>
                                             <CommandInput placeholder="Search or add category..." />
                                             <CommandList>
                                                 <CommandEmpty>No category found.</CommandEmpty>
@@ -214,13 +304,13 @@ export default function AdminDashboardPage() {
                                                 {categories.map((cat) => (
                                                     <CommandItem
                                                     key={cat.value}
-                                                    value={cat.value}
+                                                    value={cat.label}
                                                     onSelect={handleCategorySelect}
                                                     >
                                                     <Check
                                                         className={cn(
                                                         "mr-2 h-4 w-4",
-                                                        selectedCategory === cat.value ? "opacity-100" : "opacity-0"
+                                                        newSelectedCategory === cat.value ? "opacity-100" : "opacity-0"
                                                         )}
                                                     />
                                                     {cat.label}
@@ -236,7 +326,7 @@ export default function AdminDashboardPage() {
 
                          <div className="space-y-2">
                             <Label htmlFor="display-section" className="text-accent">Display In</Label>
-                            <Select>
+                            <Select value={newDisplaySection} onValueChange={(value: 'shop' | 'accessories') => setNewDisplaySection(value)}>
                                 <SelectTrigger id="display-section">
                                     <SelectValue placeholder="Select a section" />
                                 </SelectTrigger>
@@ -249,23 +339,27 @@ export default function AdminDashboardPage() {
 
                         <div className="space-y-2">
                             <Label htmlFor="description" className="text-accent">Description</Label>
-                            <Textarea id="description" placeholder="e.g. A classic crew-neck t-shirt..." />
+                            <Textarea id="description" placeholder="e.g. A classic crew-neck t-shirt..." value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
                         </div>
 
                         <div className="space-y-2">
                             <Label htmlFor="colors" className="text-accent">Colors (comma-separated)</Label>
-                            <Input id="colors" placeholder="e.g., Black, White, Blue" />
+                            <Input id="colors" placeholder="e.g., Black, White, Blue" value={newColors} onChange={(e) => setNewColors(e.target.value)} />
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                              <div className="space-y-2">
                                 <Label htmlFor="text-sizes" className="text-accent">Text-based Sizes (comma-separated)</Label>
-                                <Input id="text-sizes" placeholder="e.g., S, M, L, XL, XXL" />
+                                <Input id="text-sizes" placeholder="e.g., S, M, L, XL, XXL" value={newTextSizes} onChange={(e) => setNewTextSizes(e.target.value)} />
                             </div>
                            <div className="space-y-2">
                                <Label htmlFor="numeric-sizes" className="text-accent">Numeric Sizes (comma-separated)</Label>
-                               <Input id="numeric-sizes" placeholder="e.g., 28, 30, 32" />
+                               <Input id="numeric-sizes" placeholder="e.g., 28, 30, 32" value={newNumericSizes} onChange={(e) => setNewNumericSizes(e.target.value)} />
                            </div>
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="stock" className="text-accent">Stock Quantity</Label>
+                            <Input id="stock" type="number" placeholder="e.g., 100" value={newStock} onChange={(e) => setNewStock(Number(e.target.value))} />
                         </div>
 
                          <div className="space-y-2">
@@ -282,13 +376,13 @@ export default function AdminDashboardPage() {
                         </div>
 
                         <div className="flex items-center space-x-2">
-                            <Switch id="new-arrival" />
+                            <Switch id="new-arrival" checked={isNewArrival} onCheckedChange={setIsNewArrival}/>
                             <Label htmlFor="new-arrival">Mark as New Arrival</Label>
                         </div>
                         
                         <div className="flex justify-end gap-2">
-                            <Button variant="outline">Cancel</Button>
-                            <Button>Add Product</Button>
+                            <Button variant="outline" onClick={resetForm}>Cancel</Button>
+                            <Button onClick={handleAddProduct}>Add Product</Button>
                         </div>
                     </CardContent>
                 </Card>

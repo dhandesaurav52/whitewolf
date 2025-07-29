@@ -16,11 +16,12 @@ import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import type { Advertisement } from '@/lib/types';
+import type { Advertisement, Product as ProductType } from '@/lib/types';
 
 const ADS_STORAGE_KEY = 'advertisements';
+const PRODUCTS_STORAGE_KEY = 'products';
 
-const initialProducts = [
+const initialProducts: ProductType[] = [
   {
     id: 'acc1',
     name: 'Classic Leather Belt',
@@ -30,7 +31,9 @@ const initialProducts = [
     image: 'https://placehold.co/400x500.png',
     aiHint: 'leather belt',
     discount: null,
+    stock: 100,
     new: true,
+    displaySection: 'accessories'
   },
   {
     id: 'acc2',
@@ -41,7 +44,9 @@ const initialProducts = [
     image: 'https://placehold.co/400x500.png',
     aiHint: 'silver chain',
     discount: null,
+    stock: 50,
     new: false,
+    displaySection: 'accessories'
   },
   {
     id: 'acc3',
@@ -52,7 +57,9 @@ const initialProducts = [
     image: 'https://placehold.co/400x500.png',
     aiHint: 'men\'s watch',
     discount: '20% OFF',
+    stock: 25,
     new: false,
+    displaySection: 'accessories'
   },
   {
     id: 'acc4',
@@ -63,7 +70,9 @@ const initialProducts = [
     image: 'https://placehold.co/400x500.png',
     aiHint: 'wool beanie',
     discount: null,
+    stock: 75,
     new: false,
+    displaySection: 'accessories'
   },
   {
     id: 'acc5',
@@ -74,7 +83,9 @@ const initialProducts = [
     image: 'https://placehold.co/400x500.png',
     aiHint: 'sunglasses fashion',
     discount: null,
+    stock: 40,
     new: true,
+    displaySection: 'accessories'
   },
   {
     id: 'acc6',
@@ -85,7 +96,9 @@ const initialProducts = [
     image: 'https://placehold.co/400x500.png',
     aiHint: 'canvas backpack',
     discount: null,
+    stock: 30,
     new: false,
+    displaySection: 'accessories'
   },
   {
     id: 'acc7',
@@ -96,7 +109,9 @@ const initialProducts = [
     image: 'https://placehold.co/400x500.png',
     aiHint: 'leather wallet',
     discount: null,
+    stock: 120,
     new: false,
+    displaySection: 'accessories'
   },
   {
     id: 'acc8',
@@ -107,13 +122,13 @@ const initialProducts = [
     image: 'https://placehold.co/400x500.png',
     aiHint: 'silk tie',
     discount: '15% OFF',
+    stock: 60,
     new: false,
+    displaySection: 'accessories'
   },
 ];
 
-type Product = typeof initialProducts[0];
-
-const ProductCard = ({ product }: { product: Product }) => {
+const ProductCard = ({ product }: { product: ProductType }) => {
   return (
     <Card className="group overflow-hidden rounded-lg bg-card text-card-foreground border-border relative">
        <Link href="#" className="block">
@@ -165,23 +180,46 @@ const ProductCard = ({ product }: { product: Product }) => {
 
 
 export default function AccessoriesPage() {
-    const [products, setProducts] = useState<Product[]>(initialProducts);
+    const [products, setProducts] = useState<ProductType[]>([]);
+    const [allProducts, setAllProducts] = useState<ProductType[]>([]);
+
+    useEffect(() => {
+        let storedProducts: ProductType[] = [];
+        try {
+            const productsFromStorage = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+            if (productsFromStorage) {
+                storedProducts = JSON.parse(productsFromStorage);
+            } else {
+                storedProducts = initialProducts;
+                localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(initialProducts));
+            }
+        } catch (error) {
+            console.error("Failed to load products from storage, using initial products.", error);
+            storedProducts = initialProducts;
+        }
+        setAllProducts(storedProducts);
+    }, []);
 
     useEffect(() => {
         const applyDiscounts = () => {
             try {
                 const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
-                if (!storedAds) return;
+                 const accessoryProducts = allProducts.filter(p => p.displaySection === 'accessories');
+
+                if (!storedAds) {
+                    setProducts(accessoryProducts);
+                    return;
+                }
 
                 const activeAds: Advertisement[] = JSON.parse(storedAds).filter((ad: Advertisement) => ad.status === 'Active');
                 const categoryAds = activeAds.filter(ad => ad.appliesTo === 'categories' && ad.selectedCategories.length > 0);
 
                 if (categoryAds.length === 0) {
-                    setProducts(initialProducts); // Reset to original if no offers
+                    setProducts(accessoryProducts); // Reset to original if no offers
                     return;
                 }
                 
-                const updatedProducts = initialProducts.map(p => {
+                const updatedProducts = accessoryProducts.map(p => {
                     let productPrice = parseFloat(p.price);
                     let originalProductPrice = p.originalPrice ? parseFloat(p.originalPrice) : productPrice;
                     let appliedDiscount = null;
@@ -210,21 +248,23 @@ export default function AccessoriesPage() {
 
             } catch (error) {
                 console.error("Failed to apply discounts", error);
-                setProducts(initialProducts);
+                setProducts(allProducts.filter(p => p.displaySection === 'accessories'));
             }
         };
 
         applyDiscounts();
 
-        const handleStorageChange = () => {
-            applyDiscounts();
+        const handleStorageChange = (event: StorageEvent) => {
+            if (event.key === ADS_STORAGE_KEY || event.key === PRODUCTS_STORAGE_KEY) {
+                window.location.reload();
+            }
         };
 
         window.addEventListener('storage', handleStorageChange);
         return () => {
             window.removeEventListener('storage', handleStorageChange);
         };
-    }, []);
+    }, [allProducts]);
 
     const filters = [
         { placeholder: 'All Categories', options: ['Belts', 'Wallets', 'Watches', 'Ties'] },

@@ -30,3 +30,21 @@ export type Advertisement = {
     heroButton?: string;
 };
 
+export type Product = {
+  id: string;
+  name: string;
+  image: string;
+  aiHint: string;
+  category: string;
+  price: string;
+  originalPrice: string | null;
+  stock: number;
+  brand?: string;
+  description?: string;
+  colors?: string;
+  textSizes?: string;
+  numericSizes?: string;
+  new?: boolean;
+  displaySection: 'shop' | 'accessories';
+  discount: string | null;
+};

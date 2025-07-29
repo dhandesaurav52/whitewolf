@@ -14,22 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-type Product = {
-  name: string;
-  image: string;
-  aiHint: string;
-  category: string;
-  price: string;
-  stock: number;
-  brand?: string;
-  description?: string;
-  colors?: string;
-  textSizes?: string;
-  numericSizes?: string;
-  isNew?: boolean;
-  displaySection?: 'shop' | 'accessories';
-};
+import type { Product } from "@/lib/types";
 
 interface EditProductDialogProps {
   product: Product;
@@ -58,7 +43,7 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
     }
   }, [product]);
 
-  const handleChange = (field: keyof Product, value: string | number | boolean) => {
+  const handleChange = (field: keyof Product, value: string | number | boolean | null) => {
     setEditedProduct(prev => ({ ...prev, [field]: value }));
   };
 
@@ -181,7 +166,7 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
                     <Input id="numeric-sizes" value={editedProduct.numericSizes || ''} onChange={(e) => handleChange('numericSizes', e.target.value)} />
                 </div>
               <div className="flex items-center space-x-2">
-                <Switch id="new-arrival" checked={editedProduct.isNew} onCheckedChange={(checked) => handleChange('isNew', checked)} />
+                <Switch id="new-arrival" checked={editedProduct.new} onCheckedChange={(checked) => handleChange('new', checked)} />
                 <Label htmlFor="new-arrival">Mark as New Arrival</Label>
               </div>
             </div>
