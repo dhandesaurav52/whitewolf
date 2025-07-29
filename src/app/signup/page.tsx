@@ -50,6 +50,16 @@ export default function SignupPage() {
 
   const onSubmit = async (data: SignupFormValues) => {
     setIsLoading(true);
+    if (!auth) {
+        toast({
+            variant: "destructive",
+            title: "Authentication not configured.",
+            description: "Please contact support.",
+        });
+        setIsLoading(false);
+        return;
+    }
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       await updateProfile(userCredential.user, {
@@ -157,7 +167,7 @@ export default function SignupPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={isLoading || !auth}>
                 {isLoading ? <Loader2 className="animate-spin" /> : "Create Account"}
               </Button>
             </form>
@@ -175,5 +185,3 @@ export default function SignupPage() {
     </div>
   );
 }
-
-    

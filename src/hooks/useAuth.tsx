@@ -26,9 +26,8 @@ function AuthManager({ children }: { children: ReactNode }) {
     const router = useRouter();
 
     const refreshUser = useCallback(async () => {
-        const currentUser = auth.currentUser;
-        if (currentUser) {
-            await currentUser.reload();
+        if (auth?.currentUser) {
+            await auth.currentUser.reload();
             const refreshedUser = auth.currentUser;
             setUser(refreshedUser);
             setIsAdmin(refreshedUser ? ADMIN_EMAILS.includes(refreshedUser.email || "") : false);
@@ -36,6 +35,10 @@ function AuthManager({ children }: { children: ReactNode }) {
     }, []);
 
     useEffect(() => {
+        if (!auth) {
+            setLoading(false);
+            return;
+        }
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setUser(user);
             setIsAdmin(user ? ADMIN_EMAILS.includes(user.email || "") : false);
@@ -45,17 +48,20 @@ function AuthManager({ children }: { children: ReactNode }) {
     }, []);
 
     const signOut = async () => {
-        await firebaseSignOut(auth);
-        router.push("/");
+        if (auth) {
+            await firebaseSignOut(auth);
+            router.push("/");
+        } else {
+             console.error("Firebase Auth is not initialized.");
+        }
     };
     
     const deleteAccount = async () => {
-        const currentUser = auth.currentUser;
-        if (currentUser) {
-            await deleteUser(currentUser);
+        if (auth?.currentUser) {
+            await deleteUser(auth.currentUser);
             router.push("/");
         } else {
-            throw new Error("No user is currently signed in.");
+            throw new Error("No user is currently signed in or Firebase Auth is not initialized.");
         }
     };
 

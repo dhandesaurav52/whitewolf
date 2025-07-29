@@ -1,24 +1,50 @@
 
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
+import { getAuth, Auth } from "firebase/auth";
+import { getStorage, ref, uploadBytes, getDownloadURL, FirebaseStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  projectId: "white-wolf-style-advisor",
-  appId: "1:564592626382:web:47d6ba0d87a0088c3a1e9f",
-  storageBucket: "white-wolf-style-advisor.appspot.com",
-  apiKey: "AIzaSyBxzZ8xNDTBLi5pD0dap05yYeESskysmB0",
-  authDomain: "white-wolf-style-advisor.firebaseapp.com",
-  messagingSenderId: "564592626382",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth = getAuth(app);
-const storage = getStorage(app);
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
+let storage: FirebaseStorage | null = null;
+
+function initializeFirebase() {
+    if (firebaseConfig.apiKey && !getApps().length) {
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            storage = getStorage(app);
+        } catch (error) {
+            console.error("Firebase initialization error:", error);
+            app = null;
+            auth = null;
+            storage = null;
+        }
+    } else if (getApps().length > 0) {
+        app = getApp();
+        auth = getAuth(app);
+        storage = getStorage(app);
+    } else {
+        console.warn("Firebase API key is not defined. Firebase services will be disabled.");
+    }
+}
+
+initializeFirebase();
+
 
 // New function to upload files to Firebase Storage
 const uploadFile = async (file: File, path: string): Promise<string> => {
+    if (!storage) {
+        throw new Error("Firebase Storage is not initialized. Please check your environment variables.");
+    }
     const storageRef = ref(storage, path);
     await uploadBytes(storageRef, file);
     const downloadURL = await getDownloadURL(storageRef);
