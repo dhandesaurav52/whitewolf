@@ -27,7 +27,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function SettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const { theme, setTheme } = useTheme();
-  const { isAdmin, deleteAccount } = useAuth();
+  const { user, isAdmin, deleteAccount } = useAuth();
   const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
 
@@ -148,7 +148,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {!isAdmin && (
+        {user && !isAdmin && (
             <Card>
                 <CardHeader>
                     <CardTitle className="text-2xl font-headline text-destructive">Account Management</CardTitle>

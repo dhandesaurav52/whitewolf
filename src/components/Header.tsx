@@ -95,7 +95,7 @@ export default function Header() {
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    {isAdmin ? (
+                    {isAdmin && (
                       <>
                         <DropdownMenuItem asChild>
                             <Link href="/admin/dashboard"><LayoutDashboard className="mr-2 h-4 w-4" />Dashboard</Link>
@@ -114,7 +114,7 @@ export default function Header() {
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                       </>
-                    ) : null}
+                    )}
                     <DropdownMenuItem asChild>
                       <Link href="/profile">
                         <UserIcon className="mr-2 h-4 w-4" />
@@ -169,5 +169,3 @@ export default function Header() {
     </header>
   );
 }
-
-    
