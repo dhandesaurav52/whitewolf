@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Truck, Package, CheckCircle, Ban, RefreshCw } from "lucide-react";
 import type { Order, OrderStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ORDERS_STORAGE_KEY = 'orders';
 
@@ -36,7 +37,7 @@ const statusIcons: { [key in OrderStatus]: React.ElementType } = {
 
 export default function ManageOrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
-    const [isClient, setIsClient] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
 
     const loadOrders = useCallback(() => {
         try {
@@ -49,7 +50,7 @@ export default function ManageOrdersPage() {
     }, []);
 
     useEffect(() => {
-        setIsClient(true);
+        setIsMounted(true);
         loadOrders();
         window.addEventListener('storage', loadOrders);
         return () => {
@@ -71,8 +72,31 @@ export default function ManageOrdersPage() {
         }
     };
 
-    if (!isClient) {
-        return <div>Loading...</div>;
+    if (!isMounted) {
+      return (
+        <div className="container mx-auto py-10 space-y-8">
+            <div className="flex justify-between items-center">
+                <Skeleton className="h-12 w-1/3" />
+                <Skeleton className="h-10 w-10" />
+            </div>
+            <Card>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            {[...Array(7)].map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {[...Array(5)].map((_, i) => (
+                            <TableRow key={i}>
+                                {[...Array(7)].map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </Card>
+        </div>
+      );
     }
 
     return (
@@ -153,5 +177,3 @@ export default function ManageOrdersPage() {
         </div>
     );
 }
-
-    

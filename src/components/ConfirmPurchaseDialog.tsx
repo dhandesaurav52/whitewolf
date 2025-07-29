@@ -9,8 +9,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import type { CustomerDetails, CartItem, Order } from "@/lib/types";
 import { useAuth } from "@/hooks/useAuth";
@@ -55,7 +53,7 @@ export default function ConfirmPurchaseDialog({
   clearCart,
   productToBuy
 }: ConfirmPurchaseDialogProps) {
-  const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cod" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -73,7 +71,7 @@ export default function ConfirmPurchaseDialog({
   });
   
   useEffect(() => {
-    if (user) {
+    if (user && isOpen) {
         form.setValue('name', user.displayName || '');
         form.setValue('email', user.email || '');
     }
@@ -119,11 +117,10 @@ export default function ConfirmPurchaseDialog({
 
   const handleRazorpayPayment = async (shippingDetails: CustomerDetails) => {
     setIsLoading(true);
-    // This is a mock API call. In a real app, you would have a backend endpoint.
+    setPaymentMethod('online');
+
     const createOrderOnServer = async () => {
-        // Simulate API latency
         await new Promise(resolve => setTimeout(resolve, 1000));
-        // In a real app, this would be a unique order_id from Razorpay's API
         return `mock_order_${Date.now()}`;
     };
 
@@ -132,13 +129,12 @@ export default function ConfirmPurchaseDialog({
         
         const options = {
             key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_your_key_here',
-            amount: totalAmount * 100, // amount in smallest currency unit (paise)
+            amount: totalAmount * 100,
             currency: "INR",
             name: "White Wolf",
             description: `Purchase of ${productNames}`,
             order_id: orderId,
             handler: function (response: any) {
-                // Mock verification
                 placeOrder(shippingDetails, response.razorpay_payment_id);
             },
             prefill: {
@@ -151,6 +147,12 @@ export default function ConfirmPurchaseDialog({
             },
             theme: {
                 color: "#09090B"
+            },
+            modal: {
+                ondismiss: function() {
+                    setIsLoading(false);
+                    setPaymentMethod(null);
+                }
             }
         };
 
@@ -162,6 +164,7 @@ export default function ConfirmPurchaseDialog({
                 description: response.error.description || 'Something went wrong.',
             });
             setIsLoading(false);
+            setPaymentMethod(null);
         });
         rzp.open();
 
@@ -169,21 +172,38 @@ export default function ConfirmPurchaseDialog({
         console.error("Razorpay Error:", error);
         toast({ title: "Error", description: error.message || "Could not initiate payment.", variant: "destructive" });
         setIsLoading(false);
+        setPaymentMethod(null);
     }
   }
+  
+  const handleCashOnDelivery = (shippingDetails: CustomerDetails) => {
+    setIsLoading(true);
+    setPaymentMethod('cod');
+    // Simulate processing time for COD
+    setTimeout(() => {
+        placeOrder(shippingDetails);
+        setIsLoading(false);
+        setPaymentMethod(null);
+    }, 1000);
+  };
+
 
   const onFormSubmit = (data: CheckoutFormValues) => {
-    setIsLoading(true);
-    if (paymentMethod === 'cod') {
-        placeOrder(data);
-        setIsLoading(false);
-    } else {
-        handleRazorpayPayment(data);
+    if (paymentMethod === 'online') {
+      handleRazorpayPayment(data);
+    } else if (paymentMethod === 'cod') {
+      handleCashOnDelivery(data);
     }
   };
   
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) {
+        setIsLoading(false);
+        setPaymentMethod(null);
+      }
+      onClose();
+    }}>
       <DialogContent className="sm:max-w-lg p-0">
         <DialogHeader className="p-6 pb-4">
           <DialogTitle className="text-2xl font-bold">Confirm Purchase</DialogTitle>
@@ -245,7 +265,10 @@ export default function ConfirmPurchaseDialog({
             <Button
                 variant={'default'}
                 className="flex-1"
-                onClick={() => { setPaymentMethod('online'); form.handleSubmit(onFormSubmit)(); }}
+                onClick={() => {
+                  setPaymentMethod('online');
+                  form.handleSubmit(onFormSubmit)();
+                }}
                 disabled={isLoading}
             >
                 {isLoading && paymentMethod === 'online' ? <Loader2 className="animate-spin" /> : "Pay Online"}
@@ -253,7 +276,10 @@ export default function ConfirmPurchaseDialog({
             <Button
                 variant={'outline'}
                 className="flex-1"
-                onClick={() => { setPaymentMethod('cod'); form.handleSubmit(onFormSubmit)(); }}
+                onClick={() => {
+                  setPaymentMethod('cod');
+                  form.handleSubmit(onFormSubmit)();
+                }}
                 disabled={isLoading}
             >
                 {isLoading && paymentMethod === 'cod' ? <Loader2 className="animate-spin" /> : "Cash on Delivery"}
@@ -263,5 +289,3 @@ export default function ConfirmPurchaseDialog({
     </Dialog>
   );
 }
-
-    
