@@ -56,8 +56,9 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
             Make changes to "{product.name}". Click save when you're done.
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="h-full overflow-y-auto">
-            <div className="grid gap-6 py-4 px-6">
+        <div className="grid gap-4 py-4 overflow-hidden">
+          <ScrollArea className="h-full px-6">
+            <div className="grid gap-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-accent">Product Name</Label>
@@ -112,8 +113,9 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
                 <Label htmlFor="new-arrival">Mark as New Arrival</Label>
               </div>
             </div>
-        </ScrollArea>
-        <DialogFooter className="p-6 pt-0 border-t mt-4 pt-4">
+          </ScrollArea>
+        </div>
+        <DialogFooter className="p-6 pt-0 border-t mt-auto">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={handleSave}>Save Changes</Button>
         </DialogFooter>
