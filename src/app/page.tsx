@@ -171,7 +171,7 @@ export default function Home() {
   const [categories, setCategories] = useState<{name: string, href: string, image: string, aiHint: string}[]>([]);
 
 
-  useEffect(() => {
+  const loadData = () => {
     try {
       const storedReels = localStorage.getItem(REELS_STORAGE_KEY);
       if (storedReels) {
@@ -198,6 +198,14 @@ export default function Home() {
     } catch (error) {
       console.error("Failed to load data from localStorage", error);
     }
+  };
+
+  useEffect(() => {
+    loadData();
+    window.addEventListener('storage', loadData);
+    return () => {
+      window.removeEventListener('storage', loadData);
+    };
   }, []);
 
   return (

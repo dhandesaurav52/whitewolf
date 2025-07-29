@@ -57,7 +57,7 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
     if (!categories.some(c => c.value === productCategoryValue)) {
       setCategories(prev => [...prev, {value: productCategoryValue, label: product.category}]);
     }
-  }, [product, categories]);
+  }, [product]);
 
   const handleChange = (field: keyof Product, value: any) => {
     setEditedProduct(prev => ({ ...prev, [field]: value }));
