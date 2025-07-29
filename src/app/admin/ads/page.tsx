@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import CreateOfferDialog from "@/components/CreateOfferDialog";
+import EditOfferDialog from "@/components/EditOfferDialog";
 
 const initialAds: Advertisement[] = [
     { id: '1', text: '20% off all T-Shirts for a limited time!', discount: '20%', appliesTo: 'Categories (1)', status: 'Active' },
@@ -36,6 +37,7 @@ export default function AdvertiseOffersPage() {
     const [ads, setAds] = useState<Advertisement[]>(initialAds);
     const { toast } = useToast();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const [editingOffer, setEditingOffer] = useState<Advertisement | null>(null);
 
     const handleDeleteAd = (id: string) => {
         setAds(prev => prev.filter(ad => ad.id !== id));
@@ -60,6 +62,25 @@ export default function AdvertiseOffersPage() {
             description: "The new promotional offer has been successfully added.",
         });
         setIsCreateDialogOpen(false);
+    };
+
+    const handleUpdateOffer = (updatedOfferData: { text: string; discountType: string; discountValue: string; appliesTo: string; selectedCategories: string[]; isActive: boolean; }) => {
+        if (!editingOffer) return;
+
+        const updatedAd: Advertisement = {
+            ...editingOffer,
+            text: updatedOfferData.text,
+            discount: updatedOfferData.discountValue ? `${updatedOfferData.discountValue}${updatedOfferData.discountType === 'percentage' ? '%' : ''}` : 'N/A',
+            appliesTo: updatedOfferData.appliesTo === 'categories' ? `Categories (${updatedOfferData.selectedCategories.length})` : 'Products',
+            status: updatedOfferData.isActive ? 'Active' : 'Inactive',
+        };
+
+        setAds(prev => prev.map(ad => ad.id === updatedAd.id ? updatedAd : ad));
+        toast({
+            title: "Offer Updated",
+            description: "The promotional offer has been successfully updated.",
+        });
+        setEditingOffer(null);
     };
 
 
@@ -108,7 +129,7 @@ export default function AdvertiseOffersPage() {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuItem>Edit</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => setEditingOffer(ad)}>Edit</DropdownMenuItem>
                                                 <DropdownMenuItem 
                                                     onClick={() => handleDeleteAd(ad.id)} 
                                                     className="text-destructive"
@@ -136,6 +157,15 @@ export default function AdvertiseOffersPage() {
                     isOpen={isCreateDialogOpen}
                     onClose={() => setIsCreateDialogOpen(false)}
                     onSave={handleCreateOffer}
+                    categories={productCategories}
+                />
+            )}
+            {editingOffer && (
+                <EditOfferDialog
+                    isOpen={!!editingOffer}
+                    onClose={() => setEditingOffer(null)}
+                    onSave={handleUpdateOffer}
+                    offer={editingOffer}
                     categories={productCategories}
                 />
             )}
