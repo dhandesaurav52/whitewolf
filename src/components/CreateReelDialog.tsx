@@ -40,7 +40,7 @@ export default function CreateReelDialog({ isOpen, onClose, onSave, products }: 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[525px]">
+      <DialogContent className="sm:max-w-[525px] p-6">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-accent">Create New Reel</DialogTitle>
         </DialogHeader>
@@ -61,6 +61,7 @@ export default function CreateReelDialog({ isOpen, onClose, onSave, products }: 
               type="file"
               onChange={(e) => setVideoFile(e.target.files ? e.target.files[0] : null)}
               accept="video/*"
+              className="file:text-foreground"
             />
           </div>
           <div className="space-y-2">
