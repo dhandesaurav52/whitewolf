@@ -61,7 +61,7 @@ export default function CreateHeroDialog({ isOpen, onClose, onSave, hero }: Crea
                         Fill in the details for the hero banner. This will be displayed on the homepage.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
+                <div className="grid gap-4 py-4 px-6">
                     <div className="space-y-2">
                         <Label htmlFor="headline">Headline</Label>
                         <Input id="headline" value={headline} onChange={(e) => setHeadline(e.target.value)} />
