@@ -7,7 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BarChart, ShoppingCart, Package, Users, Upload } from "lucide-react";
+import { BarChart, ShoppingCart, Package, Users, UploadCloud, FileUp } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+
 
 export default function AdminDashboardPage() {
     const stats = [
@@ -87,29 +89,42 @@ export default function AdminDashboardPage() {
                                 <Input id="colors" placeholder="e.g., Black, White, Blue" />
                             </div>
                              <div className="space-y-2">
-                                <Label htmlFor="sizes" className="text-accent">Text-based Sizes (comma-separated)</Label>
-                                <Input id="sizes" placeholder="e.g., S, M, L, XL, XXL" />
+                                <Label htmlFor="text-sizes" className="text-accent">Text-based Sizes (comma-separated)</Label>
+                                <Input id="text-sizes" placeholder="e.g., S, M, L, XL, XXL" />
                             </div>
                         </div>
                         
+                        <div className="space-y-2">
+                           <Label htmlFor="numeric-sizes" className="text-accent">Numeric Sizes (comma-separated)</Label>
+                           <Input id="numeric-sizes" placeholder="e.g., 28, 30, 32" />
+                        </div>
+
                          <div className="space-y-2">
                             <Label htmlFor="product-images" className="text-accent">Product Images</Label>
                             <div className="flex items-center justify-center w-full">
                                 <Label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-muted">
                                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                        <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
-                                        <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                                        <p className="text-xs text-muted-foreground">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+                                        <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
+                                        <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Drag & drop files here,</span> or click to select files</p>
                                     </div>
                                     <Input id="dropzone-file" type="file" className="hidden" multiple />
                                 </Label>
                             </div> 
                         </div>
 
-                        <Button size="lg" className="w-full md:w-auto">Add Product</Button>
+                        <div className="flex items-center space-x-2">
+                            <Switch id="new-arrival" />
+                            <Label htmlFor="new-arrival">Mark as New Arrival</Label>
+                        </div>
+                        
+                        <div className="flex justify-end gap-2">
+                            <Button variant="outline">Cancel</Button>
+                            <Button>Add Product</Button>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
         </div>
     );
 }
+
