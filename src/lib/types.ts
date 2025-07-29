@@ -1,9 +1,14 @@
-import type { StyleRecommendationOutput } from '@/ai/flows/generate-style-recommendation';
 
-export type Garment = StyleRecommendationOutput['garments'][0];
+export type Garment = {
+    name: string;
+    description: string;
+    link: string;
+};
 
-export type Recommendation = StyleRecommendationOutput & {
+export type Recommendation = {
     id: string;
+    recommendation: string;
+    garments: Garment[];
     preferences: {
         occasion: string;
         weather: string;
