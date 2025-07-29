@@ -240,9 +240,9 @@ export default function ProductDetailPage() {
             </div>
         </div>
         <Separator/>
-        <ProductCarousel title="Complete The Look" products={complementaryProducts} />
-        <Separator/>
         <ProductCarousel title="Similar Products" products={similarProducts} />
+        <Separator/>
+        <ProductCarousel title="Complete The Look" products={complementaryProducts} />
     </div>
   );
 }
