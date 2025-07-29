@@ -6,9 +6,9 @@ import Image from "next/image";
 const WhiteWolfLogo = () => (
     <div className="flex items-center">
         <Image src="https://firebasestorage.googleapis.com/v0/b/white-wolf-style-advisor.firebasestorage.app/o/WhiteWolfLogo.png?alt=media&token=3accae8b-9687-41f4-99a3-31856cdeaa91" alt="White Wolf Logo" width={40} height={40} className="w-10 h-10 rounded-md mr-2" />
-        <div className="flex flex-col">
-           <span className="text-xs font-bold text-white tracking-widest">WHITE</span>
-           <span className="text-xs font-bold text-white tracking-widest">WOLF</span>
+        <div className="flex flex-col text-primary-foreground">
+           <span className="text-xs font-bold tracking-widest">WHITE</span>
+           <span className="text-xs font-bold tracking-widest">WOLF</span>
         </div>
     </div>
 )
@@ -36,29 +36,29 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-background text-muted-foreground border-t border-gray-800">
+    <footer className="bg-primary text-primary-foreground">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
               <WhiteWolfLogo />
             </Link>
-            <p className="text-sm max-w-xs">
+            <p className="text-sm max-w-xs text-muted-foreground">
               Timeless style, uncompromising quality, and conscious craftsmanship for the modern individual.
             </p>
             <div className="flex mt-4 space-x-4">
-              <Link href="#" className="hover:text-accent transition-colors">
+              <Link href="#" className="hover:text-accent-foreground transition-colors">
                 <Instagram className="h-6 w-6" />
               </Link>
             </div>
           </div>
 
           <div className="col-span-1">
-            <h3 className="font-bold text-sm text-accent tracking-wider uppercase mb-4">Shop</h3>
+            <h3 className="font-bold text-sm text-accent-foreground tracking-wider uppercase mb-4">Shop</h3>
             <ul className="space-y-2">
               {shopLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm hover:text-accent transition-colors">
+                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-accent-foreground transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -67,17 +67,17 @@ export default function Footer() {
           </div>
           
           <div className="col-span-1">
-            <h3 className="font-bold text-sm text-accent tracking-wider uppercase mb-4">About</h3>
+            <h3 className="font-bold text-sm text-accent-foreground tracking-wider uppercase mb-4">About</h3>
             <ul className="space-y-2">
               {aboutLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm hover:text-accent transition-colors">
+                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-accent-foreground transition-colors">
                     {link.label}
                   </Link>
                 </li>
               ))}
               <li>
-                <Link href="/faqs" className="text-sm hover:text-accent transition-colors flex items-center">
+                <Link href="/faqs" className="text-sm text-muted-foreground hover:text-accent-foreground transition-colors flex items-center">
                   FAQs
                   <span className="ml-2 inline-flex items-center">
                     <Star className="h-3 w-3 text-yellow-400 fill-current" />
@@ -89,11 +89,11 @@ export default function Footer() {
           </div>
 
           <div className="col-span-1">
-            <h3 className="font-bold text-sm text-accent tracking-wider uppercase mb-4">Support</h3>
+            <h3 className="font-bold text-sm text-accent-foreground tracking-wider uppercase mb-4">Support</h3>
             <ul className="space-y-2">
               {supportLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm hover:text-accent transition-colors">
+                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-accent-foreground transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -102,8 +102,8 @@ export default function Footer() {
           </div>
         </div>
       </div>
-      <div className="border-t border-gray-800">
-        <div className="container mx-auto px-4 py-4 text-center text-xs">
+      <div className="border-t border-border/20">
+        <div className="container mx-auto px-4 py-4 text-center text-xs text-muted-foreground">
           <p>&copy; {new Date().getFullYear()} White Wolf Co. All Rights Reserved.</p>
         </div>
       </div>

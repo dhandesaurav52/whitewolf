@@ -22,9 +22,9 @@ import Image from "next/image";
 const WhiteWolfLogo = () => (
     <div className="flex items-center">
         <Image src="https://firebasestorage.googleapis.com/v0/b/white-wolf-style-advisor.firebasestorage.app/o/WhiteWolfLogo.png?alt=media&token=3accae8b-9687-41f4-99a3-31856cdeaa91" alt="White Wolf Logo" width={40} height={40} className="w-10 h-10 rounded-md mr-2" />
-        <div className="flex flex-col">
-           <span className="text-xs font-bold tracking-widest text-foreground">WHITE</span>
-           <span className="text-xs font-bold tracking-widest text-foreground">WOLF</span>
+        <div className="flex flex-col text-foreground">
+           <span className="text-xs font-bold tracking-widest">WHITE</span>
+           <span className="text-xs font-bold tracking-widest">WOLF</span>
         </div>
     </div>
 )
@@ -39,7 +39,7 @@ export default function Header() {
   ];
 
   return (
-    <header className="bg-background border-b border-gray-800 shadow-sm sticky top-0 z-40">
+    <header className="bg-background border-b border-input shadow-sm sticky top-0 z-40">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center gap-6">
@@ -75,7 +75,7 @@ export default function Header() {
                 <Link href="/cart" className="text-muted-foreground hover:text-accent transition-colors">
                     <ShoppingBag className="h-6 w-6 text-accent" />
                 </Link>
-                <div className="h-6 w-px bg-gray-700 mx-2"></div>
+                <div className="h-6 w-px bg-border mx-2"></div>
                  <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
