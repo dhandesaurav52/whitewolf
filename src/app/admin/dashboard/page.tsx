@@ -17,7 +17,7 @@ import EditProductDialog from "@/components/EditProductDialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-import type { Product as ProductType } from "@/lib/types";
+import type { Product as ProductType, Order } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -25,6 +25,7 @@ import { Loader2 } from "lucide-react";
 
 
 const PRODUCTS_STORAGE_KEY = 'products';
+const ORDERS_STORAGE_KEY = 'orders';
 
 const initialProducts: ProductType[] = [];
 
@@ -41,6 +42,7 @@ const categoriesList = [
 export default function AdminDashboardPage() {
     const { toast } = useToast();
     const [products, setProducts] = useState<ProductType[]>([]);
+    const [orders, setOrders] = useState<Order[]>([]);
     const [editingProduct, setEditingProduct] = useState<ProductType | null>(null);
     const [categories, setCategories] = useState(categoriesList);
     const [openCategoryPopover, setOpenCategoryPopover] = useState(false);
@@ -62,20 +64,31 @@ export default function AdminDashboardPage() {
     const [isUploading, setIsUploading] = useState(false);
 
     useEffect(() => {
-        let storedProducts: ProductType[] = [];
-        try {
-            const productsFromStorage = localStorage.getItem(PRODUCTS_STORAGE_KEY);
-            if (productsFromStorage) {
-                storedProducts = JSON.parse(productsFromStorage);
-            } else {
+        const loadData = () => {
+            let storedProducts: ProductType[] = [];
+            try {
+                const productsFromStorage = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+                storedProducts = productsFromStorage ? JSON.parse(productsFromStorage) : initialProducts;
+            } catch (error) {
+                console.error("Failed to load products from storage, using initial products.", error);
                 storedProducts = initialProducts;
-                localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(initialProducts));
             }
-        } catch (error) {
-            console.error("Failed to load products from storage, using initial products.", error);
-            storedProducts = initialProducts;
-        }
-        setProducts(storedProducts);
+            setProducts(storedProducts);
+
+            let storedOrders: Order[] = [];
+            try {
+                const ordersFromStorage = localStorage.getItem(ORDERS_STORAGE_KEY);
+                storedOrders = ordersFromStorage ? JSON.parse(ordersFromStorage) : [];
+            } catch (error) {
+                console.error("Failed to load orders from storage.", error);
+            }
+            setOrders(storedOrders);
+        };
+        
+        loadData();
+        window.addEventListener('storage', loadData);
+        return () => window.removeEventListener('storage', loadData);
+
     }, []);
 
     const updateProducts = (newProducts: ProductType[]) => {
@@ -113,11 +126,19 @@ export default function AdminDashboardPage() {
         });
     };
 
+    const totalRevenue = orders
+        .filter(order => order.status === 'Delivered')
+        .reduce((sum, order) => sum + order.total, 0);
+
+    const newOrdersCount = orders.filter(order => order.status === 'Pending').length;
+
+    const totalUsers = new Set(orders.map(order => order.customer.email)).size;
+
     const stats = [
-        { title: "Total Revenue", value: "₹4,800", description: "Based on delivered orders", icon: BarChart },
-        { title: "New Orders", value: "15", description: "Orders pending fulfillment", icon: ShoppingCart },
-        { title: "Products in Stock", value: products.length, description: "Total active products", icon: Package },
-        { title: "Total Users", value: "2", description: "Unique customers with orders", icon: Users },
+        { title: "Total Revenue", value: `P${totalRevenue.toFixed(2)}`, description: "Based on delivered orders", icon: BarChart },
+        { title: "New Orders", value: newOrdersCount.toString(), description: "Orders pending fulfillment", icon: ShoppingCart },
+        { title: "Products in Stock", value: products.length.toString(), description: "Total active products", icon: Package },
+        { title: "Total Users", value: totalUsers.toString(), description: "Unique customers with orders", icon: Users },
     ];
 
     const handleCategorySelect = (currentValue: string) => {
