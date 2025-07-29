@@ -144,9 +144,8 @@ export default function Home() {
           <Image
             src="https://placehold.co/1600x900.png"
             alt="Fashion display in a store window"
-            layout="fill"
-            objectFit="cover"
-            className="absolute inset-0 opacity-40"
+            fill
+            className="absolute inset-0 object-cover opacity-40"
             data-ai-hint="storefront fashion"
           />
           <div className="relative z-10 p-4">
@@ -205,9 +204,8 @@ export default function Home() {
                     <Image
                       src={`https://placehold.co/400x500.png`}
                       alt={`New Arrival ${i + 1}`}
-                      layout="fill"
-                      objectFit="cover"
-                      className="transition-transform duration-300 group-hover:scale-105"
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
                       data-ai-hint="mens fashion"
                     />
                   </div>
@@ -250,9 +248,8 @@ export default function Home() {
                              <Image
                                 src={tee.image}
                                 alt={tee.name}
-                                layout="fill"
-                                objectFit="cover"
-                                className="transition-transform duration-300 group-hover:scale-105"
+                                fill
+                                className="object-cover transition-transform duration-300 group-hover:scale-105"
                                 data-ai-hint={tee.aiHint}
                               />
                           </div>
@@ -288,9 +285,8 @@ export default function Home() {
                     <Image
                       src={item.image}
                       alt={item.name}
-                      layout="fill"
-                      objectFit="cover"
-                      className="transition-transform duration-300 group-hover:scale-105"
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
                       data-ai-hint={item.aiHint}
                     />
                   </div>
@@ -327,9 +323,8 @@ export default function Home() {
                         <Image
                           src={item.mainImage}
                           alt={item.productName}
-                          layout="fill"
-                          objectFit="cover"
-                          className="transition-transform duration-300 group-hover:scale-105"
+                          fill
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
                           data-ai-hint={item.mainAiHint}
                         />
                         <div className="absolute bottom-4 left-4 right-4">
@@ -339,8 +334,8 @@ export default function Home() {
                                 <Image
                                   src={item.productImage}
                                   alt={item.productName}
-                                  layout="fill"
-                                  objectFit="cover"
+                                  fill
+                                  className="object-cover"
                                   data-ai-hint={item.productAiHint}
                                 />
                               </div>
@@ -389,9 +384,8 @@ export default function Home() {
                   <Image
                     src={category.image}
                     alt={category.name}
-                    layout="fill"
-                    objectFit="cover"
-                    className="transition-transform duration-300 group-hover:scale-105"
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
                     data-ai-hint={category.aiHint}
                   />
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
@@ -406,9 +400,8 @@ export default function Home() {
                   <Image
                     src={category.image}
                     alt={category.name}
-                    layout="fill"
-                    objectFit="cover"
-                    className="transition-transform duration-300 group-hover:scale-105"
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
                     data-ai-hint={category.aiHint}
                   />
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
