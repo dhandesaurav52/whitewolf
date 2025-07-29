@@ -86,7 +86,7 @@ export default function EditOfferDialog({ isOpen, onClose, onSave, offer, catego
             Update the details for this offer.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-6 py-4">
+        <div className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="offer-name">Offer Name</Label>
             <Input
