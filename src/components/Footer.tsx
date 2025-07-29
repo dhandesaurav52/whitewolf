@@ -1,16 +1,11 @@
+
 import Link from "next/link";
 import { Instagram, Star } from "lucide-react";
+import Image from "next/image";
 
 const WhiteWolfLogo = () => (
     <div className="flex items-center">
-        <div className="w-10 h-10 bg-white p-2 flex items-center justify-center rounded-md mr-2">
-            <svg viewBox="0 0 100 100" className="w-full h-full">
-                <path d="M50,5 L95,40 L80,95 L20,95 L5,40 Z" fill="none" stroke="black" strokeWidth="5" />
-                <path d="M50,20 L75,40 L65,70 L35,70 L25,40 Z" fill="black" />
-                <path d="M50,15 L55,30 L45,30 Z" fill="white" />
-                <path d="M40,45 C45,40 55,40 60,45" fill="none" stroke="white" strokeWidth="3" />
-            </svg>
-        </div>
+        <Image src="https://firebasestorage.googleapis.com/v0/b/white-wolf-style-advisor.firebasestorage.app/o/WhiteWolfLogo.png?alt=media&token=3accae8b-9687-41f4-99a3-31856cdeaa91" alt="White Wolf Logo" width={40} height={40} className="w-10 h-10 rounded-md mr-2" />
         <div className="flex flex-col">
            <span className="text-xs font-bold text-white tracking-widest">WHITE</span>
            <span className="text-xs font-bold text-white tracking-widest">WOLF</span>
