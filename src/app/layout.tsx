@@ -37,7 +37,7 @@ export default function RootLayout({
             <div className="flex flex-col min-h-screen">
               <Header />
               <AdBanner />
-              <main className="flex-grow container mx-auto px-4 py-8">
+              <main className="flex-grow">
                 {children}
               </main>
               <Footer />

@@ -29,7 +29,7 @@ const defaultHero: Advertisement = {
     selectedCategories: [],
     heroHeadline: "Define Your Style",
     heroSubtext: "Timeless style, uncompromising quality, and conscious craftsmanship for the modern individual.",
-    buttonText: "Shop New Arrivals",
+    heroButton: "Shop New Arrivals",
     heroImageUrl: "https://placehold.co/1600x900.png",
 };
 
@@ -233,7 +233,6 @@ export default function Home() {
 
   return (
     <div className="flex flex-col">
-      <main className="flex-grow">
         <HeroSection />
 
         {/* Features Section */}
@@ -487,8 +486,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-      </main>
     </div>
   );
 }
