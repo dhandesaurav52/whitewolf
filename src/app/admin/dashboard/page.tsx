@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import type { Product as ProductType, Order } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { uploadFile } from "@/lib/firebase";
+import { uploadFile, storage } from "@/lib/firebase";
 
 
 const PRODUCTS_STORAGE_KEY = 'products';
@@ -205,6 +205,15 @@ export default function AdminDashboardPage() {
             return;
         }
 
+        if (!storage) {
+            toast({
+                title: "Firebase Not Configured",
+                description: "Please set up your Firebase credentials in the .env.local file to upload media.",
+                variant: "destructive",
+            });
+            return;
+        }
+
         setIsLoading(true);
 
         try {
@@ -255,7 +264,6 @@ export default function AdminDashboardPage() {
             });
 
             resetForm();
-            setIsLoading(false);
         } catch (error) {
             console.error("Error adding product: ", error);
             toast({
@@ -524,3 +532,5 @@ export default function AdminDashboardPage() {
         </div>
     );
 }
+
+    

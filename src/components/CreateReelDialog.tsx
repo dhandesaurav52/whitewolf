@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { Product, Reel } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { uploadFile } from "@/lib/firebase";
+import { uploadFile, storage } from "@/lib/firebase";
 
 interface CreateReelDialogProps {
   isOpen: boolean;
@@ -34,6 +34,15 @@ export default function CreateReelDialog({ isOpen, onClose, onSave, products }: 
         variant: "destructive",
       });
       return;
+    }
+
+    if (!storage) {
+        toast({
+            title: "Firebase Not Configured",
+            description: "Please set up your Firebase credentials in the .env.local file to upload media.",
+            variant: "destructive",
+        });
+        return;
     }
 
     setIsLoading(true);
@@ -108,3 +117,5 @@ export default function CreateReelDialog({ isOpen, onClose, onSave, products }: 
     </Dialog>
   );
 }
+
+    
