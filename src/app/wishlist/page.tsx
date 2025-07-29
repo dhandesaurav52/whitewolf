@@ -81,9 +81,9 @@ export default function WishlistPage() {
                 <CardContent className="p-4">
                     <h3 className="font-headline text-lg text-primary truncate">{product.name}</h3>
                     <div className="flex items-baseline gap-2 mt-1">
-                    <p className="text-accent font-semibold text-base">₹{product.price}</p>
+                    <p className="text-accent font-semibold text-base">{product.price}</p>
                     {product.originalPrice && (
-                        <p className="text-muted-foreground text-sm line-through">₹{product.originalPrice}</p>
+                        <p className="text-muted-foreground text-sm line-through">{product.originalPrice}</p>
                     )}
                     </div>
                 </CardContent>
@@ -94,3 +94,4 @@ export default function WishlistPage() {
     </div>
   );
 }
+

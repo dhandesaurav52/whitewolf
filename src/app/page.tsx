@@ -147,9 +147,9 @@ const WatchAndShopItem = ({ reel, product }: { reel: Reel, product?: ProductType
                 <div className="overflow-hidden">
                   <h3 className="text-sm font-headline text-primary truncate">{product.name}</h3>
                   <div className="flex items-baseline gap-2">
-                    <p className="text-accent font-bold text-sm">₹{product.price}</p>
+                    <p className="text-accent font-bold text-sm">{product.price}</p>
                     {product.originalPrice && (
-                      <p className="text-muted-foreground text-xs line-through">₹{product.originalPrice}</p>
+                      <p className="text-muted-foreground text-xs line-through">{product.originalPrice}</p>
                     )}
                   </div>
                 </div>
@@ -245,7 +245,7 @@ export default function Home() {
                 <div key={product.id} className="group">
                   <div className="relative aspect-[4/5] bg-muted rounded-lg overflow-hidden">
                     <Image
-                      src={product.images && product.images.length > 0 ? product.images[0] : "https://placehold.co/400x500.png"}
+                      src={(product.images && product.images.length > 0) ? product.images[0] : "https://placehold.co/400x500.png"}
                       alt={product.name}
                       fill
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -253,7 +253,7 @@ export default function Home() {
                     />
                   </div>
                   <h3 className="mt-4 text-lg font-headline">{product.name}</h3>
-                  <p className="text-accent font-semibold">₹{product.price}</p>
+                  <p className="text-accent font-semibold">{product.price}</p>
                 </div>
               ))}
             </div>
@@ -300,7 +300,7 @@ export default function Home() {
                               <p className="text-sm text-muted-foreground">{tee.brand || 'White Wolf'}</p>
                               <h3 className="text-lg font-headline text-primary">{tee.name}</h3>
                               <p className="text-sm text-muted-foreground">{tee.category}</p>
-                              <p className="text-accent font-bold mt-2">₹{tee.price}</p>
+                              <p className="text-accent font-bold mt-2">{tee.price}</p>
                            </div>
                         </CardContent>
                       </Card>
@@ -334,7 +334,7 @@ export default function Home() {
                     />
                   </div>
                   <h3 className="mt-4 text-lg font-headline">{item.name}</h3>
-                  <p className="text-accent font-semibold">₹{item.price}</p>
+                  <p className="text-accent font-semibold">{item.price}</p>
                 </div>
               ))}
             </div>

@@ -97,13 +97,13 @@ export default function OrdersPage() {
                                                 <p className="font-medium">{item.product.name}</p>
                                                 <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                                             </div>
-                                            <p className="ml-auto font-medium">₹{(parseFloat(item.product.price) * item.quantity).toFixed(2)}</p>
+                                            <p className="ml-auto font-medium">{(parseFloat(item.product.price) * item.quantity).toFixed(2)}</p>
                                         </div>
                                     ))}
                                 </div>
                             </CardContent>
                             <CardFooter className="flex justify-end font-semibold text-lg">
-                                Total: ₹{order.total.toFixed(2)}
+                                Total: {order.total.toFixed(2)}
                             </CardFooter>
                         </Card>
                     )

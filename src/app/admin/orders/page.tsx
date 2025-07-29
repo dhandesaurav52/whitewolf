@@ -101,7 +101,7 @@ export default function ManageOrdersPage() {
                                     </TableCell>
                                     <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
                                     <TableCell>{order.items.reduce((acc, item) => acc + item.quantity, 0)}</TableCell>
-                                    <TableCell>₹{order.total.toFixed(2)}</TableCell>
+                                    <TableCell>{order.total.toFixed(2)}</TableCell>
                                     <TableCell>
                                         <Badge variant="outline" className={cn("font-semibold", statusStyles[order.status])}>
                                             {React.createElement(statusIcons[order.status], { className: "mr-1 h-3 w-3" })}

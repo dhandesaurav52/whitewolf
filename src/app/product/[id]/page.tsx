@@ -48,9 +48,9 @@ const ProductCard = ({ product }: { product: ProductType }) => {
       <CardContent className="p-4">
         <h3 className="font-headline text-lg text-primary truncate">{product.name}</h3>
         <div className="flex items-baseline gap-2 mt-1">
-          <p className="text-accent font-semibold text-base">₹{product.price}</p>
+          <p className="text-accent font-semibold text-base">{product.price}</p>
           {product.originalPrice && (
-            <p className="text-muted-foreground text-sm line-through">₹{product.originalPrice}</p>
+            <p className="text-muted-foreground text-sm line-through">{product.originalPrice}</p>
           )}
         </div>
       </CardContent>
@@ -213,10 +213,10 @@ export default function ProductDetailPage() {
                   <div className="space-y-2">
                       <h1 className="text-3xl md:text-4xl font-bold font-headline text-primary">{product.name}</h1>
                       <div className="flex items-center gap-4">
-                          <p className="text-2xl font-semibold text-accent">₹{product.price}</p>
+                          <p className="text-2xl font-semibold text-accent">{product.price}</p>
                           {product.originalPrice && (
                               <>
-                                  <p className="text-xl text-muted-foreground line-through">₹{product.originalPrice}</p>
+                                  <p className="text-xl text-muted-foreground line-through">{product.originalPrice}</p>
                                   {product.discount && <Badge variant="destructive">{product.discount}</Badge>}
                               </>
                           )}
