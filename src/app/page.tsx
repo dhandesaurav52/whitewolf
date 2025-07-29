@@ -245,7 +245,7 @@ export default function Home() {
                 <div key={product.id} className="group">
                   <div className="relative aspect-[4/5] bg-muted rounded-lg overflow-hidden">
                     <Image
-                      src={product.images[0] || `https://placehold.co/400x500.png`}
+                      src={product.images && product.images.length > 0 ? product.images[0] : `https://placehold.co/400x500.png`}
                       alt={product.name}
                       fill
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -289,7 +289,7 @@ export default function Home() {
                         <CardContent className="p-0">
                           <div className="relative aspect-[4/5] overflow-hidden">
                              <Image
-                                src={tee.images[0]}
+                                src={tee.images && tee.images.length > 0 ? tee.images[0] : "https://placehold.co/400x500.png"}
                                 alt={tee.name}
                                 fill
                                 className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -326,7 +326,7 @@ export default function Home() {
                 <div key={i} className="group">
                   <div className="relative aspect-[4/5] bg-muted rounded-lg overflow-hidden">
                     <Image
-                      src={item.images[0]}
+                      src={item.images && item.images.length > 0 ? item.images[0] : "https://placehold.co/400x500.png"}
                       alt={item.name}
                       fill
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
