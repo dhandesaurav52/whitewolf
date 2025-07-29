@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,9 +13,37 @@ import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
+import EditProductDialog from "@/components/EditProductDialog";
 
+type Product = {
+  name: string;
+  image: string;
+  aiHint: string;
+  category: string;
+  price: string;
+  stock: number;
+  brand?: string;
+  description?: string;
+  colors?: string;
+  textSizes?: string;
+  numericSizes?: string;
+  isNew?: boolean;
+};
 
 export default function AdminDashboardPage() {
+    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+    const handleEdit = (product: Product) => {
+        setEditingProduct(product);
+    };
+
+    const handleSave = (updatedProduct: Product) => {
+        // Here you would typically update the product in your database
+        console.log("Saving product:", updatedProduct);
+        setEditingProduct(null);
+    };
+
+
     const stats = [
         { title: "Total Revenue", value: "₹4,800", description: "Based on delivered orders", icon: BarChart },
         { title: "New Orders", value: "15", description: "Orders pending fulfillment", icon: ShoppingCart },
@@ -22,7 +51,7 @@ export default function AdminDashboardPage() {
         { title: "Total Users", value: "2", description: "Unique customers with orders", icon: Users },
     ];
 
-    const products = [
+    const products: Product[] = [
       {
         name: "Vintage Wash Tee",
         image: "https://placehold.co/100x100.png",
@@ -30,6 +59,11 @@ export default function AdminDashboardPage() {
         category: "T-Shirts",
         price: "1299",
         stock: 50,
+        brand: "White Wolf",
+        description: "A classic oversized tee with a vintage wash.",
+        colors: "Charcoal, Black",
+        textSizes: "S, M, L, XL",
+        isNew: true
       },
       {
         name: "Slim-Fit Chinos",
@@ -38,6 +72,11 @@ export default function AdminDashboardPage() {
         category: "Trousers",
         price: "1599",
         stock: 30,
+        brand: "Urban Threads",
+        description: "Versatile slim-fit chinos for any occasion.",
+        colors: "Beige, Navy",
+        numericSizes: "30, 32, 34, 36",
+        isNew: false
       },
       {
         name: "Linen Button-Down",
@@ -46,6 +85,11 @@ export default function AdminDashboardPage() {
         category: "Shirts",
         price: "1499",
         stock: 45,
+        brand: "White Wolf",
+        description: "A breathable linen shirt, perfect for summer.",
+        colors: "White, Sky Blue",
+        textSizes: "M, L, XL",
+        isNew: false
       },
        {
         name: "Dark Wash Jeans",
@@ -54,6 +98,11 @@ export default function AdminDashboardPage() {
         category: "Jeans",
         price: "1899",
         stock: 25,
+        brand: "Denim Co.",
+        description: "Classic dark wash jeans with a modern fit.",
+        colors: "Indigo",
+        numericSizes: "28, 30, 32, 34, 36",
+        isNew: false
       },
     ];
 
@@ -192,7 +241,7 @@ export default function AdminDashboardPage() {
                                         <TableCell>{product.stock}</TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-2">
-                                                <Button variant="ghost" size="icon">
+                                                <Button variant="ghost" size="icon" onClick={() => handleEdit(product)}>
                                                     <Pencil className="h-4 w-4" />
                                                 </Button>
                                                 <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
@@ -207,7 +256,13 @@ export default function AdminDashboardPage() {
                     </CardContent>
                 </Card>
             </div>
+            {editingProduct && (
+                <EditProductDialog
+                    product={editingProduct}
+                    onSave={handleSave}
+                    onClose={() => setEditingProduct(null)}
+                />
+            )}
         </div>
     );
-
-    
+}
