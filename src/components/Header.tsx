@@ -41,7 +41,7 @@ export default function Header() {
 
   const navLinks = [
     { href: "/shop", label: "Shop" },
-    { href: "/premium", label: "Premium Products" },
+    { href: "/accessories", label: "Accessories" },
   ];
 
   return (
