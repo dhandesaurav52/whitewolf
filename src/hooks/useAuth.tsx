@@ -6,7 +6,7 @@ import { onAuthStateChanged, User, signOut as firebaseSignOut, deleteUser } from
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 
-const ADMIN_EMAILS = ["dhandesaurav52@gmail.com"];
+const ADMIN_EMAILS = ["dhandesaurav37@gmail.com"];
 
 interface AuthContextType {
   user: User | null;
