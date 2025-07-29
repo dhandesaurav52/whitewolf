@@ -20,6 +20,7 @@ import type { Advertisement, Product as ProductType } from '@/lib/types';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useCart } from '@/hooks/useCart';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const ADS_STORAGE_KEY = 'advertisements';
 const PRODUCTS_STORAGE_KEY = 'products';
@@ -82,6 +83,7 @@ const ProductCard = ({ product }: { product: ProductType }) => {
 export default function AccessoriesPage() {
     const [products, setProducts] = useState<ProductType[]>([]);
     const [allProducts, setAllProducts] = useState<ProductType[]>([]);
+    const [isMounted, setIsMounted] = useState(false);
 
     const loadProducts = useCallback(() => {
         let storedProducts: ProductType[] = [];
@@ -97,6 +99,7 @@ export default function AccessoriesPage() {
     }, []);
 
     useEffect(() => {
+        setIsMounted(true);
         loadProducts();
         window.addEventListener('storage', loadProducts);
         return () => {
@@ -105,6 +108,7 @@ export default function AccessoriesPage() {
     }, [loadProducts]);
 
     useEffect(() => {
+        if (!isMounted) return;
         const applyDiscountsAndFilter = () => {
             try {
                 const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
@@ -154,7 +158,7 @@ export default function AccessoriesPage() {
         };
 
         applyDiscountsAndFilter();
-    }, [allProducts]);
+    }, [allProducts, isMounted]);
 
     const filters = [
         { placeholder: 'All Categories', options: ['Belts', 'Wallets', 'Watches', 'Ties'] },
@@ -162,6 +166,26 @@ export default function AccessoriesPage() {
         { placeholder: 'All Colors', options: ['Black', 'Brown', 'Silver'] },
         { placeholder: 'All Sizes', options: ['S', 'M', 'L', 'XL'] },
     ];
+
+    if (!isMounted) {
+      return (
+        <div className="container mx-auto px-4 py-8">
+            <div className="text-center mb-10">
+                <Skeleton className="h-12 w-1/2 mx-auto" />
+                <Skeleton className="h-4 w-3/4 mx-auto mt-4" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => (
+                    <div key={i} className="space-y-2">
+                        <Skeleton className="h-64 w-full" />
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-4 w-1/2" />
+                    </div>
+                ))}
+            </div>
+        </div>
+      );
+    }
   
   return (
     <div className="min-h-screen bg-background text-foreground">

@@ -28,8 +28,10 @@ export default function ManageReelsPage() {
     const [reels, setReels] = useState<Reel[]>([]);
     const [products, setProducts] = useState<ProductType[]>([]);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
+        setIsMounted(true);
         try {
             const storedReels = localStorage.getItem(REELS_STORAGE_KEY);
             setReels(storedReels ? JSON.parse(storedReels) : initialReels);
@@ -64,6 +66,10 @@ export default function ManageReelsPage() {
             title: "Reel Deleted",
             description: "The reel has been successfully deleted.",
         });
+    }
+
+    if (!isMounted) {
+        return <div>Loading...</div>;
     }
 
     return (

@@ -16,6 +16,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useState, useEffect, useCallback } from "react";
 import type { Advertisement, Reel, Product as ProductType } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ADS_STORAGE_KEY = 'advertisements';
 const REELS_STORAGE_KEY = 'reels';
@@ -171,6 +172,7 @@ export default function Home() {
   const [oversizeTees, setOversizeTees] = useState<ProductType[]>([]);
   const [accessories, setAccessories] = useState<ProductType[]>([]);
   const [categories, setCategories] = useState<{name: string, href: string, image: string, aiHint: string}[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
 
 
   const loadData = useCallback(() => {
@@ -206,12 +208,28 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    setIsMounted(true);
     loadData();
     window.addEventListener('storage', loadData);
     return () => {
       window.removeEventListener('storage', loadData);
     };
   }, [loadData]);
+  
+    if (!isMounted) {
+    return (
+        <div className="flex flex-col">
+            <Skeleton className="h-[60vh] w-full" />
+             <div className="container mx-auto py-16">
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+                    <Skeleton className="h-24 w-full" />
+                    <Skeleton className="h-24 w-full" />
+                    <Skeleton className="h-24 w-full" />
+                 </div>
+            </div>
+        </div>
+    );
+  }
 
   return (
     <div className="flex flex-col">

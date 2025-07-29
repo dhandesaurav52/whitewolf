@@ -63,6 +63,7 @@ export default function AdvertiseOffersPage() {
     const [isHeroDialogOpen, setIsHeroDialogOpen] = useState(false);
     const [editingOffer, setEditingOffer] = useState<Advertisement | null>(null);
     const [editingHero, setEditingHero] = useState<Advertisement | null>(null);
+    const [isMounted, setIsMounted] = useState(false);
 
     const updateAds = useCallback((newAds: Advertisement[]) => {
         setAds(newAds);
@@ -80,6 +81,7 @@ export default function AdvertiseOffersPage() {
     }, [toast]);
 
     useEffect(() => {
+        setIsMounted(true);
         try {
             const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
             if (storedAds) {
@@ -182,6 +184,10 @@ export default function AdvertiseOffersPage() {
             return 'Specific Products' // This can be expanded later
         }
         return "All Orders";
+    }
+
+    if (!isMounted) {
+        return <div>Loading...</div>;
     }
 
     const nonHeroAds = ads.filter(ad => ad.appliesTo !== 'hero');
