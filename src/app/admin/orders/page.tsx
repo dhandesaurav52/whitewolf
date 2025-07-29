@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import CollapsibleTableRow from "@/components/CollapsibleTableRow";
+import Link from "next/link";
 
 const ORDERS_STORAGE_KEY = 'orders';
 
@@ -136,16 +137,21 @@ export default function ManageOrdersPage() {
                                       <div className="p-4 bg-muted/50">
                                           <h4 className="font-semibold mb-2">Order Items:</h4>
                                           <div className="space-y-2">
-                                              {order.items.map(item => (
-                                                  <div key={item.product.id} className="flex items-center gap-4">
-                                                      <Image src={(item.product.images && item.product.images[0]) || "https://placehold.co/100x100.png"} alt={item.product.name} width={48} height={48} className="rounded-md border" />
-                                                      <div className="flex-grow">
-                                                          <p className="font-medium">{item.product.name}</p>
-                                                          <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
-                                                      </div>
-                                                      <p className="font-medium">₹{(parseFloat(item.product.price) * item.quantity).toFixed(2)}</p>
-                                                  </div>
-                                              ))}
+                                              {order.items.map(item => {
+                                                  const imageUrl = (item.product.images && item.product.images[0]) || "https://placehold.co/100x100.png";
+                                                  return (
+                                                    <div key={item.product.id} className="flex items-center gap-4">
+                                                        <Link href={imageUrl} target="_blank" rel="noopener noreferrer">
+                                                          <Image src={imageUrl} alt={item.product.name} width={48} height={48} className="rounded-md border" />
+                                                        </Link>
+                                                        <div className="flex-grow">
+                                                            <p className="font-medium">{item.product.name}</p>
+                                                            <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+                                                        </div>
+                                                        <p className="font-medium">₹{(parseFloat(item.product.price) * item.quantity).toFixed(2)}</p>
+                                                    </div>
+                                                  )
+                                              })}
                                           </div>
                                       </div>
                                   }
