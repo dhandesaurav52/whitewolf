@@ -42,7 +42,6 @@ export default function Footer() {
           <div className="col-span-1 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
               <WhiteWolfLogo />
-              <span className="text-2xl font-bold text-accent">White Wolf</span>
             </Link>
             <p className="text-sm max-w-xs">
               Timeless style, uncompromising quality, and conscious craftsmanship for the modern individual.
