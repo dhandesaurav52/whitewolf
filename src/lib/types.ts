@@ -20,4 +20,7 @@ export type Recommendation = {
 export type Advertisement = {
     id: string;
     text: string;
+    discount?: string;
+    appliesTo?: string;
+    status?: 'Active' | 'Inactive';
 };
