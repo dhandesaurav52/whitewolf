@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Pencil, Trash2, Loader2 } from "lucide-react";
 import type { Advertisement } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,7 @@ import CreateOfferDialog from "@/components/CreateOfferDialog";
 import EditOfferDialog from "@/components/EditOfferDialog";
 import Image from "next/image";
 import CreateHeroDialog from "@/components/CreateHeroDialog";
+import { uploadFile, storage } from "@/lib/firebase";
 
 const ADS_STORAGE_KEY = 'advertisements';
 
@@ -64,6 +65,8 @@ export default function AdvertiseOffersPage() {
     const [editingOffer, setEditingOffer] = useState<Advertisement | null>(null);
     const [editingHero, setEditingHero] = useState<Advertisement | null>(null);
     const [isMounted, setIsMounted] = useState(false);
+    const [isSavingHero, setIsSavingHero] = useState(false);
+
 
     const updateAds = useCallback((newAds: Advertisement[]) => {
         setAds(newAds);
@@ -144,33 +147,62 @@ export default function AdvertiseOffersPage() {
         });
         setEditingOffer(null);
     };
-
-    const handleSaveHero = (heroData: Partial<Advertisement>) => {
-        if (editingHero) { // Update existing
-            const updatedHero = { ...editingHero, ...heroData, status: heroData.status || editingHero.status };
-            updateAds(ads.map(ad => ad.id === editingHero.id ? updatedHero : ad));
-            toast({ title: "Hero Updated", description: "The hero banner has been successfully updated." });
-        } else { // Create new
-            const newHeroAd: Advertisement = {
-                id: generateUniqueId(),
-                text: 'Hero Banner',
-                appliesTo: 'hero',
-                status: 'Active',
-                discountType: 'fixed',
-                discountValue: 0,
-                selectedCategories: [],
-                ...heroData
-            };
-            updateAds([...ads, newHeroAd]);
-            toast({ title: "Hero Created", description: "The new hero banner has been added." });
+    
+    const handleSaveHero = async (heroData: Partial<Advertisement>, imageFile: File | null) => {
+        setIsSavingHero(true);
+        if (!storage && imageFile) {
+            toast({
+                title: "Firebase Not Configured",
+                description: "Please set up your Firebase credentials in the .env file to upload media.",
+                variant: "destructive",
+            });
+            setIsSavingHero(false);
+            return;
         }
-        setEditingHero(null);
-        setIsHeroDialogOpen(false);
+
+        try {
+            let imageUrl = heroData.heroImageUrl;
+            if (imageFile) {
+                imageUrl = await uploadFile(imageFile, `hero-banners/${Date.now()}-${imageFile.name}`);
+            }
+
+            const finalHeroData = { ...heroData, heroImageUrl: imageUrl };
+
+            if (editingHero) { // Update existing
+                const updatedHero = { ...editingHero, ...finalHeroData, status: finalHeroData.status || editingHero.status };
+                updateAds(ads.map(ad => ad.id === editingHero.id ? updatedHero : ad));
+                toast({ title: "Hero Updated", description: "The hero banner has been successfully updated." });
+            } else { // Create new
+                const newHeroAd: Advertisement = {
+                    id: generateUniqueId(),
+                    text: 'Hero Banner',
+                    appliesTo: 'hero',
+                    status: 'Active',
+                    discountType: 'fixed',
+                    discountValue: 0,
+                    selectedCategories: [],
+                    ...finalHeroData
+                };
+                updateAds([...ads, newHeroAd]);
+                toast({ title: "Hero Created", description: "The new hero banner has been added." });
+            }
+        } catch (error) {
+             console.error("Error saving hero: ", error);
+             toast({
+                title: "Save Failed",
+                description: "There was an error saving the hero banner.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsSavingHero(false);
+            setEditingHero(null);
+            setIsHeroDialogOpen(false);
+        }
     };
     
     const getDiscountDisplay = (ad: Advertisement) => {
         if (!ad.discountValue) return 'N/A';
-        return ad.discountType === 'percentage' ? `${ad.discountValue}%` : `${ad.discountValue}`;
+        return ad.discountType === 'percentage' ? `${ad.discountValue}%` : `₹${ad.discountValue}`;
     }
     
     const getAppliesToDisplay = (ad: Advertisement) => {
@@ -338,6 +370,7 @@ export default function AdvertiseOffersPage() {
                     onClose={() => { setEditingHero(null); setIsHeroDialogOpen(false); }}
                     onSave={handleSaveHero}
                     hero={editingHero}
+                    isSaving={isSavingHero}
                 />
             )}
         </div>
