@@ -202,15 +202,10 @@ export default function ShopPage() {
     }, []);
 
     useEffect(() => {
-        const applyDiscounts = () => {
+        const applyDiscountsAndFilter = () => {
             try {
                 const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
-                if (!storedAds) {
-                     setProducts(allProducts.filter(p => p.displaySection === 'shop'));
-                    return;
-                };
-
-                const activeAds: Advertisement[] = JSON.parse(storedAds).filter((ad: Advertisement) => ad.status === 'Active');
+                const activeAds: Advertisement[] = storedAds ? JSON.parse(storedAds).filter((ad: Advertisement) => ad.status === 'Active') : [];
                 const categoryAds = activeAds.filter(ad => ad.appliesTo === 'categories' && ad.selectedCategories.length > 0);
                 
                 const shopProducts = allProducts.filter(p => p.displaySection === 'shop');
@@ -223,7 +218,7 @@ export default function ShopPage() {
                 const updatedProducts = shopProducts.map(p => {
                     let productPrice = parseFloat(p.price);
                     let originalProductPrice = p.originalPrice ? parseFloat(p.originalPrice) : productPrice;
-                    let appliedDiscount = null;
+                    let appliedDiscount = p.discount;
                     
                     const applicableAd = categoryAds.find(ad => ad.selectedCategories.includes(p.category));
 
@@ -253,11 +248,22 @@ export default function ShopPage() {
             }
         };
 
-        applyDiscounts();
+        applyDiscountsAndFilter();
 
         const handleStorageChange = (event: StorageEvent) => {
              if (event.key === ADS_STORAGE_KEY || event.key === PRODUCTS_STORAGE_KEY) {
-                window.location.reload();
+                // Refetch all products from local storage to ensure we have the latest list
+                let storedProducts: ProductType[] = [];
+                try {
+                    const productsFromStorage = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+                    if (productsFromStorage) {
+                        storedProducts = JSON.parse(productsFromStorage);
+                    }
+                } catch (error) {
+                    console.error("Failed to load products from storage on change event.", error);
+                }
+                setAllProducts(storedProducts);
+                // The useEffect watching allProducts will then re-run applyDiscountsAndFilter
             }
         };
 

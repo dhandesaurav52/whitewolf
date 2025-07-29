@@ -201,18 +201,13 @@ export default function AccessoriesPage() {
     }, []);
 
     useEffect(() => {
-        const applyDiscounts = () => {
+        const applyDiscountsAndFilter = () => {
             try {
                 const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
-                 const accessoryProducts = allProducts.filter(p => p.displaySection === 'accessories');
-
-                if (!storedAds) {
-                    setProducts(accessoryProducts);
-                    return;
-                }
-
-                const activeAds: Advertisement[] = JSON.parse(storedAds).filter((ad: Advertisement) => ad.status === 'Active');
+                const activeAds: Advertisement[] = storedAds ? JSON.parse(storedAds).filter((ad: Advertisement) => ad.status === 'Active') : [];
                 const categoryAds = activeAds.filter(ad => ad.appliesTo === 'categories' && ad.selectedCategories.length > 0);
+                
+                const accessoryProducts = allProducts.filter(p => p.displaySection === 'accessories');
 
                 if (categoryAds.length === 0) {
                     setProducts(accessoryProducts); // Reset to original if no offers
@@ -222,7 +217,7 @@ export default function AccessoriesPage() {
                 const updatedProducts = accessoryProducts.map(p => {
                     let productPrice = parseFloat(p.price);
                     let originalProductPrice = p.originalPrice ? parseFloat(p.originalPrice) : productPrice;
-                    let appliedDiscount = null;
+                    let appliedDiscount = p.discount;
                     
                     const applicableAd = categoryAds.find(ad => ad.selectedCategories.includes(p.category));
 
@@ -252,11 +247,20 @@ export default function AccessoriesPage() {
             }
         };
 
-        applyDiscounts();
+        applyDiscountsAndFilter();
 
         const handleStorageChange = (event: StorageEvent) => {
             if (event.key === ADS_STORAGE_KEY || event.key === PRODUCTS_STORAGE_KEY) {
-                window.location.reload();
+                let storedProducts: ProductType[] = [];
+                try {
+                    const productsFromStorage = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+                    if (productsFromStorage) {
+                        storedProducts = JSON.parse(productsFromStorage);
+                    }
+                } catch (error) {
+                    console.error("Failed to load products from storage on change event.", error);
+                }
+                setAllProducts(storedProducts);
             }
         };
 

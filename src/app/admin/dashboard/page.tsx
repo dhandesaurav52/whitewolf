@@ -19,6 +19,10 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { cn } from "@/lib/utils";
 import type { Product as ProductType } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
+import { storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { Loader2 } from "lucide-react";
+
 
 const PRODUCTS_STORAGE_KEY = 'products';
 
@@ -128,7 +132,9 @@ export default function AdminDashboardPage() {
     const [newNumericSizes, setNewNumericSizes] = useState('');
     const [isNewArrival, setIsNewArrival] = useState(false);
     const [newStock, setNewStock] = useState(0);
-    const [newVideoUrl, setNewVideoUrl] = useState('');
+    const [newImageFile, setNewImageFile] = useState<File | null>(null);
+    const [newVideoFile, setNewVideoFile] = useState<File | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
 
     useEffect(() => {
         let storedProducts: ProductType[] = [];
@@ -198,10 +204,18 @@ export default function AdminDashboardPage() {
         setNewNumericSizes('');
         setIsNewArrival(false);
         setNewStock(0);
-        setNewVideoUrl('');
+        setNewImageFile(null);
+        setNewVideoFile(null);
     };
 
-    const handleAddProduct = () => {
+    const uploadFile = async (file: File, path: string): Promise<string> => {
+        const storageRef = ref(storage, path);
+        await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(storageRef);
+        return downloadURL;
+    }
+
+    const handleAddProduct = async () => {
         if (!newProductName || !newPrice || !newSelectedCategory) {
             toast({
                 title: "Missing Information",
@@ -211,35 +225,60 @@ export default function AdminDashboardPage() {
             return;
         }
 
-        const newProduct: ProductType = {
-            id: generateUniqueId(),
-            name: newProductName,
-            brand: newBrandName,
-            price: newPrice,
-            category: newSelectedCategory,
-            displaySection: newDisplaySection,
-            description: newDescription,
-            colors: newColors,
-            textSizes: newTextSizes,
-            numericSizes: newNumericSizes,
-            new: isNewArrival,
-            stock: newStock,
-            image: 'https://placehold.co/400x500.png',
-            videoUrl: newVideoUrl,
-            aiHint: newProductName.toLowerCase(),
-            originalPrice: null,
-            discount: null,
-        };
+        setIsUploading(true);
 
-        const newProducts = [...products, newProduct];
-        updateProducts(newProducts);
+        try {
+            let imageUrl = 'https://placehold.co/400x500.png';
+            let videoUrl = '';
 
-        toast({
-            title: "Product Added",
-            description: `${newProduct.name} has been added to the store.`,
-        });
+            if (newImageFile) {
+                const imagePath = `products/${Date.now()}_${newImageFile.name}`;
+                imageUrl = await uploadFile(newImageFile, imagePath);
+            }
+            if (newVideoFile) {
+                const videoPath = `videos/${Date.now()}_${newVideoFile.name}`;
+                videoUrl = await uploadFile(newVideoFile, videoPath);
+            }
 
-        resetForm();
+            const newProduct: ProductType = {
+                id: generateUniqueId(),
+                name: newProductName,
+                brand: newBrandName,
+                price: newPrice,
+                category: newSelectedCategory,
+                displaySection: newDisplaySection,
+                description: newDescription,
+                colors: newColors,
+                textSizes: newTextSizes,
+                numericSizes: newNumericSizes,
+                new: isNewArrival,
+                stock: newStock,
+                image: imageUrl,
+                videoUrl: videoUrl,
+                aiHint: newProductName.toLowerCase(),
+                originalPrice: null,
+                discount: null,
+            };
+
+            const newProducts = [...products, newProduct];
+            updateProducts(newProducts);
+
+            toast({
+                title: "Product Added",
+                description: `${newProduct.name} has been added to the store.`,
+            });
+
+            resetForm();
+        } catch (error) {
+            console.error("Error adding product: ", error);
+            toast({
+                title: "Upload Failed",
+                description: "There was an error uploading files. Please try again.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsUploading(false);
+        }
     };
 
     return (
@@ -366,14 +405,18 @@ export default function AdminDashboardPage() {
                         </div>
 
                          <div className="space-y-2">
-                            <Label htmlFor="product-images" className="text-accent">Product Images</Label>
+                            <Label htmlFor="product-images" className="text-accent">Product Image</Label>
                             <div className="flex items-center justify-center w-full">
                                 <Label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-muted">
                                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                         <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
-                                        <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Drag & drop files here,</span> or click to select files</p>
+                                        {newImageFile ? (
+                                            <p className="font-semibold text-primary">{newImageFile.name}</p>
+                                        ) : (
+                                            <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Drag & drop image here,</span> or click to select</p>
+                                        )}
                                     </div>
-                                    <Input id="dropzone-file" type="file" className="hidden" multiple />
+                                    <Input id="dropzone-file" type="file" className="hidden" accept="image/*" onChange={(e) => setNewImageFile(e.target.files ? e.target.files[0] : null)} />
                                 </Label>
                             </div> 
                         </div>
@@ -384,9 +427,13 @@ export default function AdminDashboardPage() {
                                 <Label htmlFor="dropzone-video-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-muted">
                                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                         <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
-                                        <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Drag & drop video here,</span> or click to select files</p>
+                                        {newVideoFile ? (
+                                            <p className="font-semibold text-primary">{newVideoFile.name}</p>
+                                        ) : (
+                                            <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Drag & drop video here,</span> or click to select</p>
+                                        )}
                                     </div>
-                                    <Input id="dropzone-video-file" type="file" className="hidden" accept="video/*" onChange={(e) => setNewVideoUrl(e.target.value)}/>
+                                    <Input id="dropzone-video-file" type="file" className="hidden" accept="video/*" onChange={(e) => setNewVideoFile(e.target.files ? e.target.files[0] : null)}/>
                                 </Label>
                             </div>
                         </div>
@@ -398,8 +445,10 @@ export default function AdminDashboardPage() {
                         </div>
                         
                         <div className="flex justify-end gap-2">
-                            <Button variant="outline" onClick={resetForm}>Cancel</Button>
-                            <Button onClick={handleAddProduct}>Add Product</Button>
+                            <Button variant="outline" onClick={resetForm} disabled={isUploading}>Cancel</Button>
+                            <Button onClick={handleAddProduct} disabled={isUploading}>
+                                {isUploading ? <Loader2 className="animate-spin" /> : "Add Product"}
+                            </Button>
                         </div>
                     </CardContent>
                 </Card>
@@ -445,7 +494,7 @@ export default function AdminDashboardPage() {
                             </TableHeader>
                             <TableBody>
                                 {products.map((product, index) => (
-                                    <TableRow key={index}>
+                                    <TableRow key={product.id || index}>
                                         <TableCell>
                                             <div className="relative h-12 w-12 rounded-md overflow-hidden">
                                                 <Image src={product.image} alt={product.name} fill className="object-cover" data-ai-hint={product.aiHint} />
