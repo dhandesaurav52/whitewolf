@@ -90,7 +90,7 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="price" className="text-accent">Price (₹)</Label>
+                  <Label htmlFor="price" className="text-accent">Price</Label>
                   <Input id="price" type="number" value={editedProduct.price} onChange={(e) => handleChange('price', e.target.value)} />
                 </div>
                 <div className="space-y-2">
@@ -153,7 +153,7 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
               </div>
                <div className="space-y-2">
                 <Label htmlFor="images" className="text-accent">Image URLs (comma-separated)</Label>
-                <Textarea id="images" value={editedProduct.images.join(', ')} onChange={(e) => handleChange('images', e.target.value.split(',').map(url => url.trim()))} />
+                <Textarea id="images" value={(editedProduct.images || []).join(', ')} onChange={(e) => handleChange('images', e.target.value.split(',').map(url => url.trim()))} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
