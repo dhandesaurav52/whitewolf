@@ -97,6 +97,7 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [similarProducts, setSimilarProducts] = useState<ProductType[]>([]);
   const [complementaryProducts, setComplementaryProducts] = useState<ProductType[]>([]);
+  const [moreProducts, setMoreProducts] = useState<ProductType[]>([]);
   const [isConfirming, setIsConfirming] = useState(false);
   
   const { addToCart, clearCart } = useCart();
@@ -123,6 +124,7 @@ export default function ProductDetailPage() {
 
         const complementary = allProducts.filter(p => p.category !== foundProduct.category);
         setComplementaryProducts(complementary.slice(0, 8));
+        setMoreProducts(allProducts.filter(p => p.id !== foundProduct.id).slice(0, 4));
       } else {
         // Mock data for when product is not found or for development
         setSimilarProducts([
@@ -136,6 +138,12 @@ export default function ProductDetailPage() {
            { id: 'mock6', name: 'Dark Wash Jeans', category: 'jeans', price: '1899', images: ['https://placehold.co/400x500.png'], aiHint: 'denim jeans', displaySection: 'shop', originalPrice: null, stock: 10, discount: null },
            { id: 'mock7', name: 'Classic Leather Belt', category: 'accessories', price: '499', images: ['https://placehold.co/400x500.png'], aiHint: 'leather belt', displaySection: 'accessories', originalPrice: null, stock: 10, discount: null },
            { id: 'mock8', name: 'Chronograph Watch', category: 'accessories', price: '1599', images: ['https://placehold.co/400x500.png'], aiHint: 'mens watch', displaySection: 'accessories', originalPrice: '1999', stock: 10, discount: '20% OFF' },
+        ]);
+         setMoreProducts([
+          { id: 'mock9', name: 'Graphic Tee', category: 't-shirts', price: '1299', images: ['https://placehold.co/400x500.png'], aiHint: 'graphic tee', displaySection: 'shop', originalPrice: null, stock: 10, discount: null },
+          { id: 'mock10', name: 'Canvas Backpack', category: 'accessories', price: '949', images: ['https://placehold.co/400x500.png'], aiHint: 'canvas backpack', displaySection: 'accessories', originalPrice: null, stock: 10, discount: null },
+          { id: 'mock11', name: 'Aviator Sunglasses', category: 'accessories', price: '749', images: ['https://placehold.co/400x500.png'], aiHint: 'sunglasses', displaySection: 'accessories', originalPrice: null, stock: 10, discount: null },
+          { id: 'mock12', name: 'Linen Button-Down', category: 'shirts', price: '1499', images: ['https://placehold.co/400x500.png'], aiHint: 'summer shirt', displaySection: 'shop', originalPrice: null, stock: 10, discount: null },
         ]);
       }
 
@@ -277,7 +285,7 @@ export default function ProductDetailPage() {
                       <Button variant="outline" size="lg" className="flex-1" onClick={() => addToCart(product, quantity)}>
                           <ShoppingBag className="mr-2 h-5 w-5" /> Add to Cart
                       </Button>
-                      <Button variant="destructive" size="lg" className="flex-1 bg-red-500 hover:bg-red-600" onClick={handleBuyNow}>
+                      <Button size="lg" className="flex-1" onClick={handleBuyNow}>
                           Buy Now
                       </Button>
                       <Button variant="outline" size="icon" className="h-12 w-12" onClick={() => toggleWishlist(product)}>
@@ -291,6 +299,15 @@ export default function ProductDetailPage() {
           <ProductCarousel title="Similar Products" products={similarProducts} />
           <Separator/>
           <ProductCarousel title="Complete The Look" products={complementaryProducts} />
+          <Separator/>
+           <div className="py-12">
+              <h2 className="text-3xl font-bold font-headline text-center mb-8">More Products</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {moreProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+          </div>
       </div>
 
       {isConfirming && (
