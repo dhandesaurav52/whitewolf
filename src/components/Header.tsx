@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Heart, ShoppingBag, LogOut } from "lucide-react";
+import { ShoppingBag, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -56,17 +56,6 @@ export default function Header() {
                   {link.label}
                 </Link>
               ))}
-               {user && (
-                <Link
-                  href="/saved"
-                  className={cn(
-                    "text-muted-foreground transition-colors hover:text-accent",
-                    pathname === "/saved" && "text-accent"
-                  )}
-                >
-                  Saved Outfits
-                </Link>
-              )}
             </nav>
           </div>
           <div className="flex items-center gap-4">
@@ -77,9 +66,6 @@ export default function Header() {
               </div>
             ) : user ? (
               <>
-                <Link href="/saved" className="text-muted-foreground hover:text-accent transition-colors">
-                    <Heart className="h-6 w-6 text-accent" />
-                </Link>
                 <Link href="/cart" className="text-muted-foreground hover:text-accent transition-colors">
                     <ShoppingBag className="h-6 w-6 text-accent" />
                 </Link>
