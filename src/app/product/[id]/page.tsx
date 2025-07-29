@@ -50,9 +50,9 @@ const ProductCard = ({ product }: { product: ProductType }) => {
         <h3 className="font-headline text-lg text-primary truncate">{product.name}</h3>
         <p className="text-sm text-muted-foreground">{product.category}</p>
         <div className="flex items-baseline gap-2 pt-1">
-          <p className="text-accent font-semibold text-base">{product.price}</p>
+          <p className="text-accent font-semibold text-base">₹{product.price}</p>
           {product.originalPrice && (
-            <p className="text-muted-foreground text-sm line-through">{product.originalPrice}</p>
+            <p className="text-muted-foreground text-sm line-through">₹{product.originalPrice}</p>
           )}
         </div>
       </CardContent>
@@ -69,7 +69,7 @@ const ProductCarousel = ({ title, products }: { title: string, products: Product
         <Carousel
             opts={{
             align: "start",
-            loop: true,
+            loop: products.length > 4,
             }}
             className="w-full"
         >
@@ -215,10 +215,10 @@ export default function ProductDetailPage() {
                   <div className="space-y-2">
                       <h1 className="text-3xl md:text-4xl font-bold font-headline text-primary">{product.name}</h1>
                       <div className="flex items-center gap-4">
-                          <p className="text-2xl font-semibold text-accent">{product.price}</p>
+                          <p className="text-2xl font-semibold text-accent">₹{product.price}</p>
                           {product.originalPrice && (
                               <>
-                                  <p className="text-xl text-muted-foreground line-through">{product.originalPrice}</p>
+                                  <p className="text-xl text-muted-foreground line-through">₹{product.originalPrice}</p>
                                   {product.discount && <Badge variant="destructive">{product.discount}</Badge>}
                               </>
                           )}
@@ -309,3 +309,5 @@ export default function ProductDetailPage() {
     </>
   );
 }
+
+    

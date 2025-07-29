@@ -3,18 +3,16 @@
 
 import { useCart } from "@/hooks/useCart";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import Image from "next/image";
 import Link from "next/link";
-import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
+import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import ConfirmPurchaseDialog from "@/components/ConfirmPurchaseDialog";
 import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, cartTotal, cartCount, isLoaded, clearCart } = useCart();
-  const { user } = useAuth();
   const [isConfirming, setIsConfirming] = useState(false);
 
   if (!isLoaded) {
@@ -44,7 +42,7 @@ export default function CartPage() {
           <p className="text-muted-foreground mt-2">You have {cartCount} item(s) in your cart.</p>
         </div>
         
-        <div className="grid lg:grid-cols-3 gap-12">
+        <div className="grid lg:grid-cols-3 gap-12 items-start">
           <div className="lg:col-span-2 space-y-4">
             {cart.map(({ product, quantity }) => (
               <Card key={product.id} className="flex items-center p-4">
@@ -59,7 +57,7 @@ export default function CartPage() {
                 <div className="flex-grow">
                   <h3 className="font-semibold text-lg">{product.name}</h3>
                   <p className="text-muted-foreground text-sm">{product.category}</p>
-                  <p className="text-primary font-bold mt-1">{product.price}</p>
+                  <p className="text-primary font-bold mt-1">₹{product.price}</p>
                 </div>
                 <div className="flex items-center gap-4">
                    <div className="flex items-center gap-2 border rounded-md">
@@ -77,33 +75,36 @@ export default function CartPage() {
                 </div>
               </Card>
             ))}
+             <Button asChild variant="link" className="text-accent mt-4">
+                <Link href="/shop"><ArrowLeft className="mr-2 h-4 w-4" />Continue Shopping</Link>
+            </Button>
           </div>
 
           <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  <span>{cartTotal.toFixed(2)}</span>
+            <Card className="sticky top-24">
+              <div className="p-6">
+                <h3 className="text-xl font-bold mb-4">Order Summary</h3>
+                <div className="space-y-2">
+                    <div className="flex justify-between">
+                        <span>Subtotal</span>
+                        <span>₹{cartTotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span>Shipping</span>
+                        <span className="text-green-600">Free</span>
+                    </div>
+                    <Separator className="my-2" />
+                    <div className="flex justify-between font-bold text-lg">
+                        <span>Total</span>
+                        <span>₹{cartTotal.toFixed(2)}</span>
+                    </div>
                 </div>
-                <div className="flex justify-between">
-                  <span>Shipping</span>
-                  <span>Free</span>
-                </div>
-                <Separator />
-                <div className="flex justify-between font-bold text-lg">
-                  <span>Total</span>
-                  <span>{cartTotal.toFixed(2)}</span>
-                </div>
-              </CardContent>
-              <CardFooter>
+              </div>
+              <div className="p-6 pt-0">
                 <Button className="w-full" size="lg" onClick={() => setIsConfirming(true)}>
                   Proceed to Checkout
                 </Button>
-              </CardFooter>
+              </div>
             </Card>
           </div>
         </div>

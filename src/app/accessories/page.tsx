@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -68,9 +68,9 @@ const ProductCard = ({ product }: { product: ProductType }) => {
         <h3 className="font-headline text-lg text-primary truncate">{product.name}</h3>
         <p className="text-sm text-muted-foreground">{product.category}</p>
         <div className="flex items-baseline gap-2 pt-1">
-          <p className="text-accent font-semibold text-base">{product.price}</p>
+          <p className="text-accent font-semibold text-base">₹{product.price}</p>
           {product.originalPrice && (
-            <p className="text-muted-foreground text-sm line-through">{product.originalPrice}</p>
+            <p className="text-muted-foreground text-sm line-through">₹{product.originalPrice}</p>
           )}
         </div>
       </CardContent>
@@ -83,32 +83,26 @@ export default function AccessoriesPage() {
     const [products, setProducts] = useState<ProductType[]>([]);
     const [allProducts, setAllProducts] = useState<ProductType[]>([]);
 
-    useEffect(() => {
-        const loadProducts = () => {
-            let storedProducts: ProductType[] = [];
-            try {
-                const productsFromStorage = localStorage.getItem(PRODUCTS_STORAGE_KEY);
-                if (productsFromStorage) {
-                    storedProducts = JSON.parse(productsFromStorage);
-                }
-            } catch (error) {
-                console.error("Failed to load products from storage, using initial products.", error);
+    const loadProducts = useCallback(() => {
+        let storedProducts: ProductType[] = [];
+        try {
+            const productsFromStorage = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+            if (productsFromStorage) {
+                storedProducts = JSON.parse(productsFromStorage);
             }
-            setAllProducts(storedProducts);
-        };
-        loadProducts();
-
-        const handleStorageChange = (event: StorageEvent) => {
-            if (event.key === ADS_STORAGE_KEY || event.key === PRODUCTS_STORAGE_KEY) {
-                loadProducts();
-            }
-        };
-
-        window.addEventListener('storage', handleStorageChange);
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-        };
+        } catch (error) {
+            console.error("Failed to load products from storage, using initial products.", error);
+        }
+        setAllProducts(storedProducts);
     }, []);
+
+    useEffect(() => {
+        loadProducts();
+        window.addEventListener('storage', loadProducts);
+        return () => {
+            window.removeEventListener('storage', loadProducts);
+        };
+    }, [loadProducts]);
 
     useEffect(() => {
         const applyDiscountsAndFilter = () => {
@@ -132,7 +126,7 @@ export default function AccessoriesPage() {
                             appliedDiscount = `${applicableAd.discountValue}% OFF`;
                         } else { // fixed
                             productPrice = originalProductPrice - applicableAd.discountValue;
-                            appliedDiscount = `${applicableAd.discountValue} OFF`;
+                            appliedDiscount = `₹${applicableAd.discountValue} OFF`;
                         }
                         return {
                             ...p,
@@ -145,6 +139,7 @@ export default function AccessoriesPage() {
                     // Reset if no ad applies
                     return {
                         ...p,
+                        price: p.price,
                         originalPrice: p.originalPrice, // Keep original if it existed
                         discount: p.discount, // Keep original discount
                     };

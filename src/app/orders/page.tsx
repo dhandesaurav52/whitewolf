@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import type { Order } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,8 +28,7 @@ export default function OrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [isClient, setIsClient] = useState(false);
 
-    useEffect(() => {
-        setIsClient(true);
+    const loadUserOrders = useCallback(() => {
         if (user) {
             try {
                 const allOrdersRaw = localStorage.getItem(ORDERS_STORAGE_KEY);
@@ -39,8 +38,19 @@ export default function OrdersPage() {
             } catch (error) {
                 console.error("Failed to load orders", error);
             }
+        } else {
+            setOrders([]);
         }
     }, [user]);
+
+    useEffect(() => {
+        setIsClient(true);
+        loadUserOrders();
+        window.addEventListener('storage', loadUserOrders);
+        return () => {
+            window.removeEventListener('storage', loadUserOrders);
+        }
+    }, [loadUserOrders]);
 
     if (loading || !isClient) {
         return <div>Loading orders...</div>;
@@ -92,18 +102,18 @@ export default function OrdersPage() {
                                 <div className="space-y-4">
                                     {order.items.map(item => (
                                         <div key={item.product.id} className="flex items-center gap-4">
-                                            <Image src={item.product.images[0] || "https://placehold.co/100x100.png"} alt={item.product.name} width={64} height={64} className="rounded-md border" />
+                                            <Image src={(item.product.images && item.product.images[0]) || "https://placehold.co/100x100.png"} alt={item.product.name} width={64} height={64} className="rounded-md border" />
                                             <div>
                                                 <p className="font-medium">{item.product.name}</p>
                                                 <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                                             </div>
-                                            <p className="ml-auto font-medium">{(parseFloat(item.product.price) * item.quantity).toFixed(2)}</p>
+                                            <p className="ml-auto font-medium">₹{(parseFloat(item.product.price) * item.quantity).toFixed(2)}</p>
                                         </div>
                                     ))}
                                 </div>
                             </CardContent>
                             <CardFooter className="flex justify-end font-semibold text-lg">
-                                Total: {order.total.toFixed(2)}
+                                Total: ₹{order.total.toFixed(2)}
                             </CardFooter>
                         </Card>
                     )

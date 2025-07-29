@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,12 +17,10 @@ import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import type { Advertisement } from '@/lib/types';
-import type { Product as ProductType } from '@/lib/types';
+import type { Advertisement, Product as ProductType } from '@/lib/types';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useCart } from '@/hooks/useCart';
 import { cn } from '@/lib/utils';
-
 
 const ADS_STORAGE_KEY = 'advertisements';
 const PRODUCTS_STORAGE_KEY = 'products';
@@ -70,9 +69,9 @@ const ProductCard = ({ product }: { product: ProductType }) => {
         <h3 className="font-headline text-lg text-primary truncate">{product.name}</h3>
         <p className="text-sm text-muted-foreground">{product.category}</p>
         <div className="flex items-baseline gap-2 pt-1">
-          <p className="text-accent font-semibold text-base">{product.price}</p>
+          <p className="text-accent font-semibold text-base">₹{product.price}</p>
           {product.originalPrice && (
-            <p className="text-muted-foreground text-sm line-through">{product.originalPrice}</p>
+            <p className="text-muted-foreground text-sm line-through">₹{product.originalPrice}</p>
           )}
         </div>
       </CardContent>
@@ -80,37 +79,32 @@ const ProductCard = ({ product }: { product: ProductType }) => {
   );
 };
 
-
 export default function ShopPage() {
     const [products, setProducts] = useState<ProductType[]>([]);
     const [allProducts, setAllProducts] = useState<ProductType[]>([]);
+    const searchParams = useSearchParams();
+    const categoryQuery = searchParams.get('category');
 
-     useEffect(() => {
-        const loadProducts = () => {
-            let storedProducts: ProductType[] = [];
-            try {
-                const productsFromStorage = localStorage.getItem(PRODUCTS_STORAGE_KEY);
-                if (productsFromStorage) {
-                    storedProducts = JSON.parse(productsFromStorage);
-                }
-            } catch (error) {
-                console.error("Failed to load products from storage, using initial products.", error);
+     const loadProducts = useCallback(() => {
+        let storedProducts: ProductType[] = [];
+        try {
+            const productsFromStorage = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+            if (productsFromStorage) {
+                storedProducts = JSON.parse(productsFromStorage);
             }
-            setAllProducts(storedProducts);
+        } catch (error) {
+            console.error("Failed to load products from storage, using initial products.", error);
         }
-        loadProducts();
-
-        const handleStorageChange = (event: StorageEvent) => {
-             if (event.key === ADS_STORAGE_KEY || event.key === PRODUCTS_STORAGE_KEY) {
-                loadProducts();
-            }
-        };
-
-        window.addEventListener('storage', handleStorageChange);
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-        };
+        setAllProducts(storedProducts);
     }, []);
+    
+    useEffect(() => {
+        loadProducts();
+        window.addEventListener('storage', loadProducts);
+        return () => {
+            window.removeEventListener('storage', loadProducts);
+        };
+    }, [loadProducts]);
 
     useEffect(() => {
         const applyDiscountsAndFilter = () => {
@@ -120,6 +114,10 @@ export default function ShopPage() {
                 const categoryAds = activeAds.filter(ad => ad.appliesTo === 'categories' && ad.selectedCategories.length > 0);
                 
                 let shopProducts = allProducts.filter(p => p.displaySection === 'shop');
+                
+                if (categoryQuery) {
+                    shopProducts = shopProducts.filter(p => p.category.toLowerCase() === categoryQuery);
+                }
 
                 const updatedProducts = shopProducts.map(p => {
                     let productPrice = parseFloat(p.price);
@@ -134,7 +132,7 @@ export default function ShopPage() {
                             appliedDiscount = `${applicableAd.discountValue}% OFF`;
                         } else { // fixed
                             productPrice = originalProductPrice - applicableAd.discountValue;
-                            appliedDiscount = `${applicableAd.discountValue} OFF`;
+                            appliedDiscount = `₹${applicableAd.discountValue} OFF`;
                         }
                         return {
                             ...p,
@@ -147,6 +145,7 @@ export default function ShopPage() {
                     // Reset if no ad applies
                     return {
                         ...p,
+                        price: p.price,
                         originalPrice: p.originalPrice, // Keep original if it existed
                         discount: p.discount, // Keep original discount
                     };
@@ -156,13 +155,17 @@ export default function ShopPage() {
 
             } catch (error) {
                 console.error("Failed to apply discounts", error);
-                setProducts(allProducts.filter(p => p.displaySection === 'shop'));
+                let filteredProducts = allProducts.filter(p => p.displaySection === 'shop');
+                if (categoryQuery) {
+                    filteredProducts = filteredProducts.filter(p => p.category.toLowerCase() === categoryQuery);
+                }
+                setProducts(filteredProducts);
             }
         };
 
         applyDiscountsAndFilter();
 
-    }, [allProducts]);
+    }, [allProducts, categoryQuery]);
 
     const filters = [
         { placeholder: 'All Categories', options: ['T-Shirts', 'Shirts', 'Pants', 'Jeans'] },

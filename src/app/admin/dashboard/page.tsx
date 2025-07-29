@@ -19,8 +19,6 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { cn } from "@/lib/utils";
 import type { Product as ProductType, Order } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { storage } from "@/lib/firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Loader2 } from "lucide-react";
 
 
@@ -75,9 +73,9 @@ export default function AdminDashboardPage() {
     const [newNumericSizes, setNewNumericSizes] = useState('');
     const [isNewArrival, setIsNewArrival] = useState(false);
     const [newStock, setNewStock] = useState(0);
-    const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
-    const [newVideoFile, setNewVideoFile] = useState<File | null>(null);
-    const [isUploading, setIsUploading] = useState(false);
+    const [newImageUrls, setNewImageUrls] = useState('');
+    const [newVideoUrl, setNewVideoUrl] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const loadData = () => {
@@ -149,7 +147,7 @@ export default function AdminDashboardPage() {
     const totalUsers = new Set(orders.map(order => order.customer.email)).size;
 
     const stats = [
-        { title: "Total Revenue", value: totalRevenue.toFixed(2), description: "Based on delivered orders", icon: BarChart },
+        { title: "Total Revenue", value: `₹${totalRevenue.toFixed(2)}`, description: "Based on delivered orders", icon: BarChart },
         { title: "New Orders", value: newOrdersCount.toString(), description: "Orders pending fulfillment", icon: ShoppingCart },
         { title: "Products in Stock", value: products.length.toString(), description: "Total active products", icon: Package },
         { title: "Total Users", value: totalUsers.toString(), description: "Unique customers with orders", icon: Users },
@@ -187,43 +185,24 @@ export default function AdminDashboardPage() {
         setNewNumericSizes('');
         setIsNewArrival(false);
         setNewStock(0);
-        setNewImageFiles([]);
-        setNewVideoFile(null);
+        setNewImageUrls('');
+        setNewVideoUrl('');
     };
 
-    const uploadFile = async (file: File, path: string): Promise<string> => {
-        const storageRef = ref(storage, path);
-        await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(storageRef);
-        return downloadURL;
-    }
-
-    const handleAddProduct = async () => {
-        if (!newProductName || !newPrice || !newSelectedCategory || newImageFiles.length === 0) {
+    const handleAddProduct = () => {
+        if (!newProductName || !newPrice || !newSelectedCategory || !newImageUrls) {
             toast({
                 title: "Missing Information",
-                description: "Product Name, Price, Category, and at least one image are required.",
+                description: "Product Name, Price, Category, and at least one image URL are required.",
                 variant: "destructive",
             });
             return;
         }
 
-        setIsUploading(true);
+        setIsLoading(true);
 
         try {
-            const imageUrls: string[] = [];
-            for (const file of newImageFiles) {
-                const imagePath = `products/${Date.now()}_${file.name}`;
-                const imageUrl = await uploadFile(file, imagePath);
-                imageUrls.push(imageUrl);
-            }
-
-            let videoUrl = '';
-            if (newVideoFile) {
-                const videoPath = `videos/${Date.now()}_${newVideoFile.name}`;
-                videoUrl = await uploadFile(newVideoFile, videoPath);
-            }
-            
+            const imageUrls = newImageUrls.split(',').map(url => url.trim()).filter(url => url);
             const categoryLabel = categories.find(c => c.value === newSelectedCategory)?.label || newSelectedCategory;
 
             const newProduct: ProductType = {
@@ -240,13 +219,14 @@ export default function AdminDashboardPage() {
                 new: isNewArrival,
                 stock: newStock,
                 images: imageUrls,
-                videoUrl: videoUrl,
+                videoUrl: newVideoUrl,
                 aiHint: newProductName.toLowerCase(),
                 originalPrice: null,
                 discount: null,
             };
 
-            const newProducts = [...products, newProduct];
+            const currentProducts = JSON.parse(localStorage.getItem(PRODUCTS_STORAGE_KEY) || '[]');
+            const newProducts = [...currentProducts, newProduct];
             updateProducts(newProducts);
 
             toast({
@@ -258,21 +238,14 @@ export default function AdminDashboardPage() {
         } catch (error) {
             console.error("Error adding product: ", error);
             toast({
-                title: "Upload Failed",
-                description: "There was an error uploading files. Please try again.",
+                title: "Failed to Add Product",
+                description: "There was an error saving the product. Please try again.",
                 variant: "destructive",
             });
         } finally {
-            setIsUploading(false);
+            setIsLoading(false);
         }
     };
-    
-    const handleImageFilesSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            setNewImageFiles(Array.from(e.target.files));
-        }
-    };
-
 
     return (
         <div className="container mx-auto py-10 space-y-8">
@@ -421,37 +394,13 @@ export default function AdminDashboardPage() {
                         </div>
 
                          <div className="space-y-2">
-                            <Label htmlFor="product-images" className="text-accent">Product Images</Label>
-                            <div className="flex items-center justify-center w-full">
-                                <Label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-muted">
-                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                        <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
-                                        {newImageFiles.length > 0 ? (
-                                            <p className="font-semibold text-primary">{newImageFiles.length} file(s) selected</p>
-                                        ) : (
-                                            <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Drag & drop images here,</span> or click to select</p>
-                                        )}
-                                    </div>
-                                    <Input id="dropzone-file" type="file" className="hidden" accept="image/*" multiple onChange={handleImageFilesSelect} />
-                                </Label>
-                            </div> 
+                            <Label htmlFor="product-images" className="text-accent">Product Image URLs (comma-separated)</Label>
+                             <Textarea id="product-images" placeholder="https://..., https://..." value={newImageUrls} onChange={(e) => setNewImageUrls(e.target.value)} />
                         </div>
                         
                         <div className="space-y-2">
-                            <Label htmlFor="product-video" className="text-accent">Product Video</Label>
-                            <div className="flex items-center justify-center w-full">
-                                <Label htmlFor="dropzone-video-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-muted">
-                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                        <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
-                                        {newVideoFile ? (
-                                            <p className="font-semibold text-primary">{newVideoFile.name}</p>
-                                        ) : (
-                                            <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Drag & drop video here,</span> or click to select</p>
-                                        )}
-                                    </div>
-                                    <Input id="dropzone-video-file" type="file" className="hidden" accept="video/*" onChange={(e) => setNewVideoFile(e.target.files ? e.target.files[0] : null)}/>
-                                </Label>
-                            </div>
+                            <Label htmlFor="product-video" className="text-accent">Product Video URL</Label>
+                            <Input id="product-video" placeholder="https://..." value={newVideoUrl} onChange={(e) => setNewVideoUrl(e.target.value)} />
                         </div>
 
 
@@ -461,9 +410,9 @@ export default function AdminDashboardPage() {
                         </div>
                         
                         <div className="flex justify-end gap-2">
-                            <Button variant="outline" onClick={resetForm} disabled={isUploading}>Cancel</Button>
-                            <Button onClick={handleAddProduct} disabled={isUploading}>
-                                {isUploading ? <Loader2 className="animate-spin" /> : "Add Product"}
+                            <Button variant="outline" onClick={resetForm} disabled={isLoading}>Cancel</Button>
+                            <Button onClick={handleAddProduct} disabled={isLoading}>
+                                {isLoading ? <Loader2 className="animate-spin" /> : "Add Product"}
                             </Button>
                         </div>
                     </CardContent>
@@ -525,7 +474,7 @@ export default function AdminDashboardPage() {
                                         <TableCell>
                                             <Badge variant="outline">{product.category}</Badge>
                                         </TableCell>
-                                        <TableCell>{product.price}</TableCell>
+                                        <TableCell>₹{product.price}</TableCell>
                                         <TableCell>{product.stock}</TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-2">

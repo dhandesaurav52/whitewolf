@@ -13,7 +13,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 import { Card, CardContent } from "@/components/ui/card";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { Advertisement, Reel, Product as ProductType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -39,7 +39,7 @@ const HeroSection = () => {
     const [heroSlides, setHeroSlides] = useState<Advertisement[]>([defaultHero]);
     const [currentSlide, setCurrentSlide] = useState(0);
 
-    const loadHeroSlides = () => {
+    const loadHeroSlides = useCallback(() => {
         try {
             const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
             if (storedAds) {
@@ -50,18 +50,20 @@ const HeroSection = () => {
                 } else {
                     setHeroSlides([defaultHero]);
                 }
+            } else {
+                setHeroSlides([defaultHero]);
             }
         } catch (error) {
             console.error("Failed to load hero configuration from localStorage", error);
             setHeroSlides([defaultHero]);
         }
-    };
+    }, []);
     
     useEffect(() => {
         loadHeroSlides();
         window.addEventListener('storage', loadHeroSlides);
         return () => window.removeEventListener('storage', loadHeroSlides);
-    }, []);
+    }, [loadHeroSlides]);
 
     useEffect(() => {
         if (heroSlides.length <= 1) return;
@@ -111,7 +113,7 @@ const HeroSection = () => {
 
 const WatchAndShopItem = ({ reel, product }: { reel: Reel, product?: ProductType }) => {
   return (
-    <Link href={`/product/${product?.id}`} className="block p-1">
+    <Link href={product ? `/product/${product.id}` : '#'} className="block p-1">
       <Card className="bg-card border-none overflow-hidden group relative aspect-[9/16]">
         {reel.videoUrl ? (
           <video
@@ -147,9 +149,9 @@ const WatchAndShopItem = ({ reel, product }: { reel: Reel, product?: ProductType
                 <div className="overflow-hidden">
                   <h3 className="text-sm font-headline text-primary truncate">{product.name}</h3>
                   <div className="flex items-baseline gap-2">
-                    <p className="text-accent font-bold text-sm">{product.price}</p>
+                    <p className="text-accent font-bold text-sm">₹{product.price}</p>
                     {product.originalPrice && (
-                      <p className="text-muted-foreground text-xs line-through">{product.originalPrice}</p>
+                      <p className="text-muted-foreground text-xs line-through">₹{product.originalPrice}</p>
                     )}
                   </div>
                 </div>
@@ -171,7 +173,7 @@ export default function Home() {
   const [categories, setCategories] = useState<{name: string, href: string, image: string, aiHint: string}[]>([]);
 
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     try {
       const storedReels = localStorage.getItem(REELS_STORAGE_KEY);
       if (storedReels) {
@@ -186,12 +188,12 @@ export default function Home() {
         setOversizeTees(allProducts.filter(p => p.category.toLowerCase() === 'oversized t-shirts').slice(0, 5));
         setAccessories(allProducts.filter(p => p.displaySection === 'accessories').slice(0, 4));
         
-        const uniqueCategories = [...new Set(allProducts.map(p => p.category.toLowerCase()))];
+        const uniqueCategories = [...new Set(allProducts.map(p => p.category))];
         const categoryData = uniqueCategories.map(cat => {
-            const productForCategory = allProducts.find(p => p.category.toLowerCase() === cat && p.images && p.images.length > 0);
+            const productForCategory = allProducts.find(p => p.category === cat && p.images && p.images.length > 0);
             return {
-                name: cat.charAt(0).toUpperCase() + cat.slice(1),
-                href: `/shop?category=${cat}`,
+                name: cat,
+                href: `/shop?category=${encodeURIComponent(cat.toLowerCase())}`,
                 image: productForCategory?.images[0] || "https://placehold.co/400x500.png",
                 aiHint: `${cat} model`
             };
@@ -201,7 +203,7 @@ export default function Home() {
     } catch (error) {
       console.error("Failed to load data from localStorage", error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -209,7 +211,7 @@ export default function Home() {
     return () => {
       window.removeEventListener('storage', loadData);
     };
-  }, []);
+  }, [loadData]);
 
   return (
     <div className="flex flex-col">
@@ -267,7 +269,7 @@ export default function Home() {
                      {product.brand && <p className="text-sm text-muted-foreground">{product.brand}</p>}
                     <h3 className="font-headline text-lg text-primary truncate">{product.name}</h3>
                     <p className="text-sm text-muted-foreground">{product.category}</p>
-                    <p className="text-accent font-semibold pt-1">{product.price}</p>
+                    <p className="text-accent font-semibold pt-1">₹{product.price}</p>
                   </div>
                 </div>
               ))}
@@ -292,7 +294,7 @@ export default function Home() {
             <Carousel
               opts={{
                 align: "start",
-                loop: true,
+                loop: oversizeTees.length > 4,
               }}
               className="w-full"
             >
@@ -302,20 +304,22 @@ export default function Home() {
                     <div className="p-1">
                       <Card className="bg-card border-border overflow-hidden group transition-all duration-300 hover:border-primary hover:shadow-md">
                         <CardContent className="p-0">
-                          <div className="relative aspect-[4/5] overflow-hidden">
-                             <Image
-                                src={(tee.images && tee.images.length > 0) ? tee.images[0] : "https://placehold.co/400x500.png"}
-                                alt={tee.name}
-                                fill
-                                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                data-ai-hint={tee.aiHint}
-                              />
-                          </div>
+                          <Link href={`/product/${tee.id}`}>
+                            <div className="relative aspect-[4/5] overflow-hidden">
+                              <Image
+                                  src={(tee.images && tee.images.length > 0) ? tee.images[0] : "https://placehold.co/400x500.png"}
+                                  alt={tee.name}
+                                  fill
+                                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                  data-ai-hint={tee.aiHint}
+                                />
+                            </div>
+                          </Link>
                            <div className="p-4 space-y-1">
                               {tee.brand && <p className="text-sm text-muted-foreground">{tee.brand}</p>}
                               <h3 className="text-lg font-headline text-primary truncate">{tee.name}</h3>
                               <p className="text-sm text-muted-foreground">{tee.category}</p>
-                              <p className="text-accent font-bold pt-1">{tee.price}</p>
+                              <p className="text-accent font-bold pt-1">₹{tee.price}</p>
                            </div>
                         </CardContent>
                       </Card>
@@ -352,7 +356,7 @@ export default function Home() {
                      {item.brand && <p className="text-sm text-muted-foreground">{item.brand}</p>}
                     <h3 className="font-headline text-lg text-primary truncate">{item.name}</h3>
                     <p className="text-sm text-muted-foreground">{item.category}</p>
-                    <p className="text-accent font-semibold pt-1">{item.price}</p>
+                    <p className="text-accent font-semibold pt-1">₹{item.price}</p>
                   </div>
                 </div>
               ))}
@@ -374,6 +378,7 @@ export default function Home() {
             <Carousel
               opts={{
                 align: "start",
+                loop: reels.length > 5,
               }}
               className="w-full"
             >
@@ -410,7 +415,7 @@ export default function Home() {
               </p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-              {categories.slice(0, 5).map((category) => (
+              {categories.map((category) => (
                 <Link href={category.href} key={category.name} className="group relative aspect-[4/5] overflow-hidden rounded-lg">
                   <Image
                     src={category.image}
@@ -419,24 +424,8 @@ export default function Home() {
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                     data-ai-hint={category.aiHint}
                   />
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                    <h3 className="text-white font-headline text-2xl font-bold drop-shadow-md">{category.name}</h3>
-                  </div>
-                </Link>
-              ))}
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 mt-4 md:mt-6">
-              {categories.slice(5).map((category) => (
-                <Link href={category.href} key={category.name} className="group relative aspect-[4/5] overflow-hidden rounded-lg lg:col-start-2 xl:col-start-auto">
-                  <Image
-                    src={category.image}
-                    alt={category.name}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    data-ai-hint={category.aiHint}
-                  />
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                    <h3 className="text-white font-headline text-2xl font-bold drop-shadow-md">{category.name}</h3>
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center p-2">
+                    <h3 className="text-white font-headline text-2xl font-bold drop-shadow-md text-center">{category.name}</h3>
                   </div>
                 </Link>
               ))}

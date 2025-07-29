@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
@@ -38,7 +38,7 @@ export default function ManageOrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [isClient, setIsClient] = useState(false);
 
-    const loadOrders = () => {
+    const loadOrders = useCallback(() => {
         try {
             const allOrdersRaw = localStorage.getItem(ORDERS_STORAGE_KEY);
             const allOrders: Order[] = allOrdersRaw ? JSON.parse(allOrdersRaw) : [];
@@ -46,19 +46,29 @@ export default function ManageOrdersPage() {
         } catch (error) {
             console.error("Failed to load orders", error);
         }
-    };
+    }, []);
 
     useEffect(() => {
         setIsClient(true);
         loadOrders();
-    }, []);
+        window.addEventListener('storage', loadOrders);
+        return () => {
+            window.removeEventListener('storage', loadOrders);
+        }
+    }, [loadOrders]);
 
     const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
-        const updatedOrders = orders.map(order => 
-            order.id === orderId ? { ...order, status: newStatus } : order
-        );
-        setOrders(updatedOrders);
-        localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(updatedOrders));
+        try {
+            const allOrdersRaw = localStorage.getItem(ORDERS_STORAGE_KEY);
+            const allOrders: Order[] = allOrdersRaw ? JSON.parse(allOrdersRaw) : [];
+            const updatedOrders = allOrders.map(order => 
+                order.id === orderId ? { ...order, status: newStatus } : order
+            );
+            localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(updatedOrders));
+            window.dispatchEvent(new Event('storage')); // This will trigger the re-load
+        } catch (error) {
+            console.error("Failed to update order status", error);
+        }
     };
 
     if (!isClient) {
@@ -101,7 +111,7 @@ export default function ManageOrdersPage() {
                                     </TableCell>
                                     <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
                                     <TableCell>{order.items.reduce((acc, item) => acc + item.quantity, 0)}</TableCell>
-                                    <TableCell>{order.total.toFixed(2)}</TableCell>
+                                    <TableCell>₹{order.total.toFixed(2)}</TableCell>
                                     <TableCell>
                                         <Badge variant="outline" className={cn("font-semibold", statusStyles[order.status])}>
                                             {React.createElement(statusIcons[order.status], { className: "mr-1 h-3 w-3" })}
