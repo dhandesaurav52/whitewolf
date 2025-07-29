@@ -13,13 +13,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Truck, Package, CheckCircle, Ban, RefreshCw } from "lucide-react";
-import type { Order, OrderStatus } from "@/lib/types";
+import type { Order, OrderStatus, Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import CollapsibleTableRow from "@/components/CollapsibleTableRow";
 import Link from "next/link";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+
 
 const ORDERS_STORAGE_KEY = 'orders';
 
@@ -42,7 +44,7 @@ const statusIcons: { [key in OrderStatus]: React.ElementType } = {
 export default function ManageOrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [isMounted, setIsMounted] = useState(false);
-    const [imageInView, setImageInView] = useState<string | null>(null);
+    const [imagesInView, setImagesInView] = useState<string[] | null>(null);
 
     const loadOrders = useCallback(() => {
         try {
@@ -141,11 +143,11 @@ export default function ManageOrdersPage() {
                                               <h4 className="font-semibold mb-2">Order Items:</h4>
                                               <div className="space-y-2">
                                                   {order.items.map(item => {
-                                                      const imageUrl = (item.product.images && item.product.images[0]) || "https://placehold.co/100x100.png";
+                                                      const imageUrls = item.product.images?.length > 0 ? item.product.images : ["https://placehold.co/100x100.png"];
                                                       return (
                                                         <div key={item.product.id} className="flex items-center gap-4">
-                                                            <button onClick={() => setImageInView(imageUrl)} className="cursor-pointer">
-                                                              <Image src={imageUrl} alt={item.product.name} width={48} height={48} className="rounded-md border" />
+                                                            <button onClick={() => setImagesInView(imageUrls)} className="cursor-pointer">
+                                                              <Image src={imageUrls[0]} alt={item.product.name} width={48} height={48} className="rounded-md border" />
                                                             </button>
                                                             <div className="flex-grow">
                                                                 <p className="font-medium">{item.product.name}</p>
@@ -207,14 +209,26 @@ export default function ManageOrdersPage() {
                 </Card>
             </div>
 
-            {imageInView && (
-                <Dialog open={!!imageInView} onOpenChange={(open) => !open && setImageInView(null)}>
+            {imagesInView && (
+                <Dialog open={!!imagesInView} onOpenChange={(open) => !open && setImagesInView(null)}>
                     <DialogContent className="max-w-xl">
                         <DialogHeader>
-                            <DialogTitle>Product Image</DialogTitle>
+                            <DialogTitle>Product Images</DialogTitle>
                         </DialogHeader>
-                        <div className="relative aspect-square mt-4">
-                            <Image src={imageInView} alt="Product view" fill className="object-contain" />
+                        <div className="mt-4">
+                           <Carousel>
+                                <CarouselContent>
+                                    {imagesInView.map((img, index) => (
+                                        <CarouselItem key={index}>
+                                            <div className="relative aspect-square">
+                                                <Image src={img} alt={`Product image ${index + 1}`} fill className="object-contain" />
+                                            </div>
+                                        </CarouselItem>
+                                    ))}
+                                </CarouselContent>
+                                <CarouselPrevious />
+                                <CarouselNext />
+                            </Carousel>
                         </div>
                     </DialogContent>
                 </Dialog>
