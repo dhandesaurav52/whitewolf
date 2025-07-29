@@ -4,52 +4,56 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
-import { User } from "lucide-react";
+import { User, Mail, Phone, MapPin, Pencil } from "lucide-react";
 
 export default function ProfilePage() {
   const { user, loading } = useAuth();
 
   if (loading) {
     return (
-        <div className="space-y-8">
-            <div className="flex items-center gap-4">
-                <Skeleton className="h-16 w-16 rounded-full" />
-                <div className="space-y-2">
-                    <Skeleton className="h-6 w-48" />
-                    <Skeleton className="h-4 w-64" />
-                </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <Card>
-                    <CardHeader>
-                        <Skeleton className="h-6 w-32" />
-                         <Skeleton className="h-4 w-48" />
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader>
-                        <Skeleton className="h-6 w-32" />
-                        <Skeleton className="h-4 w-48" />
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-24 w-full" />
-                         <div className="flex justify-end">
-                            <Skeleton className="h-10 w-24" />
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+      <div className="space-y-8">
+        <div className="flex justify-between items-center">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-10 w-32" />
         </div>
+        <Card>
+            <CardHeader>
+                <Skeleton className="h-8 w-40 mx-auto" />
+                <Skeleton className="h-4 w-64 mx-auto" />
+            </CardHeader>
+            <CardContent className="space-y-6 pt-6">
+                <div className="flex items-center gap-4">
+                    <Skeleton className="h-6 w-6 rounded-full" />
+                    <div className="w-full space-y-2">
+                        <Skeleton className="h-4 w-1/4" />
+                        <Skeleton className="h-5 w-1/2" />
+                    </div>
+                </div>
+                <div className="flex items-center gap-4">
+                    <Skeleton className="h-6 w-6 rounded-full" />
+                    <div className="w-full space-y-2">
+                        <Skeleton className="h-4 w-1/4" />
+                        <Skeleton className="h-5 w-1/2" />
+                    </div>
+                </div>
+                <div className="flex items-center gap-4">
+                    <Skeleton className="h-6 w-6 rounded-full" />
+                    <div className="w-full space-y-2">
+                        <Skeleton className="h-4 w-1/4" />
+                        <Skeleton className="h-5 w-1/2" />
+                    </div>
+                </div>
+                 <div className="flex items-center gap-4">
+                    <Skeleton className="h-6 w-6 rounded-full" />
+                    <div className="w-full space-y-2">
+                        <Skeleton className="h-4 w-1/4" />
+                        <Skeleton className="h-5 w-1/2" />
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+      </div>
     )
   }
 
@@ -63,81 +67,43 @@ export default function ProfilePage() {
       </div>
     );
   }
+  
+  const profileDetails = [
+      { icon: User, label: "Full Name", value: user.displayName || "Not provided" },
+      { icon: Mail, label: "Email Address", value: user.email || "Not provided" },
+      { icon: Phone, label: "Mobile Number", value: user.phoneNumber || "Not provided" },
+      { icon: MapPin, label: "Address", value: "Not provided" },
+  ];
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center gap-4">
-        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-            <User className="w-8 h-8 text-muted-foreground" />
+        <div className="flex justify-between items-center">
+             <h1 className="text-4xl font-bold font-headline text-accent">My Profile</h1>
+             <Button variant="outline">
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit Profile
+             </Button>
         </div>
-        <div>
-          <h1 className="text-3xl font-bold font-headline">
-            {user.displayName || "Your Profile"}
-          </h1>
-          <p className="text-muted-foreground">{user.email}</p>
-        </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+      
         <Card>
-          <CardHeader>
-            <CardTitle className="text-accent">Personal Information</CardTitle>
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl font-headline text-accent">{user.displayName || 'Welcome!'}</CardTitle>
             <CardDescription>
-                Your personal details as provided during sign-up.
+                Your personal account details.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-1">
-              <Label htmlFor="fullName">Full Name</Label>
-              <Input id="fullName" value={user.displayName || ''} disabled />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="email">Email Address</Label>
-              <Input id="email" type="email" value={user.email || ''} disabled />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="mobile">Mobile Number</Label>
-              <Input id="mobile" placeholder="No mobile number provided" disabled />
-            </div>
+          <CardContent className="space-y-6 pt-6 max-w-lg mx-auto">
+            {profileDetails.map((detail, index) => (
+                 <div key={index} className="flex items-start gap-4">
+                    <detail.icon className="h-5 w-5 text-muted-foreground mt-1" />
+                    <div className="w-full">
+                        <p className="text-sm text-muted-foreground">{detail.label}</p>
+                        <p className="text-base text-primary font-medium">{detail.value}</p>
+                    </div>
+                 </div>
+            ))}
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-accent">Shipping Address</CardTitle>
-             <CardDescription>
-                Your primary address for order delivery.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-1">
-                <Label htmlFor="address">Address</Label>
-                <Textarea id="address" placeholder="123 Style St, Fashion City" />
-            </div>
-             <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                    <Label htmlFor="city">City</Label>
-                    <Input id="city" placeholder="e.g. Mumbai" />
-                </div>
-                <div className="space-y-1">
-                    <Label htmlFor="pincode">Pincode</Label>
-                    <Input id="pincode" placeholder="e.g. 400001" />
-                </div>
-            </div>
-             <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                    <Label htmlFor="state">State</Label>
-                    <Input id="state" placeholder="e.g. Maharashtra" />
-                </div>
-                <div className="space-y-1">
-                    <Label htmlFor="country">Country</Label>
-                    <Input id="country" value="India" disabled />
-                </div>
-            </div>
-            <div className="flex justify-end">
-                <Button>Save Address</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }
