@@ -253,8 +253,8 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {newArrivals.map((product) => (
-                <div key={product.id} className="group">
-                  <div className="relative aspect-[4/5] bg-muted rounded-lg overflow-hidden">
+                <div key={product.id} className="group overflow-hidden rounded-lg border border-transparent hover:border-primary transition-colors duration-300">
+                  <div className="relative aspect-[4/5] bg-muted overflow-hidden">
                     <Image
                       src={(product.images && product.images.length > 0) ? product.images[0] : "https://placehold.co/400x500.png"}
                       alt={product.name}
@@ -300,7 +300,7 @@ export default function Home() {
                 {oversizeTees.map((tee, index) => (
                   <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
                     <div className="p-1">
-                      <Card className="bg-card border-border overflow-hidden group">
+                      <Card className="bg-card border-border overflow-hidden group transition-all duration-300 hover:border-primary hover:shadow-md">
                         <CardContent className="p-0">
                           <div className="relative aspect-[4/5] overflow-hidden">
                              <Image
@@ -338,8 +338,8 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {accessories.map((item, i) => (
-                <div key={i} className="group">
-                  <div className="relative aspect-[4/5] bg-muted rounded-lg overflow-hidden">
+                <div key={i} className="group overflow-hidden rounded-lg border border-transparent hover:border-primary transition-colors duration-300">
+                  <div className="relative aspect-[4/5] bg-muted overflow-hidden">
                     <Image
                       src={item.images && item.images.length > 0 ? item.images[0] : "https://placehold.co/400x500.png"}
                       alt={item.name}
