@@ -126,26 +126,6 @@ export default function ProductDetailPage() {
         const complementary = allProducts.filter(p => p.category !== foundProduct.category);
         setComplementaryProducts(complementary.slice(0, 8));
         setMoreProducts(allProducts.filter(p => p.id !== foundProduct.id).slice(0, 4));
-      } else {
-        // Mock data for when product is not found or for development
-        setSimilarProducts([
-          { id: 'mock1', name: 'Another Cool Shirt', category: 'shirts', price: '1350', images: ['https://placehold.co/400x500.png'], aiHint: 'mens shirt', displaySection: 'shop', originalPrice: null, stock: 10, discount: null },
-          { id: 'mock2', name: 'Striped Business Shirt', category: 'shirts', price: '1550', images: ['https://placehold.co/400x500.png'], aiHint: 'formal shirt', displaySection: 'shop', originalPrice: null, stock: 10, discount: null },
-          { id: 'mock3', name: 'Casual Denim Shirt', category: 'shirts', price: '1600', images: ['https://placehold.co/400x500.png'], aiHint: 'denim shirt', displaySection: 'shop', originalPrice: null, stock: 10, discount: null },
-          { id: 'mock4', name: 'Plain White Shirt', category: 'shirts', price: '1200', images: ['https://placehold.co/400x500.png'], aiHint: 'white shirt', displaySection: 'shop', originalPrice: null, stock: 10, discount: null },
-        ]);
-        setComplementaryProducts([
-           { id: 'mock5', name: 'Slim-Fit Chinos', category: 'trousers', price: '1599', images: ['https://placehold.co/400x500.png'], aiHint: 'mens trousers', displaySection: 'shop', originalPrice: '1999', stock: 10, discount: '20% OFF' },
-           { id: 'mock6', name: 'Dark Wash Jeans', category: 'jeans', price: '1899', images: ['https://placehold.co/400x500.png'], aiHint: 'denim jeans', displaySection: 'shop', originalPrice: null, stock: 10, discount: null },
-           { id: 'mock7', name: 'Classic Leather Belt', category: 'accessories', price: '499', images: ['https://placehold.co/400x500.png'], aiHint: 'leather belt', displaySection: 'accessories', originalPrice: null, stock: 10, discount: null },
-           { id: 'mock8', name: 'Chronograph Watch', category: 'accessories', price: '1599', images: ['https://placehold.co/400x500.png'], aiHint: 'mens watch', displaySection: 'accessories', originalPrice: '1999', stock: 10, discount: '20% OFF' },
-        ]);
-         setMoreProducts([
-          { id: 'mock9', name: 'Graphic Tee', category: 't-shirts', price: '1299', images: ['https://placehold.co/400x500.png'], aiHint: 'graphic tee', displaySection: 'shop', originalPrice: null, stock: 10, discount: null },
-          { id: 'mock10', name: 'Canvas Backpack', category: 'accessories', price: '949', images: ['https://placehold.co/400x500.png'], aiHint: 'canvas backpack', displaySection: 'accessories', originalPrice: null, stock: 10, discount: null },
-          { id: 'mock11', name: 'Aviator Sunglasses', category: 'accessories', price: '749', images: ['https://placehold.co/400x500.png'], aiHint: 'sunglasses', displaySection: 'accessories', originalPrice: null, stock: 10, discount: null },
-          { id: 'mock12', name: 'Linen Button-Down', category: 'shirts', price: '1499', images: ['https://placehold.co/400x500.png'], aiHint: 'summer shirt', displaySection: 'shop', originalPrice: null, stock: 10, discount: null },
-        ]);
       }
 
       setLoading(false);
@@ -327,5 +307,3 @@ export default function ProductDetailPage() {
     </>
   );
 }
-
-    

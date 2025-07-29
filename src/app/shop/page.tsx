@@ -26,112 +26,7 @@ import { cn } from '@/lib/utils';
 const ADS_STORAGE_KEY = 'advertisements';
 const PRODUCTS_STORAGE_KEY = 'products';
 
-const initialProducts: ProductType[] = [
-  {
-    id: 'prod1',
-    name: 'Vintage Wash Tee',
-    category: 't-shirts',
-    price: '1299',
-    originalPrice: null,
-    images: ['https://placehold.co/400x500.png'],
-    aiHint: 'streetwear fashion',
-    discount: null,
-    stock: 50,
-    new: true,
-    displaySection: 'shop'
-  },
-  {
-    id: 'prod2',
-    name: 'Slim-Fit Chinos',
-    category: 'trousers',
-    price: '1599',
-    originalPrice: '1999',
-    images: ['https://placehold.co/400x500.png'],
-    aiHint: 'mens trousers',
-    discount: '20% OFF',
-    stock: 30,
-    new: false,
-     displaySection: 'shop'
-  },
-  {
-    id: 'prod3',
-    name: 'Linen Button-Down',
-    category: 'shirts',
-    price: '1499',
-    originalPrice: null,
-    images: ['https://placehold.co/400x500.png'],
-    aiHint: 'summer shirt',
-    discount: null,
-    stock: 45,
-    new: false,
-     displaySection: 'shop'
-  },
-  {
-    id: 'prod4',
-    name: 'Dark Wash Jeans',
-    category: 'jeans',
-    price: '1899',
-    originalPrice: null,
-    images: ['https://placehold.co/400x500.png'],
-    aiHint: 'denim jeans',
-    discount: null,
-    stock: 25,
-    new: false,
-     displaySection: 'shop'
-  },
-    {
-    id: 'prod5',
-    name: 'Graphic Print Tee',
-    category: 't-shirts',
-    price: '1399',
-    originalPrice: null,
-    images: ['https://placehold.co/400x500.png'],
-    aiHint: 'urban style',
-    discount: null,
-    stock: 40,
-    new: true,
-     displaySection: 'shop'
-  },
-  {
-    id: 'prod6',
-    name: 'Utility Cargo Pants',
-    category: 'trousers',
-    price: '2199',
-    originalPrice: null,
-    images: ['https://placehold.co/400x500.png'],
-    aiHint: 'cargo pants',
-    discount: null,
-    stock: 20,
-    new: false,
-     displaySection: 'shop'
-  },
-  {
-    id: 'prod7',
-    name: 'Anxious Tshirt',
-    category: 't-shirts',
-    price: '1199',
-    originalPrice: null,
-    images: ['https://placehold.co/400x500.png'],
-    aiHint: 'graphic tee fashion',
-    discount: null,
-    stock: 60,
-    new: false,
-     displaySection: 'shop'
-  },
-    {
-    id: 'prod8',
-    name: 'Classic Tee',
-    category: 't-shirts',
-    price: '999',
-    originalPrice: '1199',
-    images: ['https://placehold.co/400x500.png'],
-    aiHint: 'mens fashion',
-    discount: '17% OFF',
-    stock: 80,
-    new: false,
-     displaySection: 'shop'
-  },
-];
+const initialProducts: ProductType[] = [];
 
 const ProductCard = ({ product }: { product: ProductType }) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
@@ -329,13 +224,11 @@ export default function ShopPage() {
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.map((product, index) => (
+          {products.length > 0 ? products.map((product, index) => (
             <ProductCard key={product.id || index} product={product} />
-          ))}
+          )) : <p className="col-span-full text-center text-muted-foreground">No products found. Add some from the admin dashboard!</p>}
         </div>
       </main>
     </div>
   );
 }
-
-    

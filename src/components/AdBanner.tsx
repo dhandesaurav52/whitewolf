@@ -7,10 +7,7 @@ import type { Advertisement } from '@/lib/types';
 
 const ADS_STORAGE_KEY = 'advertisements';
 
-const initialAds: Advertisement[] = [
-    { id: '1', text: '20% off all T-Shirts for a limited time!', discountType: 'percentage', discountValue: 20, appliesTo: 'categories', selectedCategories: ['t-shirts'], status: 'Active' },
-    { id: '2', text: 'Free shipping on orders over ₹1000.', discountType: 'fixed', discountValue: 0, appliesTo: 'products', selectedCategories: [], status: 'Active' },
-];
+const initialAds: Advertisement[] = [];
 
 export default function AdBanner() {
     const [ads, setAds] = useState<Advertisement[]>([]);
@@ -49,7 +46,7 @@ export default function AdBanner() {
         return null;
     }
 
-    const activeAds = ads.filter(ad => ad.status === 'Active');
+    const activeAds = ads.filter(ad => ad.status === 'Active' && ad.appliesTo !== 'hero');
 
     if (activeAds.length === 0) {
         return null;

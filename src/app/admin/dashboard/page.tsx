@@ -26,82 +26,7 @@ import { Loader2 } from "lucide-react";
 
 const PRODUCTS_STORAGE_KEY = 'products';
 
-const initialProducts: ProductType[] = [
-      {
-        id: 'prod1',
-        name: "Vintage Wash Tee",
-        images: ["https://placehold.co/100x100.png"],
-        aiHint: "streetwear fashion",
-        category: "T-Shirts",
-        price: "1299",
-        stock: 50,
-        brand: "White Wolf",
-        description: "A classic oversized tee with a vintage wash.",
-        colors: "Charcoal, Black",
-        textSizes: "S, M, L, XL",
-        new: true,
-        displaySection: 'shop'
-      },
-      {
-        id: 'prod2',
-        name: "Slim-Fit Chinos",
-        images: ["https://placehold.co/100x100.png"],
-        aiHint: "mens trousers",
-        category: "Trousers",
-        price: "1599",
-        stock: 30,
-        brand: "Urban Threads",
-        description: "Versatile slim-fit chinos for any occasion.",
-        colors: "Beige, Navy",
-        numericSizes: "30, 32, 34, 36",
-        new: false,
-        displaySection: 'shop'
-      },
-      {
-        id: 'prod3',
-        name: "Linen Button-Down",
-        images: ["https://placehold.co/100x100.png"],
-        aiHint: "summer shirt",
-        category: "Shirts",
-        price: "1499",
-        stock: 45,
-        brand: "White Wolf",
-        description: "A breathable linen shirt, perfect for summer.",
-        colors: "White, Sky Blue",
-        textSizes: "M, L, XL",
-        new: false,
-        displaySection: 'shop'
-      },
-       {
-        id: 'prod4',
-        name: "Dark Wash Jeans",
-        images: ["https://placehold.co/100x100.png"],
-        aiHint: "denim jeans",
-        category: "Jeans",
-        price: "1899",
-        stock: 25,
-        brand: "Denim Co.",
-        description: "Classic dark wash jeans with a modern fit.",
-        colors: "Indigo",
-        numericSizes: "28, 30, 32, 34, 36",
-        new: false,
-        displaySection: 'shop'
-      },
-       {
-        id: 'acc1',
-        name: "Classic Leather Belt",
-        images: ["https://placehold.co/100x100.png"],
-        aiHint: "leather belt",
-        category: "Accessories",
-        price: "499",
-        stock: 100,
-        brand: "Urban Threads",
-        description: "A timeless leather belt.",
-        colors: "Black, Brown",
-        new: false,
-        displaySection: 'accessories'
-      },
-];
+const initialProducts: ProductType[] = [];
 
 const generateUniqueId = () => `prod_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 9)}`;
 
@@ -559,7 +484,3 @@ export default function AdminDashboardPage() {
         </div>
     );
 }
-
-    
-
-    

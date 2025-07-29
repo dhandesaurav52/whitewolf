@@ -165,6 +165,11 @@ const WatchAndShopItem = ({ reel, product }: { reel: Reel, product?: ProductType
 export default function Home() {
   const [reels, setReels] = useState<Reel[]>([]);
   const [products, setProducts] = useState<ProductType[]>([]);
+  const [newArrivals, setNewArrivals] = useState<ProductType[]>([]);
+  const [oversizeTees, setOversizeTees] = useState<ProductType[]>([]);
+  const [accessories, setAccessories] = useState<ProductType[]>([]);
+  const [categories, setCategories] = useState<{name: string, href: string, image: string, aiHint: string}[]>([]);
+
 
   useEffect(() => {
     try {
@@ -174,87 +179,26 @@ export default function Home() {
       }
       const storedProducts = localStorage.getItem(PRODUCTS_STORAGE_KEY);
       if (storedProducts) {
-        setProducts(JSON.parse(storedProducts));
+        const allProducts: ProductType[] = JSON.parse(storedProducts);
+        setProducts(allProducts);
+        
+        setNewArrivals(allProducts.filter(p => p.new).slice(0, 4));
+        setOversizeTees(allProducts.filter(p => p.category.toLowerCase().includes('t-shirt')).slice(0, 5));
+        setAccessories(allProducts.filter(p => p.displaySection === 'accessories').slice(0, 4));
+        
+        const uniqueCategories = [...new Set(allProducts.map(p => p.category.toLowerCase()))];
+        const categoryData = uniqueCategories.map(cat => ({
+            name: cat.charAt(0).toUpperCase() + cat.slice(1),
+            href: `/shop?category=${cat}`,
+            image: "https://placehold.co/400x500.png",
+            aiHint: `${cat} model`
+        }));
+        setCategories(categoryData);
       }
     } catch (error) {
       console.error("Failed to load data from localStorage", error);
     }
   }, []);
-
-  const oversizeTees = [
-    {
-      name: "Anxious Tshirt",
-      category: "Oversized T Shirts",
-      price: "1199",
-      image: "https://placehold.co/400x500.png",
-      aiHint: "graphic tee fashion"
-    },
-    {
-      name: "Classic Tee",
-      category: "Oversized T Shirts",
-      price: "999",
-      image: "https://placehold.co/400x500.png",
-      aiHint: "mens fashion"
-    },
-    {
-      name: "Vintage Wash Tee",
-      category: "Oversized T Shirts",
-      price: "1299",
-      image: "https://placehold.co/400x500.png",
-      aiHint: "streetwear fashion"
-    },
-    {
-      name: "Graphic Print Tee",
-      category: "Oversized T Shirts",
-      price: "1399",
-      image: "https://placehold.co/400x500.png",
-      aiHint: "urban style"
-    },
-     {
-      name: "Minimalist Tee",
-      category: "Oversized T Shirts",
-      price: "1099",
-      image: "https://placehold.co/400x500.png",
-      aiHint: "simple fashion"
-    },
-  ];
-
-  const accessories = [
-    {
-      name: "Silver Chain",
-      price: "899",
-      image: "https://placehold.co/400x500.png",
-      aiHint: "mens jewelry"
-    },
-    {
-      name: "Leather Belt",
-      price: "499",
-      image: "https://placehold.co/400x500.png",
-      aiHint: "leather good"
-    },
-    {
-      name: "Classic Watch",
-      price: "1999",
-      image: "https://placehold.co/400x500.png",
-      aiHint: "timepiece watch"
-    },
-    {
-      name: "Wool Beanie",
-      price: "349",
-      image: "https://placehold.co/400x500.png",
-      aiHint: "winter hat"
-    }
-  ];
-
-  const categories = [
-    { name: "T-Shirts", href: "/t-shirts", image: "https://placehold.co/400x500.png", aiHint: "t-shirt model" },
-    { name: "Shirts", href: "/shirts", image: "https://placehold.co/400x500.png", aiHint: "button-up shirt" },
-    { name: "Jeans", href: "/jeans", image: "https://placehold.co/400x500.png", aiHint: "denim jeans" },
-    { name: "Trousers", href: "/trousers", image: "https://placehold.co/400x500.png", aiHint: "formal trousers" },
-    { name: "Slippers", href: "/slippers", image: "https://placehold.co/400x500.png", aiHint: "sandals footwear" },
-    { name: "Oversized T-shirts", href: "/oversized-t-shirts", image: "https://placehold.co/400x500.png", aiHint: "baggy shirt" },
-    { name: "Shoes", href: "/shoes", image: "https://placehold.co/400x500.png", aiHint: "sneakers shoes" },
-  ];
 
   return (
     <div className="flex flex-col">
@@ -297,19 +241,19 @@ export default function Home() {
               <p className="text-muted-foreground mt-2">Check out the latest additions to our collection.</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="group">
+              {newArrivals.map((product) => (
+                <div key={product.id} className="group">
                   <div className="relative aspect-[4/5] bg-muted rounded-lg overflow-hidden">
                     <Image
-                      src={`https://placehold.co/400x500.png`}
-                      alt={`New Arrival ${i + 1}`}
+                      src={product.images[0] || `https://placehold.co/400x500.png`}
+                      alt={product.name}
                       fill
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      data-ai-hint="mens fashion"
+                      data-ai-hint={product.aiHint}
                     />
                   </div>
-                  <h3 className="mt-4 text-lg font-headline">Stylish Shirt {i+1}</h3>
-                  <p className="text-accent font-semibold">₹499</p>
+                  <h3 className="mt-4 text-lg font-headline">{product.name}</h3>
+                  <p className="text-accent font-semibold">₹{product.price}</p>
                 </div>
               ))}
             </div>
@@ -345,7 +289,7 @@ export default function Home() {
                         <CardContent className="p-0">
                           <div className="relative aspect-[4/5] overflow-hidden">
                              <Image
-                                src={tee.image}
+                                src={tee.images[0]}
                                 alt={tee.name}
                                 fill
                                 className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -353,7 +297,7 @@ export default function Home() {
                               />
                           </div>
                            <div className="p-4">
-                              <p className="text-sm text-muted-foreground">White Wolf</p>
+                              <p className="text-sm text-muted-foreground">{tee.brand || 'White Wolf'}</p>
                               <h3 className="text-lg font-headline text-primary">{tee.name}</h3>
                               <p className="text-sm text-muted-foreground">{tee.category}</p>
                               <p className="text-accent font-bold mt-2">₹{tee.price}</p>
@@ -382,7 +326,7 @@ export default function Home() {
                 <div key={i} className="group">
                   <div className="relative aspect-[4/5] bg-muted rounded-lg overflow-hidden">
                     <Image
-                      src={item.image}
+                      src={item.images[0]}
                       alt={item.name}
                       fill
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -483,5 +427,3 @@ export default function Home() {
     </div>
   );
 }
-
-    

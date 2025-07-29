@@ -21,11 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 const REELS_STORAGE_KEY = 'reels';
 const PRODUCTS_STORAGE_KEY = 'products';
 
-const initialReels: Reel[] = [
-    { id: "1", reelTitle: "Summer Vibes", linkedProduct: "Vintage Wash Tee", videoUrl: "" },
-    { id: "2", reelTitle: "Urban Explorer", linkedProduct: "Slim-Fit Chinos", videoUrl: "" },
-    { id: "3", reelTitle: "Office Look", linkedProduct: "Linen Button-Down", videoUrl: "" },
-];
+const initialReels: Reel[] = [];
 
 export default function ManageReelsPage() {
     const { toast } = useToast();

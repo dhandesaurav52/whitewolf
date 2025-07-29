@@ -25,9 +25,6 @@ const ADS_STORAGE_KEY = 'advertisements';
 const generateUniqueId = () => `ad_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 9)}`;
 
 const initialAds: Advertisement[] = [
-    { id: generateUniqueId(), text: '20% off all T-Shirts for a limited time!', discountType: 'percentage', discountValue: 20, appliesTo: 'categories', selectedCategories: ['t-shirts'], status: 'Active' },
-    { id: generateUniqueId(), text: 'Free shipping on orders over ₹1000.', discountType: 'fixed', discountValue: 0, appliesTo: 'products', selectedCategories: [], status: 'Active' },
-    { id: generateUniqueId(), text: 'New summer collection just dropped. Shop now!', discountType: 'fixed', discountValue: 0, appliesTo: 'products', selectedCategories: [], status: 'Inactive' },
     {
         id: generateUniqueId(),
         text: 'Default Hero Banner',

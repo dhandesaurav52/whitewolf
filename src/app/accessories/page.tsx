@@ -24,112 +24,7 @@ import { cn } from '@/lib/utils';
 const ADS_STORAGE_KEY = 'advertisements';
 const PRODUCTS_STORAGE_KEY = 'products';
 
-const initialProducts: ProductType[] = [
-  {
-    id: 'acc1',
-    name: 'Classic Leather Belt',
-    category: 'belts',
-    price: '499',
-    originalPrice: null,
-    images: ['https://placehold.co/400x500.png'],
-    aiHint: 'leather belt',
-    discount: null,
-    stock: 100,
-    new: true,
-    displaySection: 'accessories'
-  },
-  {
-    id: 'acc2',
-    name: 'Silver-plated Chain',
-    category: 'chains',
-    price: '899',
-    originalPrice: null,
-    images: ['https://placehold.co/400x500.png'],
-    aiHint: 'silver chain',
-    discount: null,
-    stock: 50,
-    new: false,
-    displaySection: 'accessories'
-  },
-  {
-    id: 'acc3',
-    name: 'Chronograph Watch',
-    category: 'watches',
-    price: '1599',
-    originalPrice: '1999',
-    images: ['https://placehold.co/400x500.png'],
-    aiHint: 'men\'s watch',
-    discount: '20% OFF',
-    stock: 25,
-    new: false,
-    displaySection: 'accessories'
-  },
-  {
-    id: 'acc4',
-    name: 'Wool Knit Beanie',
-    category: 'headwear',
-    price: '349',
-    originalPrice: null,
-    images: ['https://placehold.co/400x500.png'],
-    aiHint: 'wool beanie',
-    discount: null,
-    stock: 75,
-    new: false,
-    displaySection: 'accessories'
-  },
-  {
-    id: 'acc5',
-    name: 'Aviator Sunglasses',
-    category: 'eyewear',
-    price: '749',
-    originalPrice: null,
-    images: ['https://placehold.co/400x500.png'],
-    aiHint: 'sunglasses fashion',
-    discount: null,
-    stock: 40,
-    new: true,
-    displaySection: 'accessories'
-  },
-  {
-    id: 'acc6',
-    name: 'Canvas Backpack',
-    category: 'bags',
-    price: '949',
-    originalPrice: null,
-    images: ['https://placehold.co/400x500.png'],
-    aiHint: 'canvas backpack',
-    discount: null,
-    stock: 30,
-    new: false,
-    displaySection: 'accessories'
-  },
-  {
-    id: 'acc7',
-    name: 'Leather Cardholder',
-    category: 'wallets',
-    price: '299',
-    originalPrice: null,
-    images: ['https://placehold.co/400x500.png'],
-    aiHint: 'leather wallet',
-    discount: null,
-    stock: 120,
-    new: false,
-    displaySection: 'accessories'
-  },
-  {
-    id: 'acc8',
-    name: 'Patterned Silk Tie',
-    category: 'ties',
-    price: '549',
-    originalPrice: '649',
-    images: ['https://placehold.co/400x500.png'],
-    aiHint: 'silk tie',
-    discount: '15% OFF',
-    stock: 60,
-    new: false,
-    displaySection: 'accessories'
-  },
-];
+const initialProducts: ProductType[] = [];
 
 const ProductCard = ({ product }: { product: ProductType }) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
@@ -325,13 +220,11 @@ export default function AccessoriesPage() {
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.map((product, index) => (
+          {products.length > 0 ? products.map((product, index) => (
             <ProductCard key={product.id || index} product={product} />
-          ))}
+          )) : <p className="col-span-full text-center text-muted-foreground">No accessories found. Add some from the admin dashboard!</p>}
         </div>
       </main>
     </div>
   );
 }
-
-    
