@@ -16,6 +16,8 @@ import { MoreHorizontal, Truck, Package, CheckCircle, Ban, RefreshCw } from "luc
 import type { Order, OrderStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import Image from "next/image";
+import CollapsibleTableRow from "@/components/CollapsibleTableRow";
 
 const ORDERS_STORAGE_KEY = 'orders';
 
@@ -116,6 +118,7 @@ export default function ManageOrdersPage() {
                      <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead className="w-8"></TableHead>
                                 <TableHead className="w-[120px]">Order ID</TableHead>
                                 <TableHead>Customer</TableHead>
                                 <TableHead>Date</TableHead>
@@ -127,7 +130,26 @@ export default function ManageOrdersPage() {
                         </TableHeader>
                         <TableBody>
                             {orders.length > 0 ? orders.map((order) => (
-                                <TableRow key={order.id}>
+                                <CollapsibleTableRow
+                                  key={order.id}
+                                  content={
+                                      <div className="p-4 bg-muted/50">
+                                          <h4 className="font-semibold mb-2">Order Items:</h4>
+                                          <div className="space-y-2">
+                                              {order.items.map(item => (
+                                                  <div key={item.product.id} className="flex items-center gap-4">
+                                                      <Image src={(item.product.images && item.product.images[0]) || "https://placehold.co/100x100.png"} alt={item.product.name} width={48} height={48} className="rounded-md border" />
+                                                      <div className="flex-grow">
+                                                          <p className="font-medium">{item.product.name}</p>
+                                                          <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+                                                      </div>
+                                                      <p className="font-medium">₹{(parseFloat(item.product.price) * item.quantity).toFixed(2)}</p>
+                                                  </div>
+                                              ))}
+                                          </div>
+                                      </div>
+                                  }
+                                >
                                     <TableCell className="font-medium">#{order.id.split('_')[1]}</TableCell>
                                     <TableCell>
                                         <div className="font-medium">{order.customer.name}</div>
@@ -162,10 +184,10 @@ export default function ManageOrdersPage() {
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
-                                </TableRow>
+                                </CollapsibleTableRow>
                             )) : (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                                    <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                                         No orders found.
                                     </TableCell>
                                 </TableRow>
