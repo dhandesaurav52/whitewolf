@@ -65,11 +65,11 @@ export default function CreateOfferDialog({ isOpen, onClose, onSave, categories 
             />
           </div>
           
-          <div className="grid grid-cols-2 gap-6 items-end">
-            <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-2">
               <Label>Discount Type</Label>
               <RadioGroup
-                className="flex items-center space-x-4"
+                className="flex items-center space-x-4 pt-2"
                 onValueChange={setDiscountType}
                 value={discountType}
               >
@@ -95,11 +95,11 @@ export default function CreateOfferDialog({ isOpen, onClose, onSave, categories 
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-6 items-end">
-            <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-2">
               <Label>Applies To</Label>
               <RadioGroup
-                className="flex items-center space-x-4"
+                className="flex items-center space-x-4 pt-2"
                 onValueChange={setAppliesTo}
                 value={appliesTo}
               >
