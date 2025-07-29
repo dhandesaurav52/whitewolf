@@ -78,6 +78,54 @@ export default function Home() {
     }
   ];
 
+  const watchAndShopItems = [
+    {
+      mainImage: "https://placehold.co/400x600.png",
+      mainAiHint: "blue tshirt",
+      productImage: "https://placehold.co/100x100.png",
+      productAiHint: "orange shirt",
+      productName: "Supima: Sparkling Orange",
+      price: "999",
+      originalPrice: "1,199"
+    },
+    {
+      mainImage: "https://placehold.co/400x600.png",
+      mainAiHint: "stadium soccer",
+      productImage: "https://placehold.co/100x100.png",
+      productAiHint: "red backpack",
+      productName: "Fcb: Legacy",
+      price: "2,999",
+      originalPrice: ""
+    },
+    {
+      mainImage: "https://placehold.co/400x600.png",
+      mainAiHint: "bear mask",
+      productImage: "https://placehold.co/100x100.png",
+      productAiHint: "white tshirt space",
+      productName: "Ted: Space",
+      price: "1,199",
+      originalPrice: ""
+    },
+    {
+      mainImage: "https://placehold.co/400x600.png",
+      mainAiHint: "green sneaker",
+      productImage: "https://placehold.co/100x100.png",
+      productAiHint: "green shoe",
+      productName: "Marvel: Doctor Doom",
+      price: "2,899",
+      originalPrice: "3,699"
+    },
+    {
+      mainImage: "https://placehold.co/400x600.png",
+      mainAiHint: "black tshirt",
+      productImage: "https://placehold.co/100x100.png",
+      productAiHint: "tshirt design",
+      productName: "Anime Cloud Tee",
+      price: "1,299",
+      originalPrice: ""
+    }
+  ];
+
   return (
     <div className="flex flex-col">
       <main className="flex-grow">
@@ -246,6 +294,73 @@ export default function Home() {
                 <Link href="/accessories">View All <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
             </div>
+          </div>
+        </section>
+
+        {/* Watch and Shop Section */}
+        <section className="py-16 bg-background">
+          <div className="container mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-headline font-bold">Watch and Shop</h2>
+            </div>
+            <Carousel
+              opts={{
+                align: "start",
+              }}
+              className="w-full"
+            >
+              <CarouselContent>
+                {watchAndShopItems.map((item, index) => (
+                  <CarouselItem key={index} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
+                    <div className="p-1">
+                      <Card className="bg-card border-none overflow-hidden group relative aspect-[9/16]">
+                        <Image
+                          src={item.mainImage}
+                          alt={item.productName}
+                          layout="fill"
+                          objectFit="cover"
+                          className="transition-transform duration-300 group-hover:scale-105"
+                          data-ai-hint={item.mainAiHint}
+                        />
+                        <div className="absolute bottom-4 left-4 right-4">
+                          <Card className="bg-background/80 backdrop-blur-sm p-2 rounded-lg">
+                            <div className="flex items-center gap-2">
+                              <div className="relative w-12 h-12 rounded-md overflow-hidden flex-shrink-0">
+                                <Image
+                                  src={item.productImage}
+                                  alt={item.productName}
+                                  layout="fill"
+                                  objectFit="cover"
+                                  data-ai-hint={item.productAiHint}
+                                />
+                              </div>
+                              <div className="overflow-hidden">
+                                <h3 className="text-sm font-headline text-primary truncate">{item.productName}</h3>
+                                <div className="flex items-baseline gap-2">
+                                  <p className="text-accent font-bold text-sm">₹{item.price}</p>
+                                  {item.originalPrice && (
+                                    <p className="text-muted-foreground text-xs line-through">₹{item.originalPrice}</p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </Card>
+                        </div>
+                      </Card>
+                    </div>
+                  </CarouselItem>
+                ))}
+                 <CarouselItem className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 flex items-center justify-center">
+                    <Button asChild variant="outline" size="icon" className="w-16 h-16 rounded-full">
+                      <Link href="/shop" >
+                        <ArrowRight className="h-8 w-8" />
+                      </Link>
+                    </Button>
+                </CarouselItem>
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex" />
+              <CarouselNext className="hidden md:flex" />
+            </Carousel>
           </div>
         </section>
 
