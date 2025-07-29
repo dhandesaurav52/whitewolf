@@ -54,7 +54,7 @@ export default function CreateOfferDialog({ isOpen, onClose, onSave, categories 
             Fill out the form to create a new promotional offer.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-8 py-4">
+        <div className="space-y-6 py-4">
           <div className="space-y-2">
             <Label htmlFor="offer-name">Offer Name</Label>
             <Input
@@ -65,7 +65,7 @@ export default function CreateOfferDialog({ isOpen, onClose, onSave, categories 
             />
           </div>
           
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-2 gap-6">
             <div className="space-y-3">
               <Label>Discount Type</Label>
               <RadioGroup
@@ -95,7 +95,7 @@ export default function CreateOfferDialog({ isOpen, onClose, onSave, categories 
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-2 gap-6">
             <div className="space-y-3">
               <Label>Applies To</Label>
               <RadioGroup
