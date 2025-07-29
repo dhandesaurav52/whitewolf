@@ -1,16 +1,13 @@
+
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Heart, ShoppingBag } from "lucide-react";
+import { Heart, ShoppingBag, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
-
-const WolfIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-        <path d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm0 1.5a8.25 8.25 0 1 1 0 16.5 8.25 8.25 0 0 1 0-16.5ZM12 6a.75.75 0 0 0-.75.75v3a.75.75 0 0 0 1.5 0v-3A.75.75 0 0 0 12 6Zm0 6a.75.75 0 0 0-.75.75v3a.75.75 0 0 0 1.5 0v-3A.75.75 0 0 0 12 12Z" />
-    </svg>
-)
+import { useAuth } from "@/hooks/useAuth";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const WhiteWolfLogo = () => (
     <div className="flex items-center">
@@ -29,9 +26,9 @@ const WhiteWolfLogo = () => (
     </div>
 )
 
-
 export default function Header() {
   const pathname = usePathname();
+  const { user, loading, signOut } = useAuth();
 
   const navLinks = [
     { href: "/shop", label: "Shop" },
@@ -45,7 +42,6 @@ export default function Header() {
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-2 text-xl font-bold">
               <WhiteWolfLogo />
-              <span className="text-2xl font-bold text-accent">White Wolf</span>
             </Link>
             <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
               {navLinks.map((link) => (
@@ -60,22 +56,49 @@ export default function Header() {
                   {link.label}
                 </Link>
               ))}
+               {user && (
+                <Link
+                  href="/saved"
+                  className={cn(
+                    "text-muted-foreground transition-colors hover:text-accent",
+                    pathname === "/saved" && "text-accent"
+                  )}
+                >
+                  Saved Outfits
+                </Link>
+              )}
             </nav>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/wishlist" className="text-muted-foreground hover:text-accent transition-colors">
-                <Heart className="h-6 w-6 text-accent" />
-            </Link>
-            <Link href="/cart" className="text-muted-foreground hover:text-accent transition-colors">
-                <ShoppingBag className="h-6 w-6 text-accent" />
-            </Link>
-            <div className="h-6 w-px bg-gray-700 mx-2"></div>
-            <Link href="/login" className="text-sm font-medium text-accent hover:underline">
-                Login
-            </Link>
-            <Button asChild variant="default" className="bg-white text-black hover:bg-gray-200">
-                <Link href="/signup">Sign Up</Link>
-            </Button>
+            {loading ? (
+              <div className="flex items-center gap-4">
+                <Skeleton className="h-8 w-20" />
+                <Skeleton className="h-8 w-20" />
+              </div>
+            ) : user ? (
+              <>
+                <Link href="/saved" className="text-muted-foreground hover:text-accent transition-colors">
+                    <Heart className="h-6 w-6 text-accent" />
+                </Link>
+                <Link href="/cart" className="text-muted-foreground hover:text-accent transition-colors">
+                    <ShoppingBag className="h-6 w-6 text-accent" />
+                </Link>
+                <div className="h-6 w-px bg-gray-700 mx-2"></div>
+                <Button variant="ghost" size="icon" onClick={signOut}>
+                  <LogOut className="h-6 w-6 text-accent" />
+                  <span className="sr-only">Logout</span>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="text-sm font-medium text-accent hover:underline">
+                    Login
+                </Link>
+                <Button asChild variant="default" className="bg-white text-black hover:bg-gray-200">
+                    <Link href="/signup">Sign Up</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
