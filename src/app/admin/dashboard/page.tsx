@@ -115,8 +115,6 @@ export default function AdminDashboardPage() {
     };
 
     const handleSave = (updatedProduct: ProductType) => {
-        // Here you would typically update the product in your database
-        console.log("Saving product:", updatedProduct);
         const newProducts = products.map(p => p.id === updatedProduct.id ? updatedProduct : p);
         updateProducts(newProducts);
         setEditingProduct(null);
@@ -135,7 +133,7 @@ export default function AdminDashboardPage() {
     const totalUsers = new Set(orders.map(order => order.customer.email)).size;
 
     const stats = [
-        { title: "Total Revenue", value: `P${totalRevenue.toFixed(2)}`, description: "Based on delivered orders", icon: BarChart },
+        { title: "Total Revenue", value: `₹${totalRevenue.toFixed(2)}`, description: "Based on delivered orders", icon: BarChart },
         { title: "New Orders", value: newOrdersCount.toString(), description: "Orders pending fulfillment", icon: ShoppingCart },
         { title: "Products in Stock", value: products.length.toString(), description: "Total active products", icon: Package },
         { title: "Total Users", value: totalUsers.toString(), description: "Unique customers with orders", icon: Users },
