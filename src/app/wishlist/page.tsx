@@ -43,7 +43,7 @@ export default function WishlistPage() {
       {isLoaded && wishlist.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {wishlist.map((product) => (
-             <Card key={product.id} className="group overflow-hidden rounded-lg bg-card text-card-foreground border-border relative">
+             <Card key={product.id} className="group overflow-hidden rounded-lg bg-card text-card-foreground border-border relative transition-all duration-300 hover:border-primary hover:shadow-md">
                 <Link href={`/product/${product.id}`} className="block">
                     <div className="relative aspect-[4/5] bg-muted">
                     <Image

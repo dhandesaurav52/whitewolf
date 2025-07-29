@@ -30,7 +30,7 @@ const ProductCard = ({ product }: { product: ProductType }) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
   return (
-    <Card className="group overflow-hidden rounded-lg bg-card text-card-foreground border-border relative">
+    <Card className="group overflow-hidden rounded-lg bg-card text-card-foreground border-border relative transition-all duration-300 hover:border-primary hover:shadow-md">
        <Link href={`/product/${product.id}`} className="block">
         <div className="relative aspect-[4/5] bg-muted">
           <Image
