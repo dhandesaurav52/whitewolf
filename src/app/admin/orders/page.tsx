@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import CollapsibleTableRow from "@/components/CollapsibleTableRow";
 import Link from "next/link";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const ORDERS_STORAGE_KEY = 'orders';
 
@@ -41,6 +42,7 @@ const statusIcons: { [key in OrderStatus]: React.ElementType } = {
 export default function ManageOrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [isMounted, setIsMounted] = useState(false);
+    const [imageInView, setImageInView] = useState<string | null>(null);
 
     const loadOrders = useCallback(() => {
         try {
@@ -103,105 +105,117 @@ export default function ManageOrdersPage() {
     }
 
     return (
-        <div className="container mx-auto py-10">
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-4xl font-bold font-headline text-accent">Manage Orders</h1>
-                    <p className="text-muted-foreground mt-1">View and process customer orders.</p>
+        <>
+            <div className="container mx-auto py-10">
+                <div className="flex justify-between items-center mb-8">
+                    <div>
+                        <h1 className="text-4xl font-bold font-headline text-accent">Manage Orders</h1>
+                        <p className="text-muted-foreground mt-1">View and process customer orders.</p>
+                    </div>
+                    <Button variant="outline" size="icon" onClick={loadOrders}>
+                        <RefreshCw className="h-4 w-4" />
+                    </Button>
                 </div>
-                <Button variant="outline" size="icon" onClick={loadOrders}>
-                    <RefreshCw className="h-4 w-4" />
-                </Button>
-            </div>
-            
-            <Card>
-                <CardContent className="p-0">
-                     <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-8"></TableHead>
-                                <TableHead className="w-[120px]">Order ID</TableHead>
-                                <TableHead>Customer</TableHead>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Items</TableHead>
-                                <TableHead>Total</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {orders.length > 0 ? orders.map((order) => (
-                                <CollapsibleTableRow
-                                  key={order.id}
-                                  content={
-                                      <div className="p-4 bg-muted/50">
-                                          <h4 className="font-semibold mb-2">Order Items:</h4>
-                                          <div className="space-y-2">
-                                              {order.items.map(item => {
-                                                  const imageUrl = (item.product.images && item.product.images[0]) || "https://placehold.co/100x100.png";
-                                                  return (
-                                                    <div key={item.product.id} className="flex items-center gap-4">
-                                                        <Link href={imageUrl} target="_blank" rel="noopener noreferrer">
-                                                          <Image src={imageUrl} alt={item.product.name} width={48} height={48} className="rounded-md border" />
-                                                        </Link>
-                                                        <div className="flex-grow">
-                                                            <p className="font-medium">{item.product.name}</p>
-                                                            <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
-                                                        </div>
-                                                        <p className="font-medium">₹{(parseFloat(item.product.price) * item.quantity).toFixed(2)}</p>
-                                                    </div>
-                                                  )
-                                              })}
-                                          </div>
-                                      </div>
-                                  }
-                                >
-                                    <TableCell className="font-medium">#{order.id.split('_')[1]}</TableCell>
-                                    <TableCell>
-                                        <div className="font-medium">{order.customer.name}</div>
-                                        <div className="text-sm text-muted-foreground">{order.customer.email}</div>
-                                    </TableCell>
-                                    <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
-                                    <TableCell>{order.items.reduce((acc, item) => acc + item.quantity, 0)}</TableCell>
-                                    <TableCell>₹{order.total.toFixed(2)}</TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline" className={cn("font-semibold", statusStyles[order.status])}>
-                                            {React.createElement(statusIcons[order.status], { className: "mr-1 h-3 w-3" })}
-                                            {order.status}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon">
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                {Object.keys(statusStyles).map((status) => (
-                                                    <DropdownMenuItem 
-                                                        key={status} 
-                                                        onClick={() => handleStatusChange(order.id, status as OrderStatus)}
-                                                        disabled={order.status === status}
-                                                    >
-                                                        Mark as {status}
-                                                    </DropdownMenuItem>
-                                                ))}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
-                                </CollapsibleTableRow>
-                            )) : (
+                
+                <Card>
+                    <CardContent className="p-0">
+                         <Table>
+                            <TableHeader>
                                 <TableRow>
-                                    <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
-                                        No orders found.
-                                    </TableCell>
+                                    <TableHead className="w-8"></TableHead>
+                                    <TableHead className="w-[120px]">Order ID</TableHead>
+                                    <TableHead>Customer</TableHead>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead>Items</TableHead>
+                                    <TableHead>Total</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
-        </div>
+                            </TableHeader>
+                            <TableBody>
+                                {orders.length > 0 ? orders.map((order) => (
+                                    <CollapsibleTableRow
+                                      key={order.id}
+                                      content={
+                                          <div className="p-4 bg-muted/50">
+                                              <h4 className="font-semibold mb-2">Order Items:</h4>
+                                              <div className="space-y-2">
+                                                  {order.items.map(item => {
+                                                      const imageUrl = (item.product.images && item.product.images[0]) || "https://placehold.co/100x100.png";
+                                                      return (
+                                                        <div key={item.product.id} className="flex items-center gap-4">
+                                                            <button onClick={() => setImageInView(imageUrl)} className="cursor-pointer">
+                                                              <Image src={imageUrl} alt={item.product.name} width={48} height={48} className="rounded-md border" />
+                                                            </button>
+                                                            <div className="flex-grow">
+                                                                <p className="font-medium">{item.product.name}</p>
+                                                                <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+                                                            </div>
+                                                            <p className="font-medium">₹{(parseFloat(item.product.price) * item.quantity).toFixed(2)}</p>
+                                                        </div>
+                                                      )
+                                                  })}
+                                              </div>
+                                          </div>
+                                      }
+                                    >
+                                        <TableCell className="font-medium">#{order.id.split('_')[1]}</TableCell>
+                                        <TableCell>
+                                            <div className="font-medium">{order.customer.name}</div>
+                                            <div className="text-sm text-muted-foreground">{order.customer.email}</div>
+                                        </TableCell>
+                                        <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
+                                        <TableCell>{order.items.reduce((acc, item) => acc + item.quantity, 0)}</TableCell>
+                                        <TableCell>₹{order.total.toFixed(2)}</TableCell>
+                                        <TableCell>
+                                            <Badge variant="outline" className={cn("font-semibold", statusStyles[order.status])}>
+                                                {React.createElement(statusIcons[order.status], { className: "mr-1 h-3 w-3" })}
+                                                {order.status}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon">
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    {Object.keys(statusStyles).map((status) => (
+                                                        <DropdownMenuItem 
+                                                            key={status} 
+                                                            onClick={() => handleStatusChange(order.id, status as OrderStatus)}
+                                                            disabled={order.status === status}
+                                                        >
+                                                            Mark as {status}
+                                                        </DropdownMenuItem>
+                                                    ))}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </CollapsibleTableRow>
+                                )) : (
+                                    <TableRow>
+                                        <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                                            No orders found.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {imageInView && (
+                <Dialog open={!!imageInView} onOpenChange={(open) => !open && setImageInView(null)}>
+                    <DialogContent className="max-w-xl">
+                        <div className="relative aspect-square">
+                            <Image src={imageInView} alt="Product view" fill className="object-contain" />
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
+        </>
     );
 }
