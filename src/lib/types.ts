@@ -82,4 +82,5 @@ export type Order = {
     total: number;
     status: OrderStatus;
     orderDate: string;
+    paymentId?: string;
 };

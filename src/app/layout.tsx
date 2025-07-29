@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from '@/components/ThemeProvider';
 import AdBanner from '@/components/AdBanner';
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: 'White Wolf',
@@ -45,6 +46,7 @@ export default function RootLayout({
             </div>
           </AuthProvider>
         </ThemeProvider>
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" />
       </body>
     </html>
   );

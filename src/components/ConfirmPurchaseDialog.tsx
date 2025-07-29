@@ -17,6 +17,7 @@ import type { CustomerDetails, CartItem, Order } from "@/lib/types";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 const ORDERS_STORAGE_KEY = 'orders';
 
@@ -41,6 +42,12 @@ interface ConfirmPurchaseDialogProps {
   productToBuy?: CartItem | null;
 }
 
+declare global {
+    interface Window {
+        Razorpay: any;
+    }
+}
+
 export default function ConfirmPurchaseDialog({
   isOpen,
   onClose,
@@ -51,6 +58,7 @@ export default function ConfirmPurchaseDialog({
 }: ConfirmPurchaseDialogProps) {
   const [addressOption, setAddressOption] = useState<"default" | "new">("new");
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
   const router = useRouter();
@@ -70,12 +78,10 @@ export default function ConfirmPurchaseDialog({
     if (user) {
         form.setValue('name', user.displayName || '');
         form.setValue('email', user.email || '');
-        // In a real app, you'd fetch saved address here
-        // For now, we just pre-fill name and email
     }
   }, [user, form]);
   
-  const handleConfirm = (payment: "online" | "cod", shippingDetails: CustomerDetails) => {
+  const placeOrder = (shippingDetails: CustomerDetails, paymentId?: string) => {
     const newOrder: Order = {
         id: `order_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
         customer: { ...shippingDetails, userId: user?.uid },
@@ -83,6 +89,7 @@ export default function ConfirmPurchaseDialog({
         total: totalAmount,
         status: 'Pending',
         orderDate: new Date().toISOString(),
+        paymentId,
     };
 
     try {
@@ -111,11 +118,84 @@ export default function ConfirmPurchaseDialog({
     }
   };
 
+  const handleRazorpayPayment = async (shippingDetails: CustomerDetails) => {
+    setIsLoading(true);
+    try {
+        // --- Step 1: Create Order on your backend ---
+        // This is a placeholder. You need to implement an API route on your server
+        // that calls Razorpay's Orders API and returns the order_id.
+        const orderResponse = await fetch('/api/create-razorpay-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount: totalAmount * 100 }), // amount in smallest currency unit (paise)
+        });
+        
+        if (!orderResponse.ok) throw new Error('Failed to create Razorpay order.');
+        
+        const { orderId } = await orderResponse.json();
+        
+        // --- Step 2: Open Razorpay Checkout ---
+        const options = {
+            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Replace with your Key ID
+            amount: totalAmount * 100,
+            currency: "INR",
+            name: "White Wolf",
+            description: "Test Transaction",
+            order_id: orderId,
+            handler: async function (response: any) {
+                // --- Step 3: Verify Payment on your backend ---
+                // This is a placeholder. You need to implement an API route to verify
+                // the payment signature.
+                const verificationResponse = await fetch('/api/verify-razorpay-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(response),
+                });
+                
+                if (!verificationResponse.ok) throw new Error('Payment verification failed.');
+
+                placeOrder(shippingDetails, response.razorpay_payment_id);
+            },
+            prefill: {
+                name: shippingDetails.name,
+                email: shippingDetails.email,
+                contact: shippingDetails.phone,
+            },
+            notes: {
+                address: `${shippingDetails.address}, ${shippingDetails.city}, ${shippingDetails.pincode}`
+            },
+            theme: {
+                color: "#09090B"
+            }
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', function (response: any){
+            toast({
+                variant: 'destructive',
+                title: 'Payment Failed',
+                description: response.error.description,
+            });
+        });
+        rzp.open();
+
+    } catch (error: any) {
+        console.error("Razorpay Error:", error);
+        toast({ title: "Error", description: error.message || "Could not initiate payment.", variant: "destructive" });
+    } finally {
+        setIsLoading(false);
+    }
+  }
+
   const onFormSubmit = (data: CheckoutFormValues) => {
-    handleConfirm(paymentMethod, data);
+    if (paymentMethod === 'cod') {
+        placeOrder(data);
+    } else {
+        handleRazorpayPayment(data);
+    }
   };
   
-  const hasDefaultAddress = user?.displayName && user.email; // Mock check
+  const hasDefaultAddress = false; // Mock check, implement your logic
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -138,7 +218,7 @@ export default function ConfirmPurchaseDialog({
                             <p className="font-semibold">Use Default Address</p>
                             {!hasDefaultAddress && (
                                 <p className="text-sm text-destructive mt-1">
-                                    No default address and/or phone number found. Please add them in your profile.
+                                    No default address found. Please add one in your profile.
                                 </p>
                             )}
                         </div>
@@ -209,27 +289,25 @@ export default function ConfirmPurchaseDialog({
             </div>
         </div>
 
-        <DialogFooter className="p-6 bg-muted/50 flex-row gap-2">
+        <DialogFooter className="p-6 bg-muted/50 flex-col sm:flex-row gap-2">
             <Button
-                variant={paymentMethod === 'online' ? 'default' : 'outline'}
+                variant={'default'}
                 className="flex-1"
                 onClick={() => { setPaymentMethod('online'); form.handleSubmit(onFormSubmit)(); }}
-                disabled={addressOption === 'default' && !hasDefaultAddress}
+                disabled={isLoading || (addressOption === 'default' && !hasDefaultAddress)}
             >
-                Pay Online
+                {isLoading && paymentMethod === 'online' ? <Loader2 className="animate-spin" /> : "Pay Online"}
             </Button>
             <Button
-                variant={paymentMethod === 'cod' ? 'default' : 'outline'}
+                variant={'outline'}
                 className="flex-1"
                 onClick={() => { setPaymentMethod('cod'); form.handleSubmit(onFormSubmit)(); }}
-                disabled={addressOption === 'default' && !hasDefaultAddress}
+                disabled={isLoading || (addressOption === 'default' && !hasDefaultAddress)}
             >
-                Cash on Delivery
+                {isLoading && paymentMethod === 'cod' ? <Loader2 className="animate-spin" /> : "Cash on Delivery"}
             </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
-
-    
