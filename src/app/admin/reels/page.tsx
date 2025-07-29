@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -14,36 +14,60 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import CreateReelDialog from "@/components/CreateReelDialog";
+import type { Reel, Product as ProductType } from "@/lib/types";
+import { useToast } from "@/hooks/use-toast";
 
 
-type Reel = {
-  id: string;
-  reelTitle: string;
-  linkedProduct: string;
-};
+const REELS_STORAGE_KEY = 'reels';
+const PRODUCTS_STORAGE_KEY = 'products';
 
-const products = [
-    { name: "Vintage Wash Tee" },
-    { name: "Slim-Fit Chinos" },
-    { name: "Linen Button-Down" },
-    { name: "Dark Wash Jeans" },
-    { name: "Classic Leather Belt" },
+const initialReels: Reel[] = [
+    { id: "1", reelTitle: "Summer Vibes", linkedProduct: "Vintage Wash Tee", videoUrl: "" },
+    { id: "2", reelTitle: "Urban Explorer", linkedProduct: "Slim-Fit Chinos", videoUrl: "" },
+    { id: "3", reelTitle: "Office Look", linkedProduct: "Linen Button-Down", videoUrl: "" },
 ];
 
-
 export default function ManageReelsPage() {
-    const [reels, setReels] = useState<Reel[]>([
-        { id: "1", reelTitle: "Summer Vibes", linkedProduct: "Vintage Wash Tee" },
-        { id: "2", reelTitle: "Urban Explorer", linkedProduct: "Slim-Fit Chinos" },
-        { id: "3", reelTitle: "Office Look", linkedProduct: "Linen Button-Down" },
-    ]);
+    const { toast } = useToast();
+    const [reels, setReels] = useState<Reel[]>([]);
+    const [products, setProducts] = useState<ProductType[]>([]);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-    const handleCreateReel = (newReel: Omit<Reel, 'id'>) => {
-        const newReelWithId = { ...newReel, id: (reels.length + 1).toString() };
-        setReels(prev => [...prev, newReelWithId]);
-        console.log("Creating new reel:", newReelWithId);
+    useEffect(() => {
+        try {
+            const storedReels = localStorage.getItem(REELS_STORAGE_KEY);
+            setReels(storedReels ? JSON.parse(storedReels) : initialReels);
+
+            const storedProducts = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+            setProducts(storedProducts ? JSON.parse(storedProducts) : []);
+        } catch (error) {
+            console.error("Error loading data from localStorage", error);
+            setReels(initialReels);
+        }
+    }, []);
+
+    const updateReels = (newReels: Reel[]) => {
+        setReels(newReels);
+        localStorage.setItem(REELS_STORAGE_KEY, JSON.stringify(newReels));
+    };
+
+    const handleCreateReel = (newReelData: Omit<Reel, 'id'>) => {
+        const newReelWithId = { ...newReelData, id: `reel_${Date.now()}` };
+        updateReels([...reels, newReelWithId]);
+        toast({
+            title: "Reel Created",
+            description: `The reel "${newReelWithId.reelTitle}" has been added.`,
+        });
         setIsCreateDialogOpen(false);
+    };
+    
+    const handleDeleteReel = (reelId: string) => {
+        const newReels = reels.filter(r => r.id !== reelId);
+        updateReels(newReels);
+        toast({
+            title: "Reel Deleted",
+            description: "The reel has been successfully deleted.",
+        });
     }
 
     return (
@@ -67,6 +91,7 @@ export default function ManageReelsPage() {
                             <TableRow>
                                 <TableHead>Reel Title</TableHead>
                                 <TableHead>Linked Product</TableHead>
+                                <TableHead>Video</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -74,10 +99,15 @@ export default function ManageReelsPage() {
                             {reels.map((reel) => (
                                 <TableRow key={reel.id}>
                                     <TableCell className="font-medium">
-                                        <Link href="#" className="text-accent hover:underline">{reel.reelTitle}</Link>
+                                        <Link href={reel.videoUrl || '#'} target="_blank" className="text-accent hover:underline">{reel.reelTitle}</Link>
                                     </TableCell>
                                     <TableCell>
                                         <Link href="#" className="text-accent hover:underline">{reel.linkedProduct}</Link>
+                                    </TableCell>
+                                    <TableCell>
+                                        <a href={reel.videoUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-500 hover:underline">
+                                            Watch Reel
+                                        </a>
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <DropdownMenu>
@@ -88,7 +118,12 @@ export default function ManageReelsPage() {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuItem>Edit</DropdownMenuItem>
-                                                <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                                                <DropdownMenuItem 
+                                                    onClick={() => handleDeleteReel(reel.id)} 
+                                                    className="text-destructive"
+                                                >
+                                                    Delete
+                                                </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>

@@ -55,6 +55,13 @@ export type CartItem = {
     quantity: number;
 };
 
+export type Reel = {
+  id: string;
+  reelTitle: string;
+  linkedProduct: string;
+  videoUrl: string;
+};
+
 export type OrderStatus = 'Pending' | 'Confirmed' | 'Shipped' | 'Delivered' | 'Cancelled';
 
 export type CustomerDetails = {
