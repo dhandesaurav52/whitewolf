@@ -22,9 +22,9 @@ import Image from "next/image";
 const WhiteWolfLogo = () => (
     <div className="flex items-center">
         <Image src="https://firebasestorage.googleapis.com/v0/b/white-wolf-style-advisor.firebasestorage.app/o/WhiteWolfLogo.png?alt=media&token=3accae8b-9687-41f4-99a3-31856cdeaa91" alt="White Wolf Logo" width={40} height={40} className="w-10 h-10 rounded-md mr-2" />
-        <div className="flex flex-col">
-           <span className="text-xs font-bold text-white tracking-widest">WHITE</span>
-           <span className="text-xs font-bold text-white tracking-widest">WOLF</span>
+        <div className="flex flex-col text-foreground">
+           <span className="text-xs font-bold tracking-widest">WHITE</span>
+           <span className="text-xs font-bold tracking-widest">WOLF</span>
         </div>
     </div>
 )
