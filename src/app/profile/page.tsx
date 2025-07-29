@@ -3,32 +3,37 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { updateProfile } from "firebase/auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { User, Mail, Phone, MapPin, Pencil } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ProfilePage() {
   const { user, loading } = useAuth();
+  const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
 
-  // Dummy data for now
+  // Form state
+  const [displayName, setDisplayName] = useState("");
+  const [mobile, setMobile] = useState("");
   const [address, setAddress] = useState({
       street: "",
       city: "",
       state: "",
       pincode: ""
   });
-   const [mobile, setMobile] = useState("");
-
-   useEffect(() => {
-    if (user?.phoneNumber) {
-      setMobile(user.phoneNumber);
+  
+  useEffect(() => {
+    if (user) {
+      setDisplayName(user.displayName || "");
+      setMobile(user.phoneNumber || "");
+      // You would typically fetch and set address from your database here
     }
   }, [user]);
-
 
   if (loading) {
     return (
@@ -95,10 +100,23 @@ export default function ProfilePage() {
       { icon: MapPin, label: "Address", value: address.street ? `${address.street}, ${address.city}, ${address.state} - ${address.pincode}` : "Not provided" },
   ];
 
-  const handleSave = () => {
-    // Here you would typically save the data to your backend
-    console.log("Saving data...");
-    setIsEditing(false);
+  const handleSave = async () => {
+    if (!user) return;
+    try {
+        await updateProfile(user, { displayName });
+        // Here you would also save mobile and address to your database
+        toast({
+            title: "Success",
+            description: "Your profile has been updated.",
+        });
+        setIsEditing(false);
+    } catch (error: any) {
+        toast({
+            title: "Error",
+            description: "Failed to update profile. " + error.message,
+            variant: "destructive",
+        });
+    }
   }
 
   return (
@@ -124,11 +142,11 @@ export default function ProfilePage() {
                  <CardContent className="space-y-6 pt-6 max-w-lg mx-auto">
                     <div className="space-y-2">
                         <Label htmlFor="fullName" className="text-accent">Full Name</Label>
-                        <Input id="fullName" defaultValue={user.displayName || ''} />
+                        <Input id="fullName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="email" className="text-accent">Email Address</Label>
-                        <Input id="email" defaultValue={user.email || ''} readOnly />
+                        <Input id="email" value={user.email || ''} readOnly disabled />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="mobile" className="text-accent">Mobile Number</Label>
