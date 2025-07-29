@@ -1,5 +1,4 @@
 
-
 export type Garment = {
     name: string;
     description: string;
@@ -22,7 +21,12 @@ export type Advertisement = {
     text: string;
     discountType: 'percentage' | 'fixed';
     discountValue: number;
-    appliesTo: 'categories' | 'products';
+    appliesTo: 'categories' | 'products' | 'hero';
     selectedCategories: string[];
     status: 'Active' | 'Inactive';
+    heroImageUrl?: string;
+    heroHeadline?: string;
+    heroSubtext?: string;
+    heroButton?: string;
 };
+

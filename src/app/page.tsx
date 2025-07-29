@@ -1,4 +1,6 @@
 
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -11,6 +13,86 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 import { Card, CardContent } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import type { Advertisement } from "@/lib/types";
+
+const ADS_STORAGE_KEY = 'advertisements';
+const HERO_AD_ID = 'hero_banner_ad';
+
+const HeroSection = () => {
+    const [heroConfig, setHeroConfig] = useState({
+        headline: "Define Your Style",
+        subtext: "Timeless style, uncompromising quality, and conscious craftsmanship for the modern individual.",
+        buttonText: "Shop New Arrivals",
+        imageUrl: "https://placehold.co/1600x900.png",
+    });
+
+    useEffect(() => {
+        try {
+            const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
+            if (storedAds) {
+                const parsedAds: Advertisement[] = JSON.parse(storedAds);
+                const heroAd = parsedAds.find(ad => ad.id === HERO_AD_ID && ad.status === 'Active');
+                if (heroAd) {
+                    setHeroConfig({
+                        headline: heroAd.heroHeadline || "Define Your Style",
+                        subtext: heroAd.heroSubtext || "Timeless style, uncompromising quality, and conscious craftsmanship for the modern individual.",
+                        buttonText: heroAd.heroButton || "Shop New Arrivals",
+                        imageUrl: heroAd.heroImageUrl || "https://placehold.co/1600x900.png",
+                    });
+                }
+            }
+        } catch (error) {
+            console.error("Failed to load hero configuration from localStorage", error);
+        }
+
+        const handleStorageChange = () => {
+             try {
+                const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
+                if (storedAds) {
+                     const parsedAds: Advertisement[] = JSON.parse(storedAds);
+                    const heroAd = parsedAds.find(ad => ad.id === HERO_AD_ID && ad.status === 'Active');
+                     if (heroAd) {
+                        setHeroConfig({
+                            headline: heroAd.heroHeadline || "Define Your Style",
+                            subtext: heroAd.heroSubtext || "Timeless style, uncompromising quality, and conscious craftsmanship for the modern individual.",
+                            buttonText: heroAd.heroButton || "Shop New Arrivals",
+                            imageUrl: heroAd.heroImageUrl || "https://placehold.co/1600x900.png",
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to reload hero configuration from localStorage", error);
+            }
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+
+    }, []);
+
+    return (
+        <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center text-center text-white bg-black">
+          <Image
+            src={heroConfig.imageUrl}
+            alt="Fashion display in a store window"
+            fill
+            className="absolute inset-0 object-cover opacity-40"
+            data-ai-hint="storefront fashion"
+          />
+          <div className="relative z-10 p-4">
+            <h1 className="text-5xl md:text-7xl font-bold font-headline drop-shadow-md">
+              {heroConfig.headline}
+            </h1>
+            <p className="mt-4 max-w-2xl mx-auto text-lg md:text-xl text-neutral-300 drop-shadow-md">
+              {heroConfig.subtext}
+            </p>
+            <Button asChild size="lg" className="mt-8 bg-white text-black hover:bg-neutral-200">
+              <Link href="/new-arrivals">{heroConfig.buttonText}</Link>
+            </Button>
+          </div>
+        </section>
+    );
+};
 
 export default function Home() {
   const oversizeTees = [
@@ -139,27 +221,7 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       <main className="flex-grow">
-        {/* Hero Section */}
-        <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center text-center text-white bg-black">
-          <Image
-            src="https://placehold.co/1600x900.png"
-            alt="Fashion display in a store window"
-            fill
-            className="absolute inset-0 object-cover opacity-40"
-            data-ai-hint="storefront fashion"
-          />
-          <div className="relative z-10 p-4">
-            <h1 className="text-5xl md:text-7xl font-bold font-headline drop-shadow-md">
-              Define Your Style
-            </h1>
-            <p className="mt-4 max-w-2xl mx-auto text-lg md:text-xl text-neutral-300 drop-shadow-md">
-              Timeless style, uncompromising quality, and conscious craftsmanship for the modern individual.
-            </p>
-            <Button asChild size="lg" className="mt-8 bg-white text-black hover:bg-neutral-200">
-              <Link href="/new-arrivals">Shop New Arrivals</Link>
-            </Button>
-          </div>
-        </section>
+        <HeroSection />
 
         {/* Features Section */}
         <section className="bg-background py-16">
