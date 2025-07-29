@@ -10,6 +10,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type Product = {
   name: string;
@@ -33,11 +37,25 @@ interface EditProductDialogProps {
   onClose: () => void;
 }
 
+const categoriesList = [
+    { value: 't-shirts', label: 'T-Shirts' },
+    { value: 'shirts', label: 'Shirts' },
+    { value: 'jeans', label: 'Jeans' },
+    { value: 'trousers', label: 'Trousers' },
+    { value: 'accessories', label: 'Accessories' },
+];
+
 export default function EditProductDialog({ product, onSave, onClose }: EditProductDialogProps) {
   const [editedProduct, setEditedProduct] = useState(product);
-
+  const [categories, setCategories] = useState(categoriesList);
+  const [openCategoryPopover, setOpenCategoryPopover] = useState(false);
+  
   useEffect(() => {
     setEditedProduct(product);
+    const productCategoryValue = product.category.toLowerCase().replace(/\s/g, '-');
+    if (!categories.some(c => c.value === productCategoryValue)) {
+      setCategories(prev => [...prev, {value: productCategoryValue, label: product.category}]);
+    }
   }, [product]);
 
   const handleChange = (field: keyof Product, value: string | number | boolean) => {
@@ -47,6 +65,21 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
   const handleSave = () => {
     onSave(editedProduct);
   };
+  
+  const handleCategorySelect = (currentValue: string) => {
+      const lowerCaseValue = currentValue.toLowerCase();
+      const existingCategory = categories.find(cat => cat.value === lowerCaseValue);
+      if (existingCategory) {
+          handleChange('category', existingCategory.label);
+      } else if (currentValue) {
+          const newCategory = { value: lowerCaseValue, label: currentValue };
+          setCategories(prev => [...prev, newCategory]);
+          handleChange('category', newCategory.label);
+      }
+      setOpenCategoryPopover(false)
+  }
+
+  const currentCategoryValue = editedProduct.category.toLowerCase().replace(/\s/g, '-');
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -76,19 +109,45 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
                   <Input id="price" type="number" value={editedProduct.price} onChange={(e) => handleChange('price', e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="category" className="text-accent">Category</Label>
-                    <Select value={editedProduct.category} onValueChange={(value) => handleChange('category', value)}>
-                        <SelectTrigger id="category">
-                            <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="T-Shirts">T-Shirts</SelectItem>
-                            <SelectItem value="Shirts">Shirts</SelectItem>
-                            <SelectItem value="Jeans">Jeans</SelectItem>
-                            <SelectItem value="Trousers">Trousers</SelectItem>
-                            <SelectItem value="Accessories">Accessories</SelectItem>
-                        </SelectContent>
-                    </Select>
+                    <Label className="text-accent">Category</Label>
+                     <Popover open={openCategoryPopover} onOpenChange={setOpenCategoryPopover}>
+                        <PopoverTrigger asChild>
+                            <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={openCategoryPopover}
+                            className="w-full justify-between"
+                            >
+                            {editedProduct.category || "Select or add category..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                            <Command>
+                                <CommandInput placeholder="Search or add category..." />
+                                <CommandList>
+                                    <CommandEmpty>No category found.</CommandEmpty>
+                                    <CommandGroup>
+                                    {categories.map((cat) => (
+                                        <CommandItem
+                                        key={cat.value}
+                                        value={cat.label}
+                                        onSelect={handleCategorySelect}
+                                        >
+                                        <Check
+                                            className={cn(
+                                            "mr-2 h-4 w-4",
+                                            currentCategoryValue === cat.value ? "opacity-100" : "opacity-0"
+                                            )}
+                                        />
+                                        {cat.label}
+                                        </CommandItem>
+                                    ))}
+                                    </CommandGroup>
+                                </CommandList>
+                            </Command>
+                        </PopoverContent>
+                    </Popover>
                 </div>
               </div>
               <div className="space-y-2">

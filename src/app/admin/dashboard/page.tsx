@@ -8,12 +8,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BarChart, ShoppingCart, Package, Users, UploadCloud, Pencil, Trash2, Search } from "lucide-react";
+import { BarChart, ShoppingCart, Package, Users, UploadCloud, Pencil, Trash2, Search, Check, ChevronsUpDown } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import EditProductDialog from "@/components/EditProductDialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 type Product = {
   name: string;
@@ -31,8 +34,20 @@ type Product = {
   displaySection?: 'shop' | 'accessories';
 };
 
+const categoriesList = [
+    { value: 't-shirts', label: 'T-Shirts' },
+    { value: 'shirts', label: 'Shirts' },
+    { value: 'jeans', label: 'Jeans' },
+    { value: 'trousers', label: 'Trousers' },
+    { value: 'accessories', label: 'Accessories' },
+];
+
 export default function AdminDashboardPage() {
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [categories, setCategories] = useState(categoriesList);
+    const [openCategoryPopover, setOpenCategoryPopover] = useState(false)
+    const [selectedCategory, setSelectedCategory] = useState('')
+
 
     const handleEdit = (product: Product) => {
         setEditingProduct(product);
@@ -124,6 +139,16 @@ export default function AdminDashboardPage() {
       },
     ];
 
+    const handleCategorySelect = (currentValue: string) => {
+        const lowerCaseValue = currentValue.toLowerCase();
+        setSelectedCategory(lowerCaseValue === selectedCategory ? '' : lowerCaseValue);
+        const exists = categories.some(cat => cat.value === lowerCaseValue);
+        if (!exists && currentValue) {
+            setCategories([...categories, { value: lowerCaseValue, label: currentValue }]);
+        }
+        setOpenCategoryPopover(false);
+    }
+
     return (
         <div className="container mx-auto py-10 space-y-8">
             <h1 className="text-4xl font-bold font-headline text-accent">Admin Dashboard</h1>
@@ -165,19 +190,47 @@ export default function AdminDashboardPage() {
                                 <Input id="price" type="number" placeholder="e.g. 999" />
                             </div>
                              <div className="space-y-2">
-                                <Label htmlFor="category" className="text-accent">Category</Label>
-                                <Select>
-                                    <SelectTrigger id="category">
-                                        <SelectValue placeholder="Select a category" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="t-shirts">T-Shirts</SelectItem>
-                                        <SelectItem value="shirts">Shirts</SelectItem>
-                                        <SelectItem value="jeans">Jeans</SelectItem>
-                                        <SelectItem value="trousers">Trousers</SelectItem>
-                                        <SelectItem value="accessories">Accessories</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <Label className="text-accent">Category</Label>
+                                 <Popover open={openCategoryPopover} onOpenChange={setOpenCategoryPopover}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        aria-expanded={openCategoryPopover}
+                                        className="w-full justify-between"
+                                        >
+                                        {selectedCategory
+                                            ? categories.find((cat) => cat.value === selectedCategory)?.label
+                                            : "Select or add category..."}
+                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                                        <Command onValueChange={setSelectedCategory}>
+                                            <CommandInput placeholder="Search or add category..." />
+                                            <CommandList>
+                                                <CommandEmpty>No category found.</CommandEmpty>
+                                                <CommandGroup>
+                                                {categories.map((cat) => (
+                                                    <CommandItem
+                                                    key={cat.value}
+                                                    value={cat.value}
+                                                    onSelect={handleCategorySelect}
+                                                    >
+                                                    <Check
+                                                        className={cn(
+                                                        "mr-2 h-4 w-4",
+                                                        selectedCategory === cat.value ? "opacity-100" : "opacity-0"
+                                                        )}
+                                                    />
+                                                    {cat.label}
+                                                    </CommandItem>
+                                                ))}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
                             </div>
                         </div>
 
