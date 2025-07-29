@@ -183,7 +183,7 @@ export default function Home() {
         setProducts(allProducts);
         
         setNewArrivals(allProducts.filter(p => p.new).slice(0, 4));
-        setOversizeTees(allProducts.filter(p => p.category.toLowerCase().includes('t-shirt')).slice(0, 5));
+        setOversizeTees(allProducts.filter(p => p.category.toLowerCase() === 'oversized t-shirts').slice(0, 5));
         setAccessories(allProducts.filter(p => p.displaySection === 'accessories').slice(0, 4));
         
         const uniqueCategories = [...new Set(allProducts.map(p => p.category.toLowerCase()))];
@@ -427,5 +427,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
