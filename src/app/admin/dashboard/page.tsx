@@ -7,8 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BarChart, ShoppingCart, Package, Users, UploadCloud, FileUp } from "lucide-react";
+import { BarChart, ShoppingCart, Package, Users, UploadCloud, Pencil, Trash2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
 
 
 export default function AdminDashboardPage() {
@@ -17,7 +20,42 @@ export default function AdminDashboardPage() {
         { title: "New Orders", value: "15", description: "Orders pending fulfillment", icon: ShoppingCart },
         { title: "Products in Stock", value: "13", description: "Total active products", icon: Package },
         { title: "Total Users", value: "2", description: "Unique customers with orders", icon: Users },
-    ]
+    ];
+
+    const products = [
+      {
+        name: "Vintage Wash Tee",
+        image: "https://placehold.co/100x100.png",
+        aiHint: "streetwear fashion",
+        category: "T-Shirts",
+        price: "1299",
+        stock: 50,
+      },
+      {
+        name: "Slim-Fit Chinos",
+        image: "https://placehold.co/100x100.png",
+        aiHint: "mens trousers",
+        category: "Trousers",
+        price: "1599",
+        stock: 30,
+      },
+      {
+        name: "Linen Button-Down",
+        image: "https://placehold.co/100x100.png",
+        aiHint: "summer shirt",
+        category: "Shirts",
+        price: "1499",
+        stock: 45,
+      },
+       {
+        name: "Dark Wash Jeans",
+        image: "https://placehold.co/100x100.png",
+        aiHint: "denim jeans",
+        category: "Jeans",
+        price: "1899",
+        stock: 25,
+      },
+    ];
 
     return (
         <div className="container mx-auto py-10 space-y-8">
@@ -38,28 +76,26 @@ export default function AdminDashboardPage() {
                 ))}
             </div>
 
-            <div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-2xl font-headline text-accent">Add New Product</CardTitle>
                         <CardDescription>Fill out the form below to add a new product to your store.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <Label htmlFor="product-name" className="text-accent">Product Name</Label>
-                                <Input id="product-name" placeholder="e.g. Charcoal Crew-Neck Tee" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="brand-name" className="text-accent">Brand Name</Label>
-                                <Input id="brand-name" placeholder="e.g. White Wolf" />
-                            </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="product-name" className="text-accent">Product Name</Label>
+                            <Input id="product-name" placeholder="e.g. Charcoal Crew-Neck Tee" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="brand-name" className="text-accent">Brand Name</Label>
+                            <Input id="brand-name" placeholder="e.g. White Wolf" />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <Label htmlFor="price" className="text-accent">Price</Label>
-                                <Input id="price" type="number" placeholder="e.g. 4999" />
+                                <Input id="price" type="number" placeholder="e.g. 999" />
                             </div>
                              <div className="space-y-2">
                                 <Label htmlFor="category" className="text-accent">Category</Label>
@@ -83,20 +119,20 @@ export default function AdminDashboardPage() {
                             <Textarea id="description" placeholder="e.g. A classic crew-neck t-shirt..." />
                         </div>
 
+                        <div className="space-y-2">
+                            <Label htmlFor="colors" className="text-accent">Colors (comma-separated)</Label>
+                            <Input id="colors" placeholder="e.g., Black, White, Blue" />
+                        </div>
+                        
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <Label htmlFor="colors" className="text-accent">Colors (comma-separated)</Label>
-                                <Input id="colors" placeholder="e.g., Black, White, Blue" />
-                            </div>
                              <div className="space-y-2">
                                 <Label htmlFor="text-sizes" className="text-accent">Text-based Sizes (comma-separated)</Label>
                                 <Input id="text-sizes" placeholder="e.g., S, M, L, XL, XXL" />
                             </div>
-                        </div>
-                        
-                        <div className="space-y-2">
-                           <Label htmlFor="numeric-sizes" className="text-accent">Numeric Sizes (comma-separated)</Label>
-                           <Input id="numeric-sizes" placeholder="e.g., 28, 30, 32" />
+                           <div className="space-y-2">
+                               <Label htmlFor="numeric-sizes" className="text-accent">Numeric Sizes (comma-separated)</Label>
+                               <Input id="numeric-sizes" placeholder="e.g., 28, 30, 32" />
+                           </div>
                         </div>
 
                          <div className="space-y-2">
@@ -123,8 +159,55 @@ export default function AdminDashboardPage() {
                         </div>
                     </CardContent>
                 </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-2xl font-headline text-accent">Manage Existing Products</CardTitle>
+                        <CardDescription>View, edit, or delete products currently in your store.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-[80px]">Image</TableHead>
+                                    <TableHead>Product Name</TableHead>
+                                    <TableHead>Category</TableHead>
+                                    <TableHead>Price</TableHead>
+                                    <TableHead>Stock</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {products.map((product, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell>
+                                            <div className="relative h-12 w-12 rounded-md overflow-hidden">
+                                                <Image src={product.image} alt={product.name} fill className="object-cover" data-ai-hint={product.aiHint} />
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="font-medium">{product.name}</TableCell>
+                                        <TableCell>
+                                            <Badge variant="outline">{product.category}</Badge>
+                                        </TableCell>
+                                        <TableCell>₹{product.price}</TableCell>
+                                        <TableCell>{product.stock}</TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex justify-end gap-2">
+                                                <Button variant="ghost" size="icon">
+                                                    <Pencil className="h-4 w-4" />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );
-}
 
+    
