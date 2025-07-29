@@ -49,3 +49,8 @@ export type Product = {
   discount: string | null;
   videoUrl?: string;
 };
+
+export type CartItem = {
+    product: Product;
+    quantity: number;
+};

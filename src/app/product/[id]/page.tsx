@@ -13,10 +13,16 @@ import { Minus, Plus, Heart, Ruler, ShoppingBag } from 'lucide-react';
 import type { Product as ProductType } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
+import { useWishlist } from '@/hooks/useWishlist';
+import { useCart } from '@/hooks/useCart';
+import { cn } from '@/lib/utils';
 
 const PRODUCTS_STORAGE_KEY = 'products';
 
 const ProductCard = ({ product }: { product: ProductType }) => {
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const { addToCart } = useCart();
+  
   return (
     <Card className="group overflow-hidden rounded-lg bg-card text-card-foreground border-border relative">
        <Link href={`/product/${product.id}`} className="block">
@@ -30,6 +36,14 @@ const ProductCard = ({ product }: { product: ProductType }) => {
           />
         </div>
       </Link>
+      <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+        <Button size="icon" variant="outline" className="h-9 w-9 bg-background/80 hover:bg-background" onClick={() => toggleWishlist(product)}>
+          <Heart className={cn("h-4 w-4", isInWishlist(product.id) && "fill-destructive text-destructive")} />
+        </Button>
+        <Button size="icon" variant="outline" className="h-9 w-9 bg-background/80 hover:bg-background" onClick={() => addToCart(product, 1)}>
+          <ShoppingBag className="h-4 w-4" />
+        </Button>
+      </div>
       <CardContent className="p-4">
         <h3 className="font-headline text-lg text-primary truncate">{product.name}</h3>
         <div className="flex items-baseline gap-2 mt-1">
@@ -81,6 +95,9 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [similarProducts, setSimilarProducts] = useState<ProductType[]>([]);
   const [complementaryProducts, setComplementaryProducts] = useState<ProductType[]>([]);
+  
+  const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   useEffect(() => {
     let allProducts: ProductType[] = [];
@@ -249,14 +266,14 @@ export default function ProductDetailPage() {
                 <Separator />
                 
                 <div className="flex flex-col sm:flex-row gap-3">
-                    <Button variant="outline" size="lg" className="flex-1">
+                    <Button variant="outline" size="lg" className="flex-1" onClick={() => addToCart(product, quantity)}>
                         <ShoppingBag className="mr-2 h-5 w-5" /> Add to Cart
                     </Button>
                     <Button variant="destructive" size="lg" className="flex-1 bg-red-500 hover:bg-red-600">
                         Buy Now
                     </Button>
-                    <Button variant="outline" size="icon" className="h-12 w-12">
-                        <Heart className="h-5 w-5" />
+                    <Button variant="outline" size="icon" className="h-12 w-12" onClick={() => toggleWishlist(product)}>
+                        <Heart className={cn("h-5 w-5", isInWishlist(product.id) && "fill-destructive text-destructive")} />
                     </Button>
                 </div>
                 </div>

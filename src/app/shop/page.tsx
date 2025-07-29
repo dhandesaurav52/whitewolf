@@ -18,6 +18,10 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import type { Advertisement } from '@/lib/types';
 import type { Product as ProductType } from '@/lib/types';
+import { useWishlist } from '@/hooks/useWishlist';
+import { useCart } from '@/hooks/useCart';
+import { cn } from '@/lib/utils';
+
 
 const ADS_STORAGE_KEY = 'advertisements';
 const PRODUCTS_STORAGE_KEY = 'products';
@@ -130,6 +134,8 @@ const initialProducts: ProductType[] = [
 ];
 
 const ProductCard = ({ product }: { product: ProductType }) => {
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const { addToCart } = useCart();
   return (
     <Card className="group overflow-hidden rounded-lg bg-card text-card-foreground border-border relative">
        <Link href={`/product/${product.id}`} className="block">
@@ -159,10 +165,10 @@ const ProductCard = ({ product }: { product: ProductType }) => {
         </div>
       </Link>
       <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-        <Button size="icon" variant="outline" className="h-9 w-9 bg-background/80 hover:bg-background">
-          <Heart className="h-4 w-4" />
+        <Button size="icon" variant="outline" className="h-9 w-9 bg-background/80 hover:bg-background" onClick={() => toggleWishlist(product)}>
+          <Heart className={cn("h-4 w-4", isInWishlist(product.id) && "fill-destructive text-destructive")} />
         </Button>
-        <Button size="icon" variant="outline" className="h-9 w-9 bg-background/80 hover:bg-background">
+        <Button size="icon" variant="outline" className="h-9 w-9 bg-background/80 hover:bg-background" onClick={() => addToCart(product, 1)}>
           <ShoppingBag className="h-4 w-4" />
         </Button>
       </div>
