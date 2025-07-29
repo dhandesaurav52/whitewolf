@@ -15,81 +15,94 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { useState, useEffect } from "react";
 import type { Advertisement } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 const ADS_STORAGE_KEY = 'advertisements';
-const HERO_AD_ID = 'hero_banner_ad';
+
+const defaultHero: Advertisement = {
+    id: 'default-hero',
+    appliesTo: 'hero',
+    status: 'Active',
+    text: '',
+    discountType: 'fixed',
+    discountValue: 0,
+    selectedCategories: [],
+    heroHeadline: "Define Your Style",
+    heroSubtext: "Timeless style, uncompromising quality, and conscious craftsmanship for the modern individual.",
+    buttonText: "Shop New Arrivals",
+    heroImageUrl: "https://placehold.co/1600x900.png",
+};
 
 const HeroSection = () => {
-    const [heroConfig, setHeroConfig] = useState({
-        headline: "Define Your Style",
-        subtext: "Timeless style, uncompromising quality, and conscious craftsmanship for the modern individual.",
-        buttonText: "Shop New Arrivals",
-        imageUrl: "https://placehold.co/1600x900.png",
-    });
+    const [heroSlides, setHeroSlides] = useState<Advertisement[]>([defaultHero]);
+    const [currentSlide, setCurrentSlide] = useState(0);
 
-    useEffect(() => {
+    const loadHeroSlides = () => {
         try {
             const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
             if (storedAds) {
                 const parsedAds: Advertisement[] = JSON.parse(storedAds);
-                const heroAd = parsedAds.find(ad => ad.id === HERO_AD_ID && ad.status === 'Active');
-                if (heroAd) {
-                    setHeroConfig({
-                        headline: heroAd.heroHeadline || "Define Your Style",
-                        subtext: heroAd.heroSubtext || "Timeless style, uncompromising quality, and conscious craftsmanship for the modern individual.",
-                        buttonText: heroAd.heroButton || "Shop New Arrivals",
-                        imageUrl: heroAd.heroImageUrl || "https://placehold.co/1600x900.png",
-                    });
+                const activeHeroAds = parsedAds.filter(ad => ad.appliesTo === 'hero' && ad.status === 'Active');
+                if (activeHeroAds.length > 0) {
+                    setHeroSlides(activeHeroAds);
+                } else {
+                    setHeroSlides([defaultHero]);
                 }
             }
         } catch (error) {
             console.error("Failed to load hero configuration from localStorage", error);
+            setHeroSlides([defaultHero]);
         }
-
-        const handleStorageChange = () => {
-             try {
-                const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
-                if (storedAds) {
-                     const parsedAds: Advertisement[] = JSON.parse(storedAds);
-                    const heroAd = parsedAds.find(ad => ad.id === HERO_AD_ID && ad.status === 'Active');
-                     if (heroAd) {
-                        setHeroConfig({
-                            headline: heroAd.heroHeadline || "Define Your Style",
-                            subtext: heroAd.heroSubtext || "Timeless style, uncompromising quality, and conscious craftsmanship for the modern individual.",
-                            buttonText: heroAd.heroButton || "Shop New Arrivals",
-                            imageUrl: heroAd.heroImageUrl || "https://placehold.co/1600x900.png",
-                        });
-                    }
-                }
-            } catch (error) {
-                console.error("Failed to reload hero configuration from localStorage", error);
-            }
-        };
-        window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
-
+    };
+    
+    useEffect(() => {
+        loadHeroSlides();
+        window.addEventListener('storage', loadHeroSlides);
+        return () => window.removeEventListener('storage', loadHeroSlides);
     }, []);
 
+    useEffect(() => {
+        if (heroSlides.length <= 1) return;
+
+        const timer = setInterval(() => {
+            setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+        }, 7000);
+
+        return () => clearInterval(timer);
+    }, [heroSlides.length]);
+
     return (
-        <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center text-center text-white bg-black">
-          <Image
-            src={heroConfig.imageUrl}
-            alt="Fashion display in a store window"
-            fill
-            className="absolute inset-0 object-cover opacity-40"
-            data-ai-hint="storefront fashion"
-          />
-          <div className="relative z-10 p-4">
-            <h1 className="text-5xl md:text-7xl font-bold font-headline drop-shadow-md">
-              {heroConfig.headline}
-            </h1>
-            <p className="mt-4 max-w-2xl mx-auto text-lg md:text-xl text-neutral-300 drop-shadow-md">
-              {heroConfig.subtext}
-            </p>
-            <Button asChild size="lg" className="mt-8 bg-white text-black hover:bg-neutral-200">
-              <Link href="/new-arrivals">{heroConfig.buttonText}</Link>
-            </Button>
-          </div>
+        <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center text-center text-white bg-black overflow-hidden">
+            {heroSlides.map((slide, index) => (
+                <div
+                    key={slide.id}
+                    className={cn(
+                        "absolute inset-0 transition-opacity duration-1000 ease-in-out",
+                        index === currentSlide ? "opacity-100" : "opacity-0"
+                    )}
+                >
+                    <Image
+                        src={slide.heroImageUrl || defaultHero.heroImageUrl!}
+                        alt={slide.heroHeadline || "Fashion display"}
+                        fill
+                        className="object-cover"
+                        data-ai-hint="storefront fashion"
+                        priority={index === 0}
+                    />
+                    <div className="absolute inset-0 bg-black/40" />
+                    <div className="relative z-10 flex flex-col items-center justify-center h-full p-4">
+                        <h1 className="text-5xl md:text-7xl font-bold font-headline drop-shadow-md">
+                            {slide.heroHeadline}
+                        </h1>
+                        <p className="mt-4 max-w-2xl mx-auto text-lg md:text-xl text-neutral-300 drop-shadow-md">
+                            {slide.heroSubtext}
+                        </p>
+                        <Button asChild size="lg" className="mt-8 bg-white text-black hover:bg-neutral-200">
+                            <Link href="/shop">{slide.heroButton}</Link>
+                        </Button>
+                    </div>
+                </div>
+            ))}
         </section>
     );
 };
