@@ -34,6 +34,9 @@ const categoriesList = [
     { value: 'belts', label: 'Belts' },
     { value: 'socks', label: 'Socks' },
     { value: 'wallets', label: 'Wallets' },
+    { value: 'sweater', label: 'Sweater' },
+    { value: 'jackets', label: 'Jackets' },
+    { value: 'track-pants', label: 'Track Pants' },
     { value: 'accessories', label: 'Accessories' },
 ];
 
