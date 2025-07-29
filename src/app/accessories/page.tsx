@@ -24,8 +24,6 @@ import { cn } from '@/lib/utils';
 const ADS_STORAGE_KEY = 'advertisements';
 const PRODUCTS_STORAGE_KEY = 'products';
 
-const initialProducts: ProductType[] = [];
-
 const ProductCard = ({ product }: { product: ProductType }) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
@@ -86,20 +84,30 @@ export default function AccessoriesPage() {
     const [allProducts, setAllProducts] = useState<ProductType[]>([]);
 
     useEffect(() => {
-        let storedProducts: ProductType[] = [];
-        try {
-            const productsFromStorage = localStorage.getItem(PRODUCTS_STORAGE_KEY);
-            if (productsFromStorage) {
-                storedProducts = JSON.parse(productsFromStorage);
-            } else {
-                storedProducts = initialProducts;
-                localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(initialProducts));
+        const loadProducts = () => {
+            let storedProducts: ProductType[] = [];
+            try {
+                const productsFromStorage = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+                if (productsFromStorage) {
+                    storedProducts = JSON.parse(productsFromStorage);
+                }
+            } catch (error) {
+                console.error("Failed to load products from storage, using initial products.", error);
             }
-        } catch (error) {
-            console.error("Failed to load products from storage, using initial products.", error);
-            storedProducts = initialProducts;
-        }
-        setAllProducts(storedProducts);
+            setAllProducts(storedProducts);
+        };
+        loadProducts();
+
+        const handleStorageChange = (event: StorageEvent) => {
+            if (event.key === ADS_STORAGE_KEY || event.key === PRODUCTS_STORAGE_KEY) {
+                loadProducts();
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
     }, []);
 
     useEffect(() => {
@@ -151,26 +159,6 @@ export default function AccessoriesPage() {
         };
 
         applyDiscountsAndFilter();
-
-        const handleStorageChange = (event: StorageEvent) => {
-            if (event.key === ADS_STORAGE_KEY || event.key === PRODUCTS_STORAGE_KEY) {
-                let storedProducts: ProductType[] = [];
-                try {
-                    const productsFromStorage = localStorage.getItem(PRODUCTS_STORAGE_KEY);
-                    if (productsFromStorage) {
-                        storedProducts = JSON.parse(productsFromStorage);
-                    }
-                } catch (error) {
-                    console.error("Failed to load products from storage on change event.", error);
-                }
-                setAllProducts(storedProducts);
-            }
-        };
-
-        window.addEventListener('storage', handleStorageChange);
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-        };
     }, [allProducts]);
 
     const filters = [
