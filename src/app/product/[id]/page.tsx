@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,7 @@ import Link from 'next/link';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useCart } from '@/hooks/useCart';
 import { cn } from '@/lib/utils';
+import ConfirmPurchaseDialog from '@/components/ConfirmPurchaseDialog';
 
 const PRODUCTS_STORAGE_KEY = 'products';
 
@@ -89,14 +90,16 @@ const ProductCarousel = ({ title, products }: { title: string, products: Product
 
 export default function ProductDetailPage() {
   const { id } = useParams();
+  const router = useRouter();
   const [product, setProduct] = useState<ProductType | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [similarProducts, setSimilarProducts] = useState<ProductType[]>([]);
   const [complementaryProducts, setComplementaryProducts] = useState<ProductType[]>([]);
+  const [isConfirming, setIsConfirming] = useState(false);
   
-  const { addToCart } = useCart();
+  const { addToCart, clearCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
   useEffect(() => {
@@ -139,6 +142,10 @@ export default function ProductDetailPage() {
       setLoading(false);
     }
   }, [id]);
+
+  const handleBuyNow = () => {
+    setIsConfirming(true);
+  }
 
   if (loading) {
     return (
@@ -187,102 +194,115 @@ export default function ProductDetailPage() {
 
 
   return (
-    <div className="container mx-auto px-4">
-        <div className="py-6 md:py-12">
-            <div className="grid md:grid-cols-2 gap-8 lg:gap-16 items-start">
-                <Carousel className="w-full">
-                    <CarouselContent>
-                        {(product.images && product.images.length > 0 ? product.images : ["https://placehold.co/600x800.png"]).map((img, index) => (
-                            <CarouselItem key={index}>
-                                <Card className="overflow-hidden aspect-[4/5] relative">
-                                    <Image
-                                        src={img}
-                                        alt={`${product.name} image ${index + 1}`}
-                                        fill
-                                        className="object-cover"
-                                    />
-                                </Card>
-                            </CarouselItem>
-                        ))}
-                    </CarouselContent>
-                    <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-10" />
-                    <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-10" />
-                </Carousel>
+    <>
+      <div className="container mx-auto px-4">
+          <div className="py-6 md:py-12">
+              <div className="grid md:grid-cols-2 gap-8 lg:gap-16 items-start">
+                  <Carousel className="w-full">
+                      <CarouselContent>
+                          {(product.images && product.images.length > 0 ? product.images : ["https://placehold.co/600x800.png"]).map((img, index) => (
+                              <CarouselItem key={index}>
+                                  <Card className="overflow-hidden aspect-[4/5] relative">
+                                      <Image
+                                          src={img}
+                                          alt={`${product.name} image ${index + 1}`}
+                                          fill
+                                          className="object-cover"
+                                      />
+                                  </Card>
+                              </CarouselItem>
+                          ))}
+                      </CarouselContent>
+                      <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-10" />
+                      <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-10" />
+                  </Carousel>
 
-                <div className="space-y-6">
-                <div className="space-y-2">
-                    <h1 className="text-3xl md:text-4xl font-bold font-headline text-primary">{product.name}</h1>
-                    <div className="flex items-center gap-4">
-                        <p className="text-2xl font-semibold text-accent">₹{product.price}</p>
-                        {product.originalPrice && (
-                            <>
-                                <p className="text-xl text-muted-foreground line-through">₹{product.originalPrice}</p>
-                                {product.discount && <Badge variant="destructive">{product.discount}</Badge>}
-                            </>
-                        )}
-                    </div>
-                </div>
+                  <div className="space-y-6">
+                  <div className="space-y-2">
+                      <h1 className="text-3xl md:text-4xl font-bold font-headline text-primary">{product.name}</h1>
+                      <div className="flex items-center gap-4">
+                          <p className="text-2xl font-semibold text-accent">₹{product.price}</p>
+                          {product.originalPrice && (
+                              <>
+                                  <p className="text-xl text-muted-foreground line-through">₹{product.originalPrice}</p>
+                                  {product.discount && <Badge variant="destructive">{product.discount}</Badge>}
+                              </>
+                          )}
+                      </div>
+                  </div>
 
-                <p className="text-muted-foreground text-base">
-                    {product.description || 'No description available.'}
-                </p>
+                  <p className="text-muted-foreground text-base">
+                      {product.description || 'No description available.'}
+                  </p>
 
-                <Separator />
+                  <Separator />
 
-                <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-medium text-primary">Size</h3>
-                        <Button variant="link" size="sm" className="text-muted-foreground gap-1">
-                            <Ruler className="h-4 w-4" /> Size Guide
-                        </Button>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                        {availableSizes.map(size => (
-                            <Button 
-                                key={size}
-                                variant={selectedSize === size ? "default" : "outline"}
-                                onClick={() => handleSizeSelect(size)}
-                                className="w-16"
-                            >
-                                {size}
-                            </Button>
-                        ))}
-                    </div>
-                </div>
-                
-                <div className="flex items-center gap-4">
-                    <h3 className="text-lg font-medium text-primary">Quantity</h3>
-                    <div className="flex items-center gap-2 border rounded-md">
-                    <Button variant="ghost" size="icon" onClick={decreaseQuantity} className="h-9 w-9">
-                        <Minus className="h-4 w-4" />
-                    </Button>
-                    <span className="w-10 text-center font-medium">{quantity}</span>
-                    <Button variant="ghost" size="icon" onClick={increaseQuantity} className="h-9 w-9">
-                        <Plus className="h-4 w-4" />
-                    </Button>
-                    </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="flex flex-col sm:flex-row gap-3">
-                    <Button variant="outline" size="lg" className="flex-1" onClick={() => addToCart(product, quantity)}>
-                        <ShoppingBag className="mr-2 h-5 w-5" /> Add to Cart
-                    </Button>
-                    <Button variant="destructive" size="lg" className="flex-1 bg-red-500 hover:bg-red-600">
-                        Buy Now
-                    </Button>
-                    <Button variant="outline" size="icon" className="h-12 w-12" onClick={() => toggleWishlist(product)}>
-                        <Heart className={cn("h-5 w-5", isInWishlist(product.id) && "fill-destructive text-destructive")} />
-                    </Button>
-                </div>
-                </div>
-            </div>
-        </div>
-        <Separator/>
-        <ProductCarousel title="Similar Products" products={similarProducts} />
-        <Separator/>
-        <ProductCarousel title="Complete The Look" products={complementaryProducts} />
-    </div>
+                  <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                          <h3 className="text-lg font-medium text-primary">Size</h3>
+                          <Button variant="link" size="sm" className="text-muted-foreground gap-1">
+                              <Ruler className="h-4 w-4" /> Size Guide
+                          </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                          {availableSizes.map(size => (
+                              <Button 
+                                  key={size}
+                                  variant={selectedSize === size ? "default" : "outline"}
+                                  onClick={() => handleSizeSelect(size)}
+                                  className="w-16"
+                              >
+                                  {size}
+                              </Button>
+                          ))}
+                      </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-4">
+                      <h3 className="text-lg font-medium text-primary">Quantity</h3>
+                      <div className="flex items-center gap-2 border rounded-md">
+                      <Button variant="ghost" size="icon" onClick={decreaseQuantity} className="h-9 w-9">
+                          <Minus className="h-4 w-4" />
+                      </Button>
+                      <span className="w-10 text-center font-medium">{quantity}</span>
+                      <Button variant="ghost" size="icon" onClick={increaseQuantity} className="h-9 w-9">
+                          <Plus className="h-4 w-4" />
+                      </Button>
+                      </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="flex flex-col sm:flex-row gap-3">
+                      <Button variant="outline" size="lg" className="flex-1" onClick={() => addToCart(product, quantity)}>
+                          <ShoppingBag className="mr-2 h-5 w-5" /> Add to Cart
+                      </Button>
+                      <Button variant="destructive" size="lg" className="flex-1 bg-red-500 hover:bg-red-600" onClick={handleBuyNow}>
+                          Buy Now
+                      </Button>
+                      <Button variant="outline" size="icon" className="h-12 w-12" onClick={() => toggleWishlist(product)}>
+                          <Heart className={cn("h-5 w-5", isInWishlist(product.id) && "fill-destructive text-destructive")} />
+                      </Button>
+                  </div>
+                  </div>
+              </div>
+          </div>
+          <Separator/>
+          <ProductCarousel title="Similar Products" products={similarProducts} />
+          <Separator/>
+          <ProductCarousel title="Complete The Look" products={complementaryProducts} />
+      </div>
+
+      {isConfirming && (
+          <ConfirmPurchaseDialog
+              isOpen={isConfirming}
+              onClose={() => setIsConfirming(false)}
+              cartItems={[]} // Not used when productToBuy is present
+              cartTotal={0} // Not used when productToBuy is present
+              clearCart={clearCart} // Pass clearCart from useCart
+              productToBuy={{product, quantity}}
+          />
+      )}
+    </>
   );
 }
