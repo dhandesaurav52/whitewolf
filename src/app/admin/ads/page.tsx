@@ -31,7 +31,14 @@ const productCategories = [
     { value: 'shirts', label: 'Shirts' },
     { value: 'jeans', label: 'Jeans' },
     { value: 'trousers', label: 'Trousers' },
-    { value: 'accessories', label: 'Accessories' },
+    { value: 'belts', label: 'Belts' },
+    { value: 'chains', label: 'Chains' },
+    { value: 'watches', label: 'Watches' },
+    { value: 'headwear', label: 'Headwear' },
+    { value: 'eyewear', label: 'Eyewear' },
+    { value: 'bags', label: 'Bags' },
+    { value: 'wallets', label: 'Wallets' },
+    { value: 'ties', label: 'Ties' },
 ];
 
 
@@ -60,6 +67,7 @@ export default function AdvertiseOffersPage() {
         setAds(newAds);
         try {
             localStorage.setItem(ADS_STORAGE_KEY, JSON.stringify(newAds));
+            window.dispatchEvent(new Event('storage'));
         } catch (error) {
             console.error("Failed to save ads to localStorage", error);
             toast({
@@ -81,7 +89,7 @@ export default function AdvertiseOffersPage() {
 
     const handleCreateOffer = (newOfferData: { text: string; discountType: any; discountValue: string; appliesTo: any; selectedCategories: string[]; isActive: boolean; }) => {
         const newAd: Advertisement = {
-            id: `ad_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+            id: `ad_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 15)}`,
             text: newOfferData.text,
             discountType: newOfferData.discountType,
             discountValue: parseFloat(newOfferData.discountValue) || 0,
@@ -126,7 +134,10 @@ export default function AdvertiseOffersPage() {
     
     const getAppliesToDisplay = (ad: Advertisement) => {
         if (ad.appliesTo === 'categories') {
-            return `Categories (${ad.selectedCategories.length})`
+            const categoryLabels = ad.selectedCategories.map(catValue => 
+                productCategories.find(c => c.value === catValue)?.label || catValue
+            ).join(', ');
+            return `Categories (${categoryLabels})`
         }
         if (ad.appliesTo === 'products') {
             return 'Specific Products' // This can be expanded later
@@ -223,3 +234,5 @@ export default function AdvertiseOffersPage() {
         </div>
     );
 }
+
+    
