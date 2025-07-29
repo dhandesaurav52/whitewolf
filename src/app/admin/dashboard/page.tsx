@@ -505,7 +505,12 @@ export default function AdminDashboardPage() {
                                     <TableRow key={product.id || index}>
                                         <TableCell>
                                             <div className="relative h-12 w-12 rounded-md overflow-hidden">
-                                                <Image src={product.images[0]} alt={product.name} fill className="object-cover" data-ai-hint={product.aiHint} />
+                                                <Image 
+                                                    src={product.images && product.images.length > 0 ? product.images[0] : "https://placehold.co/100x100.png"} 
+                                                    alt={product.name} 
+                                                    fill 
+                                                    className="object-cover" 
+                                                    data-ai-hint={product.aiHint} />
                                             </div>
                                         </TableCell>
                                         <TableCell className="font-medium">{product.name}</TableCell>
@@ -541,3 +546,5 @@ export default function AdminDashboardPage() {
         </div>
     );
 }
+
+    
