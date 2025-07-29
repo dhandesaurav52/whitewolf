@@ -36,11 +36,11 @@ body {
   }
   .dark {
     --background: 240 10% 3.9%;
-    --foreground: 210 40% 96.1%;
+    --foreground: 200 100% 85%;
     --card: 240 10% 3.9%;
-    --card-foreground: 210 40% 96.1%;
+    --card-foreground: 200 100% 85%;
     --popover: 240 10% 3.9%;
-    --popover-foreground: 210 40% 96.1%;
+    --popover-foreground: 200 100% 85%;
     --primary: 210 40% 98%;
     --primary-foreground: 240 5.9% 10%;
     --secondary: 240 3.7% 15.9%;
@@ -68,5 +68,20 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-marquee {
+    animation: marquee 30s linear infinite;
   }
 }

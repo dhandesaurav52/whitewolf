@@ -1,4 +1,5 @@
 
+
 export type Garment = {
     name: string;
     description: string;
@@ -14,4 +15,9 @@ export type Recommendation = {
         weather: string;
         style: string;
     }
+};
+
+export type Advertisement = {
+    id: string;
+    text: string;
 };

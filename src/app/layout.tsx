@@ -7,6 +7,7 @@ import Footer from "@/components/Footer"
 import { cn } from "@/lib/utils"
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from '@/components/ThemeProvider';
+import AdBanner from '@/components/AdBanner';
 
 export const metadata: Metadata = {
   title: 'White Wolf',
@@ -35,6 +36,7 @@ export default function RootLayout({
           <AuthProvider>
             <div className="flex flex-col min-h-screen">
               <Header />
+              <AdBanner />
               <main className="flex-grow container mx-auto px-4 py-8">
                 {children}
               </main>
