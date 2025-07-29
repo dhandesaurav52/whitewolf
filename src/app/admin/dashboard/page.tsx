@@ -32,10 +32,17 @@ const initialProducts: ProductType[] = [];
 const generateUniqueId = () => `prod_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 9)}`;
 
 const categoriesList = [
-    { value: 't-shirts', label: 'T-Shirts' },
     { value: 'shirts', label: 'Shirts' },
+    { value: 't-shirts', label: 'T-Shirts' },
+    { value: 'oversized-t-shirts', label: 'Oversized T-shirts' },
+    { value: 'pants', label: 'Pants' },
     { value: 'jeans', label: 'Jeans' },
     { value: 'trousers', label: 'Trousers' },
+    { value: 'shoes', label: 'Shoes' },
+    { value: 'bags', label: 'Bags' },
+    { value: 'belts', label: 'Belts' },
+    { value: 'socks', label: 'Socks' },
+    { value: 'wallets', label: 'Wallets' },
     { value: 'accessories', label: 'Accessories' },
 ];
 

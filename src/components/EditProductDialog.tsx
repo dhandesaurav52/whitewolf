@@ -23,10 +23,17 @@ interface EditProductDialogProps {
 }
 
 const categoriesList = [
-    { value: 't-shirts', label: 'T-Shirts' },
     { value: 'shirts', label: 'Shirts' },
+    { value: 't-shirts', label: 'T-Shirts' },
+    { value: 'oversized-t-shirts', label: 'Oversized T-shirts' },
+    { value: 'pants', label: 'Pants' },
     { value: 'jeans', label: 'Jeans' },
     { value: 'trousers', label: 'Trousers' },
+    { value: 'shoes', label: 'Shoes' },
+    { value: 'bags', label: 'Bags' },
+    { value: 'belts', label: 'Belts' },
+    { value: 'socks', label: 'Socks' },
+    { value: 'wallets', label: 'Wallets' },
     { value: 'accessories', label: 'Accessories' },
 ];
 
@@ -153,7 +160,7 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
               </div>
                <div className="space-y-2">
                 <Label htmlFor="images" className="text-accent">Image URLs (comma-separated)</Label>
-                <Textarea id="images" value={(editedProduct.images || []).join(', ')} onChange={(e) => handleChange('images', e.target.value.split(',').map(url => url.trim()))} />
+                <Textarea id="images" value={Array.isArray(editedProduct.images) ? editedProduct.images.join(', ') : ''} onChange={(e) => handleChange('images', e.target.value.split(',').map(url => url.trim()))} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
