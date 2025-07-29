@@ -49,14 +49,14 @@ export default function CreateOfferDialog({ isOpen, onClose, onSave, categories 
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-accent">Create New Offer</DialogTitle>
+          <DialogTitle className="text-xl font-bold">Create New Offer</DialogTitle>
           <DialogDescription>
             Fill out the form to create a new promotional offer.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-6 py-4">
+        <div className="grid gap-8 py-4">
           <div className="space-y-2">
-            <Label htmlFor="offer-name" className="text-accent">Offer Name</Label>
+            <Label htmlFor="offer-name">Offer Name</Label>
             <Input
               id="offer-name"
               placeholder="e.g., 20% Off T-Shirts"
@@ -65,26 +65,26 @@ export default function CreateOfferDialog({ isOpen, onClose, onSave, categories 
             />
           </div>
           
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label className="text-accent">Discount Type</Label>
+          <div className="grid grid-cols-2 gap-8">
+            <div className="space-y-3">
+              <Label>Discount Type</Label>
               <RadioGroup
-                className="flex items-center space-x-4 pt-2"
+                className="flex items-center space-x-4"
                 onValueChange={setDiscountType}
                 value={discountType}
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="percentage" id="r1" />
-                  <Label htmlFor="r1">Percentage</Label>
+                  <Label htmlFor="r1" className="font-normal">Percentage</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="fixed" id="r2" />
-                  <Label htmlFor="r2">Fixed</Label>
+                  <Label htmlFor="r2" className="font-normal">Fixed</Label>
                 </div>
               </RadioGroup>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="discount-value" className="text-accent">Discount Value</Label>
+              <Label htmlFor="discount-value">Discount Value</Label>
               <Input
                 id="discount-value"
                 type="number"
@@ -95,31 +95,31 @@ export default function CreateOfferDialog({ isOpen, onClose, onSave, categories 
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label className="text-accent">Applies To</Label>
+          <div className="grid grid-cols-2 gap-8">
+            <div className="space-y-3">
+              <Label>Applies To</Label>
               <RadioGroup
-                className="flex items-center space-x-4 pt-2"
+                className="flex items-center space-x-4"
                 onValueChange={setAppliesTo}
                 value={appliesTo}
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="categories" id="r3" />
-                  <Label htmlFor="r3">Categories</Label>
+                  <Label htmlFor="r3" className="font-normal">Categories</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="products" id="r4" />
-                  <Label htmlFor="r4">Products</Label>
+                  <Label htmlFor="r4" className="font-normal">Products</Label>
                 </div>
               </RadioGroup>
             </div>
             <div className="space-y-2">
-              <Label className="text-accent">
+              <Label>
                 {appliesTo === 'categories' ? 'Select Categories' : 'Select Products'}
               </Label>
                <Select onValueChange={(value) => setSelectedCategories([value])}>
                 <SelectTrigger>
-                  <SelectValue placeholder={`Select ${appliesTo}...`} />
+                  <SelectValue placeholder={`Select ${appliesTo.slice(0, -1)}...`} />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
@@ -130,9 +130,9 @@ export default function CreateOfferDialog({ isOpen, onClose, onSave, categories 
             </div>
           </div>
 
-          <div className="flex items-center space-x-2 pt-2">
+          <div className="flex items-center space-x-3 pt-2">
             <Switch id="offer-active" checked={isActive} onCheckedChange={setIsActive} />
-            <Label htmlFor="offer-active">Offer is active</Label>
+            <Label htmlFor="offer-active" className="font-normal">Offer is active</Label>
           </div>
 
         </div>
