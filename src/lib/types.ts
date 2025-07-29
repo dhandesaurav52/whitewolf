@@ -47,4 +47,5 @@ export type Product = {
   new?: boolean;
   displaySection: 'shop' | 'accessories';
   discount: string | null;
+  videoUrl?: string;
 };

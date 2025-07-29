@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, UploadCloud } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/lib/types";
 
@@ -164,6 +164,10 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
                <div className="space-y-2">
                     <Label htmlFor="numeric-sizes" className="text-accent">Numeric Sizes (comma-separated)</Label>
                     <Input id="numeric-sizes" value={editedProduct.numericSizes || ''} onChange={(e) => handleChange('numericSizes', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="product-video" className="text-accent">Product Video</Label>
+                    <Input id="product-video" value={editedProduct.videoUrl || ''} onChange={(e) => handleChange('videoUrl', e.target.value)} placeholder="Enter video URL..."/>
                 </div>
               <div className="flex items-center space-x-2">
                 <Switch id="new-arrival" checked={editedProduct.new} onCheckedChange={(checked) => handleChange('new', checked)} />

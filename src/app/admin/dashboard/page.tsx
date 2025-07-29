@@ -128,6 +128,7 @@ export default function AdminDashboardPage() {
     const [newNumericSizes, setNewNumericSizes] = useState('');
     const [isNewArrival, setIsNewArrival] = useState(false);
     const [newStock, setNewStock] = useState(0);
+    const [newVideoUrl, setNewVideoUrl] = useState('');
 
     useEffect(() => {
         let storedProducts: ProductType[] = [];
@@ -197,6 +198,7 @@ export default function AdminDashboardPage() {
         setNewNumericSizes('');
         setIsNewArrival(false);
         setNewStock(0);
+        setNewVideoUrl('');
     };
 
     const handleAddProduct = () => {
@@ -223,6 +225,7 @@ export default function AdminDashboardPage() {
             new: isNewArrival,
             stock: newStock,
             image: 'https://placehold.co/400x500.png',
+            videoUrl: newVideoUrl,
             aiHint: newProductName.toLowerCase(),
             originalPrice: null,
             discount: null,
@@ -374,6 +377,20 @@ export default function AdminDashboardPage() {
                                 </Label>
                             </div> 
                         </div>
+                        
+                        <div className="space-y-2">
+                            <Label htmlFor="product-video" className="text-accent">Product Video</Label>
+                            <div className="flex items-center justify-center w-full">
+                                <Label htmlFor="dropzone-video-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-muted">
+                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                        <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
+                                        <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Drag & drop video here,</span> or click to select files</p>
+                                    </div>
+                                    <Input id="dropzone-video-file" type="file" className="hidden" accept="video/*" onChange={(e) => setNewVideoUrl(e.target.value)}/>
+                                </Label>
+                            </div>
+                        </div>
+
 
                         <div className="flex items-center space-x-2">
                             <Switch id="new-arrival" checked={isNewArrival} onCheckedChange={setIsNewArrival}/>
