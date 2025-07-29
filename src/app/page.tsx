@@ -199,7 +199,7 @@ export default function Home() {
                 image: productForCategory?.images[0] || "https://placehold.co/400x500.png",
                 aiHint: `${cat} model`
             };
-        });
+        }).filter(c => c.name); // Filter out categories with no name
         setCategories(categoryData);
       }
     } catch (error) {
@@ -208,8 +208,9 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    setIsMounted(true);
     loadData();
+    setIsMounted(true); // Set mounted after first data load attempt
+    
     window.addEventListener('storage', loadData);
     return () => {
       window.removeEventListener('storage', loadData);
@@ -227,6 +228,12 @@ export default function Home() {
                     <Skeleton className="h-24 w-full" />
                  </div>
             </div>
+             <div className="container mx-auto py-16">
+                 <Skeleton className="h-12 w-1/2 mx-auto mb-12" />
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                     {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-96 w-full" />)}
+                 </div>
+             </div>
         </div>
     );
   }
@@ -265,193 +272,207 @@ export default function Home() {
         </section>
 
         {/* New Arrivals Section */}
-        <section className="py-16">
-          <div className="container mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-headline font-bold">New Arrivals</h2>
-              <p className="text-muted-foreground mt-2">Check out the latest additions to our collection.</p>
+        {newArrivals.length > 0 && (
+          <section className="py-16">
+            <div className="container mx-auto">
+              <div className="text-center mb-12">
+                <h2 className="text-4xl font-headline font-bold">New Arrivals</h2>
+                <p className="text-muted-foreground mt-2">Check out the latest additions to our collection.</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                {newArrivals.map((product) => (
+                  <Link key={product.id} href={`/product/${product.id}`} className="group block overflow-hidden rounded-lg border border-transparent hover:border-primary transition-colors duration-300">
+                    <div className="relative aspect-[4/5] bg-muted overflow-hidden">
+                      <Image
+                        src={(product.images && product.images.length > 0) ? product.images[0] : "https://placehold.co/400x500.png"}
+                        alt={product.name}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        data-ai-hint={product.aiHint}
+                      />
+                    </div>
+                    <div className="p-2 space-y-1">
+                      {product.brand && <p className="text-sm text-muted-foreground">{product.brand}</p>}
+                      <h3 className="font-headline text-lg text-primary truncate">{product.name}</h3>
+                      <p className="text-sm text-muted-foreground">{product.category}</p>
+                      <p className="text-accent font-semibold pt-1">₹{product.price}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              <div className="text-center mt-12">
+                <Button asChild variant="outline">
+                  <Link href="/shop">View All <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                </Button>
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {newArrivals.map((product) => (
-                <div key={product.id} className="group overflow-hidden rounded-lg border border-transparent hover:border-primary transition-colors duration-300">
-                  <div className="relative aspect-[4/5] bg-muted overflow-hidden">
-                    <Image
-                      src={(product.images && product.images.length > 0) ? product.images[0] : "https://placehold.co/400x500.png"}
-                      alt={product.name}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      data-ai-hint={product.aiHint}
-                    />
-                  </div>
-                  <div className="p-2 space-y-1">
-                     {product.brand && <p className="text-sm text-muted-foreground">{product.brand}</p>}
-                    <h3 className="font-headline text-lg text-primary truncate">{product.name}</h3>
-                    <p className="text-sm text-muted-foreground">{product.category}</p>
-                    <p className="text-accent font-semibold pt-1">₹{product.price}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="text-center mt-12">
-              <Button asChild variant="outline">
-                <Link href="/shop">View All <ArrowRight className="ml-2 h-4 w-4" /></Link>
-              </Button>
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
+
 
         {/* Oversize Tees Section */}
-        <section className="py-16 bg-background">
-          <div className="container mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-headline font-bold text-accent">Oversize Tees</h2>
-              <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
-                Discover our collection of relaxed, comfortable, and stylish oversized t-shirts.
-              </p>
-            </div>
-            <Carousel
-              opts={{
-                align: "start",
-                loop: oversizeTees.length > 4,
-              }}
-              className="w-full"
-            >
-              <CarouselContent>
-                {oversizeTees.map((tee, index) => (
-                  <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-                    <div className="p-1">
-                      <Card className="bg-card border-border overflow-hidden group transition-all duration-300 hover:border-primary hover:shadow-md">
-                        <CardContent className="p-0">
-                          <Link href={`/product/${tee.id}`}>
-                            <div className="relative aspect-[4/5] overflow-hidden">
-                              <Image
-                                  src={(tee.images && tee.images.length > 0) ? tee.images[0] : "https://placehold.co/400x500.png"}
-                                  alt={tee.name}
-                                  fill
-                                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                  data-ai-hint={tee.aiHint}
-                                />
+        {oversizeTees.length > 0 && (
+          <section className="py-16 bg-background">
+            <div className="container mx-auto">
+              <div className="text-center mb-12">
+                <h2 className="text-4xl font-headline font-bold text-accent">Oversize Tees</h2>
+                <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
+                  Discover our collection of relaxed, comfortable, and stylish oversized t-shirts.
+                </p>
+              </div>
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: oversizeTees.length > 4,
+                }}
+                className="w-full"
+              >
+                <CarouselContent>
+                  {oversizeTees.map((tee, index) => (
+                    <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                      <div className="p-1">
+                        <Card className="bg-card border-border overflow-hidden group transition-all duration-300 hover:border-primary hover:shadow-md">
+                          <CardContent className="p-0">
+                            <Link href={`/product/${tee.id}`}>
+                              <div className="relative aspect-[4/5] overflow-hidden">
+                                <Image
+                                    src={(tee.images && tee.images.length > 0) ? tee.images[0] : "https://placehold.co/400x500.png"}
+                                    alt={tee.name}
+                                    fill
+                                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                    data-ai-hint={tee.aiHint}
+                                  />
+                              </div>
+                            </Link>
+                            <div className="p-4 space-y-1">
+                                {tee.brand && <p className="text-sm text-muted-foreground">{tee.brand}</p>}
+                                <h3 className="text-lg font-headline text-primary truncate">{tee.name}</h3>
+                                <p className="text-sm text-muted-foreground">{tee.category}</p>
+                                <p className="text-accent font-bold pt-1">₹{tee.price}</p>
                             </div>
-                          </Link>
-                           <div className="p-4 space-y-1">
-                              {tee.brand && <p className="text-sm text-muted-foreground">{tee.brand}</p>}
-                              <h3 className="text-lg font-headline text-primary truncate">{tee.name}</h3>
-                              <p className="text-sm text-muted-foreground">{tee.category}</p>
-                              <p className="text-accent font-bold pt-1">₹{tee.price}</p>
-                           </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="hidden md:flex" />
-              <CarouselNext className="hidden md:flex" />
-            </Carousel>
-          </div>
-        </section>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="hidden md:flex" />
+                <CarouselNext className="hidden md:flex" />
+              </Carousel>
+            </div>
+          </section>
+        )}
 
         {/* Our Accessories Section */}
-        <section className="py-16">
-          <div className="container mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-headline font-bold">Our Accessories</h2>
-              <p className="text-muted-foreground mt-2">Complete your look with our curated selection of accessories.</p>
+        {accessories.length > 0 && (
+          <section className="py-16">
+            <div className="container mx-auto">
+              <div className="text-center mb-12">
+                <h2 className="text-4xl font-headline font-bold">Our Accessories</h2>
+                <p className="text-muted-foreground mt-2">Complete your look with our curated selection of accessories.</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                {accessories.map((item, i) => (
+                  <Link key={item.id || i} href={`/product/${item.id}`} className="group block overflow-hidden rounded-lg border border-transparent hover:border-primary transition-colors duration-300">
+                    <div className="relative aspect-[4/5] bg-muted overflow-hidden">
+                      <Image
+                        src={item.images && item.images.length > 0 ? item.images[0] : "https://placehold.co/400x500.png"}
+                        alt={item.name}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        data-ai-hint={item.aiHint}
+                      />
+                    </div>
+                    <div className="p-2 space-y-1">
+                      {item.brand && <p className="text-sm text-muted-foreground">{item.brand}</p>}
+                      <h3 className="font-headline text-lg text-primary truncate">{item.name}</h3>
+                      <p className="text-sm text-muted-foreground">{item.category}</p>
+                      <p className="text-accent font-semibold pt-1">₹{item.price}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              <div className="text-center mt-12">
+                <Button asChild variant="outline">
+                  <Link href="/accessories">View All <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                </Button>
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {accessories.map((item, i) => (
-                <div key={i} className="group overflow-hidden rounded-lg border border-transparent hover:border-primary transition-colors duration-300">
-                  <div className="relative aspect-[4/5] bg-muted overflow-hidden">
-                    <Image
-                      src={item.images && item.images.length > 0 ? item.images[0] : "https://placehold.co/400x500.png"}
-                      alt={item.name}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      data-ai-hint={item.aiHint}
-                    />
-                  </div>
-                  <div className="p-2 space-y-1">
-                     {item.brand && <p className="text-sm text-muted-foreground">{item.brand}</p>}
-                    <h3 className="font-headline text-lg text-primary truncate">{item.name}</h3>
-                    <p className="text-sm text-muted-foreground">{item.category}</p>
-                    <p className="text-accent font-semibold pt-1">₹{item.price}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="text-center mt-12">
-              <Button asChild variant="outline">
-                <Link href="/accessories">View All <ArrowRight className="ml-2 h-4 w-4" /></Link>
-              </Button>
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Watch and Shop Section */}
-        <section className="py-16 bg-background">
-          <div className="container mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-headline font-bold">Watch and Shop</h2>
+        {reels.length > 0 && (
+          <section className="py-16 bg-background">
+            <div className="container mx-auto">
+              <div className="text-center mb-12">
+                <h2 className="text-4xl font-headline font-bold">Watch and Shop</h2>
+              </div>
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: reels.length > 4,
+                }}
+                className="w-full"
+              >
+                <CarouselContent>
+                  {reels.map((reel) => {
+                    const product = products.find(p => p.name === reel.linkedProduct);
+                    return (
+                      <CarouselItem key={reel.id} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
+                        <WatchAndShopItem reel={reel} product={product} />
+                      </CarouselItem>
+                    )
+                  })}
+                  <CarouselItem className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 flex items-center justify-center">
+                      <Button asChild variant="outline" size="icon" className="w-16 h-16 rounded-full">
+                        <Link href="/shop" >
+                          <ArrowRight className="h-8 w-8" />
+                        </Link>
+                      </Button>
+                  </CarouselItem>
+                </CarouselContent>
+                <CarouselPrevious className="hidden md:flex" />
+                <CarouselNext className="hidden md:flex" />
+              </Carousel>
             </div>
-            <Carousel
-              opts={{
-                align: "start",
-                loop: reels.length > 5,
-              }}
-              className="w-full"
-            >
-              <CarouselContent>
-                {reels.map((reel) => {
-                  const product = products.find(p => p.name === reel.linkedProduct);
-                  return (
-                    <CarouselItem key={reel.id} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
-                      <WatchAndShopItem reel={reel} product={product} />
-                    </CarouselItem>
-                  )
-                })}
-                 <CarouselItem className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 flex items-center justify-center">
-                    <Button asChild variant="outline" size="icon" className="w-16 h-16 rounded-full">
-                      <Link href="/shop" >
-                        <ArrowRight className="h-8 w-8" />
-                      </Link>
-                    </Button>
-                </CarouselItem>
-              </CarouselContent>
-              <CarouselPrevious className="hidden md:flex" />
-              <CarouselNext className="hidden md:flex" />
-            </Carousel>
-          </div>
-        </section>
+          </section>
+        )}
+
 
         {/* Shop by Category Section */}
-        <section className="py-16">
-          <div className="container mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-headline font-bold text-accent">Shop by Category</h2>
-              <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
-                Explore our diverse range of apparel and accessories, categorized for your convenience.
-              </p>
+        {categories.length > 0 && (
+          <section className="py-16">
+            <div className="container mx-auto">
+              <div className="text-center mb-12">
+                <h2 className="text-4xl font-headline font-bold text-accent">Shop by Category</h2>
+                <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
+                  Explore our diverse range of apparel and accessories, categorized for your convenience.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+                {categories.map((category) => (
+                  <Link href={category.href} key={category.name} className="group relative aspect-[4/5] overflow-hidden rounded-lg">
+                    <Image
+                      src={category.image}
+                      alt={category.name}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      data-ai-hint={category.aiHint}
+                    />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center p-2">
+                      <h3 className="text-white font-headline text-2xl font-bold drop-shadow-md text-center">{category.name}</h3>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-              {categories.map((category) => (
-                <Link href={category.href} key={category.name} className="group relative aspect-[4/5] overflow-hidden rounded-lg">
-                  <Image
-                    src={category.image}
-                    alt={category.name}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    data-ai-hint={category.aiHint}
-                  />
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center p-2">
-                    <h3 className="text-white font-headline text-2xl font-bold drop-shadow-md text-center">{category.name}</h3>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
     </div>
   );
 }
+
+    
 
     
