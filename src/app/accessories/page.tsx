@@ -134,7 +134,7 @@ const ProductCard = ({ product }: { product: ProductType }) => {
        <Link href="#" className="block">
         <div className="relative aspect-[4/5] bg-muted">
           <Image
-            src={product.images[0]}
+            src={product.images && product.images.length > 0 ? product.images[0] : "https://placehold.co/400x500.png"}
             alt={product.name}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
