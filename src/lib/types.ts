@@ -54,3 +54,25 @@ export type CartItem = {
     product: Product;
     quantity: number;
 };
+
+export type OrderStatus = 'Pending' | 'Confirmed' | 'Shipped' | 'Delivered' | 'Cancelled';
+
+export type CustomerDetails = {
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+    city: string;
+    state: string;
+    pincode: string;
+    userId?: string;
+};
+
+export type Order = {
+    id: string;
+    customer: CustomerDetails;
+    items: CartItem[];
+    total: number;
+    status: OrderStatus;
+    orderDate: string;
+};
