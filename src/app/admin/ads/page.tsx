@@ -20,10 +20,12 @@ import EditOfferDialog from "@/components/EditOfferDialog";
 
 const ADS_STORAGE_KEY = 'advertisements';
 
+const generateUniqueId = () => `ad_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 9)}`;
+
 const initialAds: Advertisement[] = [
-    { id: '1', text: '20% off all T-Shirts for a limited time!', discountType: 'percentage', discountValue: 20, appliesTo: 'categories', selectedCategories: ['t-shirts'], status: 'Active' },
-    { id: '2', text: 'Free shipping on orders over ₹1000.', discountType: 'fixed', discountValue: 0, appliesTo: 'products', selectedCategories: [], status: 'Active' },
-    { id: '3', text: 'New summer collection just dropped. Shop now!', discountType: 'fixed', discountValue: 0, appliesTo: 'products', selectedCategories: [], status: 'Inactive' },
+    { id: generateUniqueId(), text: '20% off all T-Shirts for a limited time!', discountType: 'percentage', discountValue: 20, appliesTo: 'categories', selectedCategories: ['t-shirts'], status: 'Active' },
+    { id: generateUniqueId(), text: 'Free shipping on orders over ₹1000.', discountType: 'fixed', discountValue: 0, appliesTo: 'products', selectedCategories: [], status: 'Active' },
+    { id: generateUniqueId(), text: 'New summer collection just dropped. Shop now!', discountType: 'fixed', discountValue: 0, appliesTo: 'products', selectedCategories: [], status: 'Inactive' },
 ];
 
 const productCategories = [
@@ -89,7 +91,7 @@ export default function AdvertiseOffersPage() {
 
     const handleCreateOffer = (newOfferData: { text: string; discountType: any; discountValue: string; appliesTo: any; selectedCategories: string[]; isActive: boolean; }) => {
         const newAd: Advertisement = {
-            id: `ad_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 15)}`,
+            id: generateUniqueId(),
             text: newOfferData.text,
             discountType: newOfferData.discountType,
             discountValue: parseFloat(newOfferData.discountValue) || 0,
@@ -137,7 +139,7 @@ export default function AdvertiseOffersPage() {
             const categoryLabels = ad.selectedCategories.map(catValue => 
                 productCategories.find(c => c.value === catValue)?.label || catValue
             ).join(', ');
-            return `Categories (${categoryLabels})`
+            return `Categories (${categoryLabels || 'None'})`
         }
         if (ad.appliesTo === 'products') {
             return 'Specific Products' // This can be expanded later
@@ -233,6 +235,5 @@ export default function AdvertiseOffersPage() {
             )}
         </div>
     );
-}
 
     
