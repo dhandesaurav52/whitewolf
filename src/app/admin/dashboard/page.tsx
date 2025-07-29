@@ -255,6 +255,7 @@ export default function AdminDashboardPage() {
             });
 
             resetForm();
+            setIsLoading(false);
         } catch (error) {
             console.error("Error adding product: ", error);
             toast({
