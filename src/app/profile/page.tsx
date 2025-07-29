@@ -1,14 +1,28 @@
 
 "use client";
 
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { User, Mail, Phone, MapPin, Pencil } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 export default function ProfilePage() {
   const { user, loading } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Dummy data for now
+  const [address, setAddress] = useState({
+      street: "",
+      city: "",
+      state: "",
+      pincode: ""
+  });
+   const [mobile, setMobile] = useState(user?.phoneNumber || "");
+
 
   if (loading) {
     return (
@@ -71,38 +85,84 @@ export default function ProfilePage() {
   const profileDetails = [
       { icon: User, label: "Full Name", value: user.displayName || "Not provided" },
       { icon: Mail, label: "Email Address", value: user.email || "Not provided" },
-      { icon: Phone, label: "Mobile Number", value: user.phoneNumber || "Not provided" },
-      { icon: MapPin, label: "Address", value: "Not provided" },
+      { icon: Phone, label: "Mobile Number", value: mobile || "Not provided" },
+      { icon: MapPin, label: "Address", value: address.street ? `${address.street}, ${address.city}, ${address.state} - ${address.pincode}` : "Not provided" },
   ];
+
+  const handleSave = () => {
+    // Here you would typically save the data to your backend
+    console.log("Saving data...");
+    setIsEditing(false);
+  }
 
   return (
     <div className="space-y-8">
         <div className="flex justify-between items-center">
              <h1 className="text-4xl font-bold font-headline text-accent">My Profile</h1>
-             <Button variant="outline">
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit Profile
-             </Button>
+             {!isEditing && (
+                <Button variant="outline" onClick={() => setIsEditing(true)}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Edit Profile
+                </Button>
+             )}
         </div>
       
         <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-headline text-accent">{user.displayName || 'Welcome!'}</CardTitle>
-            <CardDescription>
-                Your personal account details.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6 pt-6 max-w-lg mx-auto">
-            {profileDetails.map((detail, index) => (
-                 <div key={index} className="flex items-start gap-4">
-                    <detail.icon className="h-5 w-5 text-muted-foreground mt-1" />
-                    <div className="w-full">
-                        <p className="text-sm text-muted-foreground">{detail.label}</p>
-                        <p className="text-base text-primary font-medium">{detail.value}</p>
+            <CardHeader className="text-center">
+                <CardTitle className="text-3xl font-headline text-accent">{user.displayName || 'Welcome!'}</CardTitle>
+                <CardDescription>
+                    Your personal account details.
+                </CardDescription>
+            </CardHeader>
+            {isEditing ? (
+                 <CardContent className="space-y-6 pt-6 max-w-lg mx-auto">
+                    <div className="space-y-2">
+                        <Label htmlFor="fullName" className="text-accent">Full Name</Label>
+                        <Input id="fullName" defaultValue={user.displayName || ''} />
                     </div>
-                 </div>
-            ))}
-          </CardContent>
+                    <div className="space-y-2">
+                        <Label htmlFor="email" className="text-accent">Email Address</Label>
+                        <Input id="email" defaultValue={user.email || ''} readOnly />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="mobile" className="text-accent">Mobile Number</Label>
+                        <Input id="mobile" placeholder="Enter your mobile number" value={mobile} onChange={e => setMobile(e.target.value)} />
+                    </div>
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                             <Label className="text-accent">Address</Label>
+                             <Button variant="link" className="text-xs p-0 h-auto">
+                                <MapPin className="mr-1 h-3 w-3" />
+                                Use my current location
+                             </Button>
+                        </div>
+                        <div className="space-y-2">
+                            <Input placeholder="Street" value={address.street} onChange={e => setAddress({...address, street: e.target.value})} />
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                            <Input placeholder="City" value={address.city} onChange={e => setAddress({...address, city: e.target.value})} />
+                            <Input placeholder="State" value={address.state} onChange={e => setAddress({...address, state: e.target.value})} />
+                            <Input placeholder="Pincode" value={address.pincode} onChange={e => setAddress({...address, pincode: e.target.value})} />
+                        </div>
+                    </div>
+                     <CardFooter className="px-0 pb-0 pt-4 flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
+                        <Button onClick={handleSave}>Save Changes</Button>
+                    </CardFooter>
+                 </CardContent>
+            ) : (
+                <CardContent className="space-y-6 pt-6 max-w-lg mx-auto">
+                    {profileDetails.map((detail, index) => (
+                        <div key={index} className="flex items-start gap-4">
+                            <detail.icon className="h-5 w-5 text-muted-foreground mt-1" />
+                            <div className="w-full">
+                                <p className="text-sm text-muted-foreground">{detail.label}</p>
+                                <p className="text-base text-primary font-medium">{detail.value}</p>
+                            </div>
+                        </div>
+                    ))}
+                </CardContent>
+            )}
         </Card>
     </div>
   );
