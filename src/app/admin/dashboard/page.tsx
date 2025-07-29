@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BarChart, ShoppingCart, Package, Users, UploadCloud, Pencil, Trash2 } from "lucide-react";
+import { BarChart, ShoppingCart, Package, Users, UploadCloud, Pencil, Trash2, Search } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Image from "next/image";
@@ -210,8 +210,31 @@ export default function AdminDashboardPage() {
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-2xl font-headline text-accent">Manage Existing Products</CardTitle>
-                        <CardDescription>View, edit, or delete products currently in your store.</CardDescription>
+                        <div className="flex justify-between items-start">
+                             <div>
+                                <CardTitle className="text-2xl font-headline text-accent">Manage Products</CardTitle>
+                                <CardDescription>View, edit, or delete products currently in your store.</CardDescription>
+                             </div>
+                             <div className="flex items-center gap-2">
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input placeholder="Search products..." className="pl-9 h-9" />
+                                </div>
+                                <Select>
+                                    <SelectTrigger className="w-[180px] h-9">
+                                        <SelectValue placeholder="All Categories" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Categories</SelectItem>
+                                        <SelectItem value="t-shirts">T-Shirts</SelectItem>
+                                        <SelectItem value="shirts">Shirts</SelectItem>
+                                        <SelectItem value="jeans">Jeans</SelectItem>
+                                        <SelectItem value="trousers">Trousers</SelectItem>
+                                        <SelectItem value="accessories">Accessories</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <Table>
@@ -265,4 +288,5 @@ export default function AdminDashboardPage() {
             )}
         </div>
     );
-}
+
+    
