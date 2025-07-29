@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useContext, createContext, ReactNode } from "react";
+import { useState, useEffect, useContext, createContext, ReactNode, useCallback } from "react";
 import { onAuthStateChanged, User, signOut as firebaseSignOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
@@ -13,6 +13,7 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   signOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,6 +23,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
+
+  const refreshUser = useCallback(async () => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      await currentUser.reload();
+      const refreshedUser = auth.currentUser;
+      setUser(refreshedUser);
+      setIsAdmin(refreshedUser ? ADMIN_EMAILS.includes(refreshedUser.email || "") : false);
+    }
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -37,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/");
   };
 
-  const value = { user, loading, isAdmin, signOut };
+  const value = { user, loading, isAdmin, signOut, refreshUser };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ProfilePage() {
-  const { user, loading } = useAuth();
+  const { user, loading, refreshUser } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
 
@@ -105,6 +105,7 @@ export default function ProfilePage() {
     try {
         await updateProfile(user, { displayName });
         // Here you would also save mobile and address to your database
+        await refreshUser();
         toast({
             title: "Success",
             description: "Your profile has been updated.",
