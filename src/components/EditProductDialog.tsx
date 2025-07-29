@@ -49,15 +49,15 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[625px] max-h-[90vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[625px] grid-rows-[auto_1fr_auto] max-h-[90vh] p-0">
+        <DialogHeader className="p-6 pb-0">
           <DialogTitle className="text-2xl font-bold text-accent">Edit Product</DialogTitle>
           <DialogDescription>
             Make changes to "{product.name}". Click save when you're done.
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="flex-grow pr-6 -mr-6">
-            <div className="grid gap-6 py-4">
+        <ScrollArea className="h-full overflow-y-auto">
+            <div className="grid gap-6 py-4 px-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-accent">Product Name</Label>
@@ -80,11 +80,11 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
                             <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="t-shirts">T-Shirts</SelectItem>
-                            <SelectItem value="shirts">Shirts</SelectItem>
-                            <SelectItem value="jeans">Jeans</SelectItem>
-                            <SelectItem value="trousers">Trousers</SelectItem>
-                            <SelectItem value="accessories">Accessories</SelectItem>
+                            <SelectItem value="T-Shirts">T-Shirts</SelectItem>
+                            <SelectItem value="Shirts">Shirts</SelectItem>
+                            <SelectItem value="Jeans">Jeans</SelectItem>
+                            <SelectItem value="Trousers">Trousers</SelectItem>
+                            <SelectItem value="Accessories">Accessories</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -113,7 +113,7 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
               </div>
             </div>
         </ScrollArea>
-        <DialogFooter className="pt-4 flex-shrink-0">
+        <DialogFooter className="p-6 pt-0 border-t mt-4 pt-4">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={handleSave}>Save Changes</Button>
         </DialogFooter>
