@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,13 @@ export default function ProfilePage() {
       state: "",
       pincode: ""
   });
-   const [mobile, setMobile] = useState(user?.phoneNumber || "");
+   const [mobile, setMobile] = useState("");
+
+   useEffect(() => {
+    if (user?.phoneNumber) {
+      setMobile(user.phoneNumber);
+    }
+  }, [user]);
 
 
   if (loading) {
