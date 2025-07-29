@@ -28,6 +28,7 @@ type Product = {
   textSizes?: string;
   numericSizes?: string;
   isNew?: boolean;
+  displaySection?: 'shop' | 'accessories';
 };
 
 export default function AdminDashboardPage() {
@@ -63,7 +64,8 @@ export default function AdminDashboardPage() {
         description: "A classic oversized tee with a vintage wash.",
         colors: "Charcoal, Black",
         textSizes: "S, M, L, XL",
-        isNew: true
+        isNew: true,
+        displaySection: 'shop'
       },
       {
         name: "Slim-Fit Chinos",
@@ -76,7 +78,8 @@ export default function AdminDashboardPage() {
         description: "Versatile slim-fit chinos for any occasion.",
         colors: "Beige, Navy",
         numericSizes: "30, 32, 34, 36",
-        isNew: false
+        isNew: false,
+        displaySection: 'shop'
       },
       {
         name: "Linen Button-Down",
@@ -89,7 +92,8 @@ export default function AdminDashboardPage() {
         description: "A breathable linen shirt, perfect for summer.",
         colors: "White, Sky Blue",
         textSizes: "M, L, XL",
-        isNew: false
+        isNew: false,
+        displaySection: 'shop'
       },
        {
         name: "Dark Wash Jeans",
@@ -102,7 +106,21 @@ export default function AdminDashboardPage() {
         description: "Classic dark wash jeans with a modern fit.",
         colors: "Indigo",
         numericSizes: "28, 30, 32, 34, 36",
-        isNew: false
+        isNew: false,
+        displaySection: 'shop'
+      },
+       {
+        name: "Classic Leather Belt",
+        image: "https://placehold.co/100x100.png",
+        aiHint: "leather belt",
+        category: "Accessories",
+        price: "499",
+        stock: 100,
+        brand: "Urban Threads",
+        description: "A timeless leather belt.",
+        colors: "Black, Brown",
+        isNew: false,
+        displaySection: 'accessories'
       },
     ];
 
@@ -161,6 +179,19 @@ export default function AdminDashboardPage() {
                                     </SelectContent>
                                 </Select>
                             </div>
+                        </div>
+
+                         <div className="space-y-2">
+                            <Label htmlFor="display-section" className="text-accent">Display In</Label>
+                            <Select>
+                                <SelectTrigger id="display-section">
+                                    <SelectValue placeholder="Select a section" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="shop">Shop</SelectItem>
+                                    <SelectItem value="accessories">Accessories</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div className="space-y-2">
@@ -288,5 +319,4 @@ export default function AdminDashboardPage() {
             )}
         </div>
     );
-
-    
+}

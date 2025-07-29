@@ -24,6 +24,7 @@ type Product = {
   textSizes?: string;
   numericSizes?: string;
   isNew?: boolean;
+  displaySection?: 'shop' | 'accessories';
 };
 
 interface EditProductDialogProps {
@@ -89,6 +90,18 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
                         </SelectContent>
                     </Select>
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="display-section" className="text-accent">Display In</Label>
+                <Select value={editedProduct.displaySection} onValueChange={(value) => handleChange('displaySection', value)}>
+                    <SelectTrigger id="display-section">
+                        <SelectValue placeholder="Select a section" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="shop">Shop</SelectItem>
+                        <SelectItem value="accessories">Accessories</SelectItem>
+                    </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="description" className="text-accent">Description</Label>
