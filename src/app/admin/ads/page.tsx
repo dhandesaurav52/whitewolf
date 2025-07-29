@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import CreateOfferDialog from "@/components/CreateOfferDialog";
 import EditOfferDialog from "@/components/EditOfferDialog";
+
+const ADS_STORAGE_KEY = 'advertisements';
 
 const initialAds: Advertisement[] = [
     { id: '1', text: '20% off all T-Shirts for a limited time!', discount: '20%', appliesTo: 'Categories (1)', status: 'Active' },
@@ -34,13 +36,43 @@ const productCategories = [
 
 
 export default function AdvertiseOffersPage() {
-    const [ads, setAds] = useState<Advertisement[]>(initialAds);
+    const [ads, setAds] = useState<Advertisement[]>([]);
     const { toast } = useToast();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [editingOffer, setEditingOffer] = useState<Advertisement | null>(null);
 
+    useEffect(() => {
+        try {
+            const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
+            if (storedAds) {
+                setAds(JSON.parse(storedAds));
+            } else {
+                setAds(initialAds);
+                localStorage.setItem(ADS_STORAGE_KEY, JSON.stringify(initialAds));
+            }
+        } catch (error) {
+            console.error("Failed to load ads from localStorage", error);
+            setAds(initialAds);
+        }
+    }, []);
+
+    const updateAds = (newAds: Advertisement[]) => {
+        setAds(newAds);
+        try {
+            localStorage.setItem(ADS_STORAGE_KEY, JSON.stringify(newAds));
+        } catch (error) {
+            console.error("Failed to save ads to localStorage", error);
+            toast({
+                title: "Storage Error",
+                description: "Could not save changes to local storage.",
+                variant: "destructive"
+            });
+        }
+    }
+
     const handleDeleteAd = (id: string) => {
-        setAds(prev => prev.filter(ad => ad.id !== id));
+        const newAds = ads.filter(ad => ad.id !== id);
+        updateAds(newAds);
         toast({
             title: "Advertisement Removed",
             description: "The ad has been successfully deleted.",
@@ -56,7 +88,7 @@ export default function AdvertiseOffersPage() {
             status: newOfferData.isActive ? 'Active' : 'Inactive',
         };
 
-        setAds(prev => [...prev, newAd]);
+        updateAds([...ads, newAd]);
         toast({
             title: "Offer Created",
             description: "The new promotional offer has been successfully added.",
@@ -75,7 +107,7 @@ export default function AdvertiseOffersPage() {
             status: updatedOfferData.isActive ? 'Active' : 'Inactive',
         };
 
-        setAds(prev => prev.map(ad => ad.id === updatedAd.id ? updatedAd : ad));
+        updateAds(ads.map(ad => ad.id === updatedAd.id ? updatedAd : ad));
         toast({
             title: "Offer Updated",
             description: "The promotional offer has been successfully updated.",
