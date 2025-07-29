@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { ShoppingBag, LogOut, User as UserIcon, Heart, Settings, LayoutDashboard, Package, Undo2, Megaphone, Clapperboard } from "lucide-react";
+import { ShoppingBag, LogOut, User as UserIcon, Heart, Settings, LayoutDashboard, Package, Undo2, Megaphone, Clapperboard, ShoppingCart } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -119,6 +119,18 @@ export default function Header() {
                       <Link href="/profile">
                         <UserIcon className="mr-2 h-4 w-4" />
                         <span>Profile</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/orders">
+                        <Package className="mr-2 h-4 w-4" />
+                        <span>Orders</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/cart">
+                        <ShoppingCart className="mr-2 h-4 w-4" />
+                        <span>Cart</span>
                       </Link>
                     </DropdownMenuItem>
                      <DropdownMenuItem asChild>
