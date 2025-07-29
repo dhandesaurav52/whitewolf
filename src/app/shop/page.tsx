@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,10 +16,15 @@ import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import type { Advertisement } from '@/lib/types';
 
-const products = [
+const ADS_STORAGE_KEY = 'advertisements';
+
+const initialProducts = [
   {
+    id: 'prod1',
     name: 'Vintage Wash Tee',
+    category: 't-shirts',
     price: '1299',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
@@ -28,7 +33,9 @@ const products = [
     new: true,
   },
   {
+    id: 'prod2',
     name: 'Slim-Fit Chinos',
+    category: 'trousers',
     price: '1599',
     originalPrice: '1999',
     image: 'https://placehold.co/400x500.png',
@@ -37,7 +44,9 @@ const products = [
     new: false,
   },
   {
+    id: 'prod3',
     name: 'Linen Button-Down',
+    category: 'shirts',
     price: '1499',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
@@ -46,7 +55,9 @@ const products = [
     new: false,
   },
   {
+    id: 'prod4',
     name: 'Dark Wash Jeans',
+    category: 'jeans',
     price: '1899',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
@@ -55,7 +66,9 @@ const products = [
     new: false,
   },
     {
+    id: 'prod5',
     name: 'Graphic Print Tee',
+    category: 't-shirts',
     price: '1399',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
@@ -64,7 +77,9 @@ const products = [
     new: true,
   },
   {
+    id: 'prod6',
     name: 'Utility Cargo Pants',
+    category: 'trousers',
     price: '2199',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
@@ -73,7 +88,9 @@ const products = [
     new: false,
   },
   {
+    id: 'prod7',
     name: 'Anxious Tshirt',
+    category: 't-shirts',
     price: '1199',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
@@ -82,7 +99,9 @@ const products = [
     new: false,
   },
     {
+    id: 'prod8',
     name: 'Classic Tee',
+    category: 't-shirts',
     price: '999',
     originalPrice: '1199',
     image: 'https://placehold.co/400x500.png',
@@ -92,7 +111,9 @@ const products = [
   },
 ];
 
-const ProductCard = ({ product }: { product: typeof products[0] }) => {
+type Product = typeof initialProducts[0];
+
+const ProductCard = ({ product }: { product: Product }) => {
   return (
     <Card className="group overflow-hidden rounded-lg bg-card text-card-foreground border-border relative">
        <Link href="#" className="block">
@@ -112,7 +133,7 @@ const ProductCard = ({ product }: { product: typeof products[0] }) => {
               {product.discount}
             </Badge>
           )}
-           {product.new && (
+           {product.new && !product.discount && (
             <Badge
               className="absolute top-3 left-3 bg-accent text-accent-foreground"
             >
@@ -144,6 +165,67 @@ const ProductCard = ({ product }: { product: typeof products[0] }) => {
 
 
 export default function ShopPage() {
+    const [products, setProducts] = useState<Product[]>(initialProducts);
+
+    useEffect(() => {
+        const applyDiscounts = () => {
+            try {
+                const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
+                if (!storedAds) return;
+
+                const activeAds: Advertisement[] = JSON.parse(storedAds).filter((ad: Advertisement) => ad.status === 'Active');
+                const categoryAds = activeAds.filter(ad => ad.appliesTo === 'categories' && ad.selectedCategories.length > 0);
+
+                if (categoryAds.length === 0) {
+                    setProducts(initialProducts); // Reset to original if no offers
+                    return;
+                }
+                
+                const updatedProducts = initialProducts.map(p => {
+                    let productPrice = parseFloat(p.price);
+                    let originalProductPrice = p.originalPrice ? parseFloat(p.originalPrice) : productPrice;
+                    let appliedDiscount = null;
+                    
+                    const applicableAd = categoryAds.find(ad => ad.selectedCategories.includes(p.category));
+
+                    if (applicableAd) {
+                         if (applicableAd.discountType === 'percentage') {
+                            productPrice = originalProductPrice * (1 - applicableAd.discountValue / 100);
+                            appliedDiscount = `${applicableAd.discountValue}% OFF`;
+                        } else { // fixed
+                            productPrice = originalProductPrice - applicableAd.discountValue;
+                            appliedDiscount = `₹${applicableAd.discountValue} OFF`;
+                        }
+                    }
+
+                    return {
+                        ...p,
+                        price: Math.round(productPrice).toString(),
+                        originalPrice: appliedDiscount ? originalProductPrice.toString() : p.originalPrice,
+                        discount: appliedDiscount,
+                    }
+                });
+
+                setProducts(updatedProducts);
+
+            } catch (error) {
+                console.error("Failed to apply discounts", error);
+                setProducts(initialProducts);
+            }
+        };
+
+        applyDiscounts();
+
+        const handleStorageChange = () => {
+            applyDiscounts();
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, []);
+
     const filters = [
         { placeholder: 'All Categories', options: ['T-Shirts', 'Shirts', 'Pants', 'Jeans'] },
         { placeholder: 'All Brands', options: ['Brand A', 'Brand B'] },
@@ -194,7 +276,7 @@ export default function ShopPage() {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {products.map((product, index) => (
-            <ProductCard key={index} product={product} />
+            <ProductCard key={product.id || index} product={product} />
           ))}
         </div>
       </main>

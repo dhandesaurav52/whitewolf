@@ -8,9 +8,8 @@ import type { Advertisement } from '@/lib/types';
 const ADS_STORAGE_KEY = 'advertisements';
 
 const initialAds: Advertisement[] = [
-    { id: '1', text: '20% off all T-Shirts for a limited time!', status: 'Active' },
-    { id: '2', text: 'Free shipping on orders over ₹1000.', status: 'Active' },
-    { id: '3', text: 'New summer collection just dropped. Shop now!', status: 'Inactive' },
+    { id: '1', text: '20% off all T-Shirts for a limited time!', discountType: 'percentage', discountValue: 20, appliesTo: 'categories', selectedCategories: ['t-shirts'], status: 'Active' },
+    { id: '2', text: 'Free shipping on orders over ₹1000.', discountType: 'fixed', discountValue: 0, appliesTo: 'products', selectedCategories: [], status: 'Active' },
 ];
 
 export default function AdBanner() {
@@ -30,11 +29,23 @@ export default function AdBanner() {
             console.error("Failed to load ads from localStorage", error);
             setAds(initialAds);
         }
+
+        const handleStorageChange = () => {
+             try {
+                const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
+                if (storedAds) {
+                    setAds(JSON.parse(storedAds));
+                }
+            } catch (error) {
+                console.error("Failed to reload ads from localStorage", error);
+            }
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+
     }, []);
 
     if (!isClient) {
-        // Return a static or empty state during server-side rendering
-        // to avoid hydration mismatch
         return null;
     }
 
@@ -44,7 +55,6 @@ export default function AdBanner() {
         return null;
     }
 
-    // Duplicate ads to create a seamless loop for the marquee
     const duplicatedAds = activeAds.length > 1 ? [...activeAds, ...activeAds] : activeAds;
 
     return (

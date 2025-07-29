@@ -26,41 +26,22 @@ interface EditOfferDialogProps {
 
 export default function EditOfferDialog({ isOpen, onClose, onSave, offer, categories }: EditOfferDialogProps) {
   const [offerName, setOfferName] = useState("");
-  const [discountType, setDiscountType] = useState("percentage");
+  const [discountType, setDiscountType] = useState<"percentage" | "fixed">("percentage");
   const [discountValue, setDiscountValue] = useState("");
-  const [appliesTo, setAppliesTo] = useState("categories");
+  const [appliesTo, setAppliesTo] = useState<"categories" | "products">("categories");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
     if (offer) {
       setOfferName(offer.text);
-      
-      const discountMatch = offer.discount?.match(/(\d+)(%?)/);
-      if (discountMatch) {
-        setDiscountValue(discountMatch[1] || "");
-        setDiscountType(discountMatch[2] === '%' ? 'percentage' : 'fixed');
-      } else {
-        setDiscountValue("");
-        setDiscountType("percentage");
-      }
-
-      if (offer.appliesTo?.toLowerCase().includes("categories")) {
-        setAppliesTo("categories");
-        // In a real app, you'd parse the categories from the offer.appliesTo string
-        // For this prototype, we'll leave it simple.
-        if (categories.length > 0) {
-            setSelectedCategories([categories[0].value]);
-        }
-      } else if (offer.appliesTo?.toLowerCase().includes("products")) {
-          setAppliesTo("products");
-      } else {
-        setAppliesTo("categories");
-      }
-
+      setDiscountType(offer.discountType);
+      setDiscountValue(offer.discountValue.toString());
+      setAppliesTo(offer.appliesTo);
+      setSelectedCategories(offer.selectedCategories || []);
       setIsActive(offer.status === 'Active');
     }
-  }, [offer, categories]);
+  }, [offer]);
 
   const handleSave = () => {
     if (!offerName) {
@@ -80,13 +61,13 @@ export default function EditOfferDialog({ isOpen, onClose, onSave, offer, catego
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[525px] p-0">
-        <DialogHeader className="p-6 pb-4">
+        <DialogHeader className="p-6 pb-4 border-b">
           <DialogTitle className="text-xl font-bold">Edit Offer</DialogTitle>
           <DialogDescription>
             Update the details for this offer.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-6 p-6">
+        <div className="p-6 space-y-6">
           <div className="space-y-2">
             <Label htmlFor="offer-name-edit">Offer Name</Label>
             <Input
@@ -102,7 +83,7 @@ export default function EditOfferDialog({ isOpen, onClose, onSave, offer, catego
               <Label>Discount Type</Label>
               <RadioGroup
                 className="flex items-center space-x-4 pt-2"
-                onValueChange={setDiscountType}
+                onValueChange={(value: "percentage" | "fixed") => setDiscountType(value)}
                 value={discountType}
               >
                 <div className="flex items-center space-x-2">
@@ -132,7 +113,7 @@ export default function EditOfferDialog({ isOpen, onClose, onSave, offer, catego
               <Label>Applies To</Label>
               <RadioGroup
                 className="flex items-center space-x-4 pt-2"
-                onValueChange={setAppliesTo}
+                onValueChange={(value: "categories" | "products") => setAppliesTo(value)}
                 value={appliesTo}
               >
                 <div className="flex items-center space-x-2">

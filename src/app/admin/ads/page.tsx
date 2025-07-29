@@ -21,9 +21,9 @@ import EditOfferDialog from "@/components/EditOfferDialog";
 const ADS_STORAGE_KEY = 'advertisements';
 
 const initialAds: Advertisement[] = [
-    { id: '1', text: '20% off all T-Shirts for a limited time!', discount: '20%', appliesTo: 'Categories (1)', status: 'Active' },
-    { id: '2', text: 'Free shipping on orders over ₹1000.', discount: 'N/A', appliesTo: 'All Orders', status: 'Active' },
-    { id: '3', text: 'New summer collection just dropped. Shop now!', discount: 'N/A', appliesTo: 'All Visitors', status: 'Inactive' },
+    { id: '1', text: '20% off all T-Shirts for a limited time!', discountType: 'percentage', discountValue: 20, appliesTo: 'categories', selectedCategories: ['t-shirts'], status: 'Active' },
+    { id: '2', text: 'Free shipping on orders over ₹1000.', discountType: 'fixed', discountValue: 0, appliesTo: 'products', selectedCategories: [], status: 'Active' },
+    { id: '3', text: 'New summer collection just dropped. Shop now!', discountType: 'fixed', discountValue: 0, appliesTo: 'products', selectedCategories: [], status: 'Inactive' },
 ];
 
 const productCategories = [
@@ -79,12 +79,14 @@ export default function AdvertiseOffersPage() {
         });
     };
 
-    const handleCreateOffer = (newOfferData: { text: string; discountType: string; discountValue: string; appliesTo: string; selectedCategories: string[]; isActive: boolean; }) => {
+    const handleCreateOffer = (newOfferData: { text: string; discountType: any; discountValue: string; appliesTo: any; selectedCategories: string[]; isActive: boolean; }) => {
         const newAd: Advertisement = {
-            id: `ad_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+            id: `ad_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
             text: newOfferData.text,
-            discount: newOfferData.discountValue ? `${newOfferData.discountValue}${newOfferData.discountType === 'percentage' ? '%' : ''}` : 'N/A',
-            appliesTo: newOfferData.appliesTo === 'categories' ? `Categories (${newOfferData.selectedCategories.length})` : 'Products', // Simplified for now
+            discountType: newOfferData.discountType,
+            discountValue: parseFloat(newOfferData.discountValue) || 0,
+            appliesTo: newOfferData.appliesTo,
+            selectedCategories: newOfferData.selectedCategories,
             status: newOfferData.isActive ? 'Active' : 'Inactive',
         };
 
@@ -96,14 +98,16 @@ export default function AdvertiseOffersPage() {
         setIsCreateDialogOpen(false);
     };
 
-    const handleUpdateOffer = (updatedOfferData: { text: string; discountType: string; discountValue: string; appliesTo: string; selectedCategories: string[]; isActive: boolean; }) => {
+    const handleUpdateOffer = (updatedOfferData: { text: string; discountType: any; discountValue: string; appliesTo: any; selectedCategories: string[]; isActive: boolean; }) => {
         if (!editingOffer) return;
 
         const updatedAd: Advertisement = {
             ...editingOffer,
             text: updatedOfferData.text,
-            discount: updatedOfferData.discountValue ? `${updatedOfferData.discountValue}${updatedOfferData.discountType === 'percentage' ? '%' : ''}` : 'N/A',
-            appliesTo: updatedOfferData.appliesTo === 'categories' ? `Categories (${updatedOfferData.selectedCategories.length})` : 'Products',
+            discountType: updatedOfferData.discountType,
+            discountValue: parseFloat(updatedOfferData.discountValue) || 0,
+            appliesTo: updatedOfferData.appliesTo,
+            selectedCategories: updatedOfferData.selectedCategories,
             status: updatedOfferData.isActive ? 'Active' : 'Inactive',
         };
 
@@ -114,6 +118,21 @@ export default function AdvertiseOffersPage() {
         });
         setEditingOffer(null);
     };
+    
+    const getDiscountDisplay = (ad: Advertisement) => {
+        if (!ad.discountValue) return 'N/A';
+        return ad.discountType === 'percentage' ? `${ad.discountValue}%` : `₹${ad.discountValue}`;
+    }
+    
+    const getAppliesToDisplay = (ad: Advertisement) => {
+        if (ad.appliesTo === 'categories') {
+            return `Categories (${ad.selectedCategories.length})`
+        }
+        if (ad.appliesTo === 'products') {
+            return 'Specific Products' // This can be expanded later
+        }
+        return "All Orders";
+    }
 
 
     return (
@@ -146,8 +165,8 @@ export default function AdvertiseOffersPage() {
                             {ads.length > 0 ? ads.map((ad) => (
                                 <TableRow key={ad.id}>
                                     <TableCell className="font-medium">{ad.text}</TableCell>
-                                    <TableCell>{ad.discount}</TableCell>
-                                    <TableCell>{ad.appliesTo}</TableCell>
+                                    <TableCell>{getDiscountDisplay(ad)}</TableCell>
+                                    <TableCell>{getAppliesToDisplay(ad)}</TableCell>
                                     <TableCell>
                                         <Badge variant={ad.status === 'Active' ? "default" : "outline"} className={ad.status === 'Active' ? 'bg-primary text-primary-foreground' : ''}>
                                             {ad.status}

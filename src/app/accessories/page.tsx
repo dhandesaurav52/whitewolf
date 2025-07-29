@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,10 +16,15 @@ import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import type { Advertisement } from '@/lib/types';
 
-const products = [
+const ADS_STORAGE_KEY = 'advertisements';
+
+const initialProducts = [
   {
+    id: 'acc1',
     name: 'Classic Leather Belt',
+    category: 'belts',
     price: '499',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
@@ -28,7 +33,9 @@ const products = [
     new: true,
   },
   {
+    id: 'acc2',
     name: 'Silver-plated Chain',
+    category: 'chains',
     price: '899',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
@@ -37,7 +44,9 @@ const products = [
     new: false,
   },
   {
+    id: 'acc3',
     name: 'Chronograph Watch',
+    category: 'watches',
     price: '1599',
     originalPrice: '1999',
     image: 'https://placehold.co/400x500.png',
@@ -46,7 +55,9 @@ const products = [
     new: false,
   },
   {
+    id: 'acc4',
     name: 'Wool Knit Beanie',
+    category: 'headwear',
     price: '349',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
@@ -55,7 +66,9 @@ const products = [
     new: false,
   },
   {
+    id: 'acc5',
     name: 'Aviator Sunglasses',
+    category: 'eyewear',
     price: '749',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
@@ -64,7 +77,9 @@ const products = [
     new: true,
   },
   {
+    id: 'acc6',
     name: 'Canvas Backpack',
+    category: 'bags',
     price: '949',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
@@ -73,7 +88,9 @@ const products = [
     new: false,
   },
   {
+    id: 'acc7',
     name: 'Leather Cardholder',
+    category: 'wallets',
     price: '299',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
@@ -82,7 +99,9 @@ const products = [
     new: false,
   },
   {
+    id: 'acc8',
     name: 'Patterned Silk Tie',
+    category: 'ties',
     price: '549',
     originalPrice: '649',
     image: 'https://placehold.co/400x500.png',
@@ -92,8 +111,9 @@ const products = [
   },
 ];
 
+type Product = typeof initialProducts[0];
 
-const ProductCard = ({ product }: { product: typeof products[0] }) => {
+const ProductCard = ({ product }: { product: Product }) => {
   return (
     <Card className="group overflow-hidden rounded-lg bg-card text-card-foreground border-border relative">
        <Link href="#" className="block">
@@ -113,7 +133,7 @@ const ProductCard = ({ product }: { product: typeof products[0] }) => {
               {product.discount}
             </Badge>
           )}
-           {product.new && (
+           {product.new && !product.discount && (
             <Badge
               className="absolute top-3 left-3 bg-accent text-accent-foreground"
             >
@@ -145,6 +165,67 @@ const ProductCard = ({ product }: { product: typeof products[0] }) => {
 
 
 export default function AccessoriesPage() {
+    const [products, setProducts] = useState<Product[]>(initialProducts);
+
+    useEffect(() => {
+        const applyDiscounts = () => {
+            try {
+                const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
+                if (!storedAds) return;
+
+                const activeAds: Advertisement[] = JSON.parse(storedAds).filter((ad: Advertisement) => ad.status === 'Active');
+                const categoryAds = activeAds.filter(ad => ad.appliesTo === 'categories' && ad.selectedCategories.length > 0);
+
+                if (categoryAds.length === 0) {
+                    setProducts(initialProducts); // Reset to original if no offers
+                    return;
+                }
+                
+                const updatedProducts = initialProducts.map(p => {
+                    let productPrice = parseFloat(p.price);
+                    let originalProductPrice = p.originalPrice ? parseFloat(p.originalPrice) : productPrice;
+                    let appliedDiscount = null;
+                    
+                    const applicableAd = categoryAds.find(ad => ad.selectedCategories.includes(p.category));
+
+                    if (applicableAd) {
+                         if (applicableAd.discountType === 'percentage') {
+                            productPrice = originalProductPrice * (1 - applicableAd.discountValue / 100);
+                            appliedDiscount = `${applicableAd.discountValue}% OFF`;
+                        } else { // fixed
+                            productPrice = originalProductPrice - applicableAd.discountValue;
+                            appliedDiscount = `₹${applicableAd.discountValue} OFF`;
+                        }
+                    }
+
+                    return {
+                        ...p,
+                        price: Math.round(productPrice).toString(),
+                        originalPrice: appliedDiscount ? originalProductPrice.toString() : p.originalPrice,
+                        discount: appliedDiscount,
+                    }
+                });
+
+                setProducts(updatedProducts);
+
+            } catch (error) {
+                console.error("Failed to apply discounts", error);
+                setProducts(initialProducts);
+            }
+        };
+
+        applyDiscounts();
+
+        const handleStorageChange = () => {
+            applyDiscounts();
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, []);
+
     const filters = [
         { placeholder: 'All Categories', options: ['Belts', 'Wallets', 'Watches', 'Ties'] },
         { placeholder: 'All Brands', options: ['Brand A', 'Brand B'] },
@@ -195,7 +276,7 @@ export default function AccessoriesPage() {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {products.map((product, index) => (
-            <ProductCard key={index} product={product} />
+            <ProductCard key={product.id || index} product={product} />
           ))}
         </div>
       </main>
