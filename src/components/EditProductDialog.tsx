@@ -84,15 +84,15 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[625px] grid-rows-[auto_1fr_auto] max-h-[90vh] p-0">
-        <DialogHeader className="p-6 pb-0">
+        <DialogHeader className="p-6 pb-4 border-b">
           <DialogTitle className="text-2xl font-bold text-accent">Edit Product</DialogTitle>
           <DialogDescription>
             Make changes to "{product.name}". Click save when you're done.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4 overflow-hidden">
-          <ScrollArea className="h-full px-6">
-            <div className="grid gap-6">
+        <div className="overflow-hidden">
+          <ScrollArea className="h-full max-h-[calc(90vh-160px)]">
+            <div className="p-6 grid gap-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-accent">Product Name</Label>
@@ -187,7 +187,7 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
             </div>
           </ScrollArea>
         </div>
-        <DialogFooter className="p-6 pt-0 border-t mt-auto">
+        <DialogFooter className="p-6 border-t">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={handleSave}>Save Changes</Button>
         </DialogFooter>
