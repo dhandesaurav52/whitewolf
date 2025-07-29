@@ -503,7 +503,7 @@ export default function AdminDashboardPage() {
                                         <TableCell>
                                             <Badge variant="outline">{product.category}</Badge>
                                         </TableCell>
-                                        <TableCell>₹{product.price}</TableCell>
+                                        <TableCell>{product.price}</TableCell>
                                         <TableCell>{product.stock}</TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-2">
