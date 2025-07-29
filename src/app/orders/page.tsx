@@ -97,9 +97,12 @@ export default function OrdersPage() {
             return false;
         }
         const deliveryDate = new Date(order.deliveryDate);
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        return deliveryDate > sevenDaysAgo;
+        const sevenDaysAfterDelivery = new Date(deliveryDate);
+        sevenDaysAfterDelivery.setDate(deliveryDate.getDate() + 7);
+        
+        const now = new Date();
+        
+        return now <= sevenDaysAfterDelivery;
     };
 
 
