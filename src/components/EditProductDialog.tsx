@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Check, ChevronsUpDown, UploadCloud } from "lucide-react";
+import { Check, ChevronsUpDown, UploadCloud, PlusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/lib/types";
 
@@ -22,28 +22,34 @@ interface EditProductDialogProps {
   onClose: () => void;
 }
 
-const categoriesList = [
-    { value: 'shirts', label: 'Shirts' },
+const initialCategories = [
     { value: 't-shirts', label: 'T-Shirts' },
-    { value: 'oversized-t-shirts', label: 'Oversized T-shirts' },
-    { value: 'pants', label: 'Pants' },
+    { value: 'shirts', label: 'Shirts' },
     { value: 'jeans', label: 'Jeans' },
     { value: 'trousers', label: 'Trousers' },
-    { value: 'shoes', label: 'Shoes' },
-    { value: 'bags', label: 'Bags' },
     { value: 'belts', label: 'Belts' },
-    { value: 'socks', label: 'Socks' },
+    { value: 'chains', label: 'Chains' },
+    { value: 'watches', label: 'Watches' },
+    { value: 'headwear', label: 'Headwear' },
+    { value: 'eyewear', label: 'Eyewear' },
+    { value: 'bags', label: 'Bags' },
     { value: 'wallets', label: 'Wallets' },
+    { value: 'ties', label: 'Ties' },
     { value: 'sweater', label: 'Sweater' },
     { value: 'jackets', label: 'Jackets' },
     { value: 'track-pants', label: 'Track Pants' },
+    { value: 'oversized-t-shirts', label: 'Oversized T-shirts' },
+    { value: 'pants', label: 'Pants' },
+    { value: 'shoes', label: 'Shoes' },
+    { value: 'socks', label: 'Socks' },
     { value: 'accessories', label: 'Accessories' },
 ];
 
 export default function EditProductDialog({ product, onSave, onClose }: EditProductDialogProps) {
   const [editedProduct, setEditedProduct] = useState(product);
-  const [categories, setCategories] = useState(categoriesList);
+  const [categories, setCategories] = useState(initialCategories);
   const [openCategoryPopover, setOpenCategoryPopover] = useState(false);
+  const [categorySearch, setCategorySearch] = useState("");
   
   useEffect(() => {
     setEditedProduct(product);
@@ -51,7 +57,7 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
     if (!categories.some(c => c.value === productCategoryValue)) {
       setCategories(prev => [...prev, {value: productCategoryValue, label: product.category}]);
     }
-  }, [product]);
+  }, [product, categories]);
 
   const handleChange = (field: keyof Product, value: any) => {
     setEditedProduct(prev => ({ ...prev, [field]: value }));
@@ -61,18 +67,16 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
     onSave(editedProduct);
   };
   
-  const handleCategorySelect = (currentValue: string) => {
-      const lowerCaseValue = currentValue.toLowerCase();
-      const existingCategory = categories.find(cat => cat.value === lowerCaseValue);
-      if (existingCategory) {
-          handleChange('category', existingCategory.label);
-      } else if (currentValue) {
-          const newCategory = { value: lowerCaseValue, label: currentValue };
-          setCategories(prev => [...prev, newCategory]);
-          handleChange('category', newCategory.label);
-      }
-      setOpenCategoryPopover(false)
-  }
+    const addNewCategory = (newCategoryLabel: string) => {
+        const newCategoryValue = newCategoryLabel.toLowerCase().replace(/\s/g, '-');
+        if (newCategoryLabel && !categories.some(cat => cat.value === newCategoryValue)) {
+            const newCategory = { value: newCategoryValue, label: newCategoryLabel };
+            setCategories(prev => [...prev, newCategory]);
+            handleChange('category', newCategory.label);
+            setCategorySearch("");
+            setOpenCategoryPopover(false);
+        }
+    }
 
   const currentCategoryValue = editedProduct.category.toLowerCase().replace(/\s/g, '-');
 
@@ -105,7 +109,7 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
                 </div>
                 <div className="space-y-2">
                     <Label className="text-accent">Category</Label>
-                     <Popover open={openCategoryPopover} onOpenChange={setOpenCategoryPopover}>
+                    <Popover open={openCategoryPopover} onOpenChange={setOpenCategoryPopover}>
                         <PopoverTrigger asChild>
                             <Button
                             variant="outline"
@@ -118,16 +122,41 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                            <Command>
-                                <CommandInput placeholder="Search or add category..." />
+                           <Command>
+                                <CommandInput 
+                                    placeholder="Search or add category..." 
+                                    value={categorySearch}
+                                    onValueChange={setCategorySearch}
+                                />
                                 <CommandList>
-                                    <CommandEmpty>No category found.</CommandEmpty>
+                                    <CommandEmpty>
+                                        <div className="p-2 text-center text-sm">
+                                            No category found.
+                                            {categorySearch && (
+                                                <Button
+                                                    variant="ghost"
+                                                    className="w-full mt-2"
+                                                    onClick={() => addNewCategory(categorySearch)}
+                                                >
+                                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                                    Add "{categorySearch}"
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </CommandEmpty>
                                     <CommandGroup>
                                     {categories.map((cat) => (
                                         <CommandItem
-                                        key={cat.value}
-                                        value={cat.label}
-                                        onSelect={handleCategorySelect}
+                                            key={cat.value}
+                                            value={cat.label}
+                                            onSelect={(currentValue) => {
+                                                const category = categories.find(c => c.label.toLowerCase() === currentValue.toLowerCase())
+                                                if (category) {
+                                                    handleChange('category', category.label);
+                                                }
+                                                setOpenCategoryPopover(false);
+                                                setCategorySearch("");
+                                            }}
                                         >
                                         <Check
                                             className={cn(

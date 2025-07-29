@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BarChart, ShoppingCart, Package, Users, UploadCloud, Pencil, Trash2, Search, Check, ChevronsUpDown } from "lucide-react";
+import { BarChart, ShoppingCart, Package, Users, UploadCloud, Pencil, Trash2, Search, Check, ChevronsUpDown, PlusCircle } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Image from "next/image";
@@ -31,21 +31,26 @@ const initialProducts: ProductType[] = [];
 
 const generateUniqueId = () => `prod_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 9)}`;
 
-const categoriesList = [
-    { value: 'shirts', label: 'Shirts' },
+const initialCategories = [
     { value: 't-shirts', label: 'T-Shirts' },
-    { value: 'oversized-t-shirts', label: 'Oversized T-shirts' },
-    { value: 'pants', label: 'Pants' },
+    { value: 'shirts', label: 'Shirts' },
     { value: 'jeans', label: 'Jeans' },
     { value: 'trousers', label: 'Trousers' },
-    { value: 'shoes', label: 'Shoes' },
-    { value: 'bags', label: 'Bags' },
     { value: 'belts', label: 'Belts' },
-    { value: 'socks', label: 'Socks' },
+    { value: 'chains', label: 'Chains' },
+    { value: 'watches', label: 'Watches' },
+    { value: 'headwear', label: 'Headwear' },
+    { value: 'eyewear', label: 'Eyewear' },
+    { value: 'bags', label: 'Bags' },
     { value: 'wallets', label: 'Wallets' },
+    { value: 'ties', label: 'Ties' },
     { value: 'sweater', label: 'Sweater' },
     { value: 'jackets', label: 'Jackets' },
     { value: 'track-pants', label: 'Track Pants' },
+    { value: 'oversized-t-shirts', label: 'Oversized T-shirts' },
+    { value: 'pants', label: 'Pants' },
+    { value: 'shoes', label: 'Shoes' },
+    { value: 'socks', label: 'Socks' },
     { value: 'accessories', label: 'Accessories' },
 ];
 
@@ -54,8 +59,9 @@ export default function AdminDashboardPage() {
     const [products, setProducts] = useState<ProductType[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
     const [editingProduct, setEditingProduct] = useState<ProductType | null>(null);
-    const [categories, setCategories] = useState(categoriesList);
+    const [categories, setCategories] = useState(initialCategories);
     const [openCategoryPopover, setOpenCategoryPopover] = useState(false);
+    const [categorySearch, setCategorySearch] = useState("");
     
     // Form state
     const [newProductName, setNewProductName] = useState('');
@@ -143,7 +149,7 @@ export default function AdminDashboardPage() {
     const totalUsers = new Set(orders.map(order => order.customer.email)).size;
 
     const stats = [
-        { title: "Total Revenue", value: `${totalRevenue.toFixed(2)}`, description: "Based on delivered orders", icon: BarChart },
+        { title: "Total Revenue", value: totalRevenue.toFixed(2), description: "Based on delivered orders", icon: BarChart },
         { title: "New Orders", value: newOrdersCount.toString(), description: "Orders pending fulfillment", icon: ShoppingCart },
         { title: "Products in Stock", value: products.length.toString(), description: "Total active products", icon: Package },
         { title: "Total Users", value: totalUsers.toString(), description: "Unique customers with orders", icon: Users },
@@ -157,6 +163,16 @@ export default function AdminDashboardPage() {
             setCategories([...categories, { value: lowerCaseValue, label: currentValue }]);
         }
         setOpenCategoryPopover(false);
+    }
+    
+    const addNewCategory = (newCategoryLabel: string) => {
+        const newCategoryValue = newCategoryLabel.toLowerCase().replace(/\s/g, '-');
+        if (newCategoryLabel && !categories.some(cat => cat.value === newCategoryValue)) {
+            setCategories(prev => [...prev, { value: newCategoryValue, label: newCategoryLabel }]);
+            setNewSelectedCategory(newCategoryValue);
+            setCategorySearch("");
+            setOpenCategoryPopover(false);
+        }
     }
 
     const resetForm = () => {
@@ -207,13 +223,15 @@ export default function AdminDashboardPage() {
                 const videoPath = `videos/${Date.now()}_${newVideoFile.name}`;
                 videoUrl = await uploadFile(newVideoFile, videoPath);
             }
+            
+            const categoryLabel = categories.find(c => c.value === newSelectedCategory)?.label || newSelectedCategory;
 
             const newProduct: ProductType = {
                 id: generateUniqueId(),
                 name: newProductName,
                 brand: newBrandName,
                 price: newPrice,
-                category: newSelectedCategory,
+                category: categoryLabel,
                 displaySection: newDisplaySection,
                 description: newDescription,
                 colors: newColors,
@@ -313,16 +331,39 @@ export default function AdminDashboardPage() {
                                         </Button>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                                        <Command onValueChange={setNewSelectedCategory}>
-                                            <CommandInput placeholder="Search or add category..." />
+                                        <Command>
+                                            <CommandInput 
+                                                placeholder="Search or add category..." 
+                                                value={categorySearch}
+                                                onValueChange={setCategorySearch}
+                                            />
                                             <CommandList>
-                                                <CommandEmpty>No category found.</CommandEmpty>
+                                                <CommandEmpty>
+                                                    <div className="p-2 text-center text-sm">
+                                                        No category found.
+                                                        {categorySearch && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                className="w-full mt-2"
+                                                                onClick={() => addNewCategory(categorySearch)}
+                                                            >
+                                                                <PlusCircle className="mr-2 h-4 w-4" />
+                                                                Add "{categorySearch}"
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                </CommandEmpty>
                                                 <CommandGroup>
                                                 {categories.map((cat) => (
                                                     <CommandItem
-                                                    key={cat.value}
-                                                    value={cat.label}
-                                                    onSelect={handleCategorySelect}
+                                                        key={cat.value}
+                                                        value={cat.label}
+                                                        onSelect={(currentValue) => {
+                                                            const value = categories.find(c => c.label.toLowerCase() === currentValue.toLowerCase())?.value;
+                                                            setNewSelectedCategory(value === newSelectedCategory ? '' : value || '');
+                                                            setOpenCategoryPopover(false);
+                                                            setCategorySearch("");
+                                                        }}
                                                     >
                                                     <Check
                                                         className={cn(
