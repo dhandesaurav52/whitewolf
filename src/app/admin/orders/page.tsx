@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Truck, Package, CheckCircle, Ban, RefreshCw } from "lucide-react";
+import { MoreHorizontal, Truck, Package, CheckCircle, Ban, RefreshCw, Undo2, Check, Star } from "lucide-react";
 import type { Order, OrderStatus, Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,6 +31,10 @@ const statusStyles: { [key in OrderStatus]: { color: string, text: string } } = 
   Shipped: "bg-green-100 text-green-800 border-green-300",
   Delivered: "bg-emerald-100 text-emerald-800 border-emerald-300",
   Cancelled: "bg-red-100 text-red-800 border-red-300",
+  "Return Requested": "bg-orange-100 text-orange-800 border-orange-300",
+  "Return Accepted": "bg-cyan-100 text-cyan-800 border-cyan-300",
+  "Return Confirmed": "bg-indigo-100 text-indigo-800 border-indigo-300",
+  "Return Successful": "bg-purple-100 text-purple-800 border-purple-300",
 };
 
 const statusIcons: { [key in OrderStatus]: React.ElementType } = {
@@ -39,6 +43,10 @@ const statusIcons: { [key in OrderStatus]: React.ElementType } = {
   Shipped: Truck,
   Delivered: CheckCircle,
   Cancelled: Ban,
+  "Return Requested": Undo2,
+  "Return Accepted": Check,
+  "Return Confirmed": Truck,
+  "Return Successful": Star,
 };
 
 export default function ManageOrdersPage() {
@@ -69,15 +77,29 @@ export default function ManageOrdersPage() {
         try {
             const allOrdersRaw = localStorage.getItem(ORDERS_STORAGE_KEY);
             const allOrders: Order[] = allOrdersRaw ? JSON.parse(allOrdersRaw) : [];
-            const updatedOrders = allOrders.map(order => 
-                order.id === orderId ? { ...order, status: newStatus } : order
-            );
+            const updatedOrders = allOrders.map(order => {
+                if (order.id === orderId) {
+                    const updatedOrder = { ...order, status: newStatus };
+                    if (newStatus === 'Delivered') {
+                        updatedOrder.deliveryDate = new Date().toISOString();
+                    }
+                    return updatedOrder;
+                }
+                return order;
+            });
             localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(updatedOrders));
             window.dispatchEvent(new Event('storage')); // This will trigger the re-load
         } catch (error) {
             console.error("Failed to update order status", error);
         }
     };
+    
+    const getActionableStatuses = (currentStatus: OrderStatus): OrderStatus[] => {
+        if (currentStatus === 'Return Requested') return ['Return Accepted'];
+        if (currentStatus === 'Return Accepted') return ['Return Confirmed'];
+        if (currentStatus === 'Return Confirmed') return ['Return Successful'];
+        return (Object.keys(statusStyles) as OrderStatus[]).filter(s => !s.startsWith('Return'));
+    }
 
     if (!isMounted) {
       return (
@@ -183,7 +205,7 @@ export default function ManageOrdersPage() {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
-                                                    {Object.keys(statusStyles).map((status) => (
+                                                    {getActionableStatuses(order.status).map((status) => (
                                                         <DropdownMenuItem 
                                                             key={status} 
                                                             onClick={() => handleStatusChange(order.id, status as OrderStatus)}

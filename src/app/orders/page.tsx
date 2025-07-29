@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { Order, OrderStatus } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Truck, Package, CheckCircle, Ban } from "lucide-react";
+import { Truck, Package, CheckCircle, Ban, Undo2, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,10 @@ const statusStyles: { [key in Order['status']]: { icon: React.ElementType, color
   Shipped: { icon: Truck, color: "bg-green-500", text: "text-green-50" },
   Delivered: { icon: CheckCircle, color: "bg-emerald-600", text: "text-emerald-50" },
   Cancelled: { icon: Ban, color: "bg-red-500", text: "text-red-50" },
+  "Return Requested": { icon: Undo2, color: "bg-orange-500", text: "text-orange-50" },
+  "Return Accepted": { icon: CheckCircle, color: "bg-cyan-500", text: "text-cyan-50" },
+  "Return Confirmed": { icon: Truck, color: "bg-indigo-500", text: "text-indigo-50" },
+  "Return Successful": { icon: Star, color: "bg-purple-500", text: "text-purple-50" },
 };
 
 export default function OrdersPage() {
@@ -65,27 +69,37 @@ export default function OrdersPage() {
         }
     }, [loadUserOrders]);
     
-    const handleCancelOrder = (orderId: string) => {
+    const handleOrderStatusUpdate = (orderId: string, newStatus: OrderStatus) => {
         try {
             const allOrdersRaw = localStorage.getItem(ORDERS_STORAGE_KEY);
             const allOrders: Order[] = allOrdersRaw ? JSON.parse(allOrdersRaw) : [];
             const updatedOrders = allOrders.map(order => 
-                order.id === orderId ? { ...order, status: 'Cancelled' as OrderStatus } : order
+                order.id === orderId ? { ...order, status: newStatus } : order
             );
             localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(updatedOrders));
             window.dispatchEvent(new Event('storage'));
             toast({
-                title: "Order Cancelled",
-                description: "Your order has been successfully cancelled.",
+                title: `Order Updated`,
+                description: `Your order status is now "${newStatus}".`,
             });
         } catch (error) {
-            console.error("Failed to cancel order", error);
+            console.error(`Failed to update order to ${newStatus}`, error);
              toast({
                 title: "Error",
-                description: "Failed to cancel the order. Please try again.",
+                description: "Failed to update the order. Please try again.",
                 variant: "destructive",
             });
         }
+    };
+
+    const isReturnEligible = (order: Order): boolean => {
+        if (order.status !== 'Delivered' || !order.deliveryDate) {
+            return false;
+        }
+        const deliveryDate = new Date(order.deliveryDate);
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        return deliveryDate > sevenDaysAgo;
     };
 
 
@@ -128,6 +142,7 @@ export default function OrdersPage() {
                                     <CardTitle>Order #{order.id.split('_')[1]}</CardTitle>
                                     <CardDescription>
                                         Placed on {new Date(order.orderDate).toLocaleDateString()}
+                                        {order.status === 'Delivered' && order.deliveryDate && ` | Delivered on ${new Date(order.deliveryDate).toLocaleDateString()}`}
                                     </CardDescription>
                                 </div>
                                  <Badge className={cn("text-sm", statusInfo.color, statusInfo.text)}>
@@ -166,8 +181,29 @@ export default function OrdersPage() {
                                             </AlertDialogHeader>
                                             <AlertDialogFooter>
                                             <AlertDialogCancel>Go Back</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => handleCancelOrder(order.id)}>
+                                            <AlertDialogAction onClick={() => handleOrderStatusUpdate(order.id, 'Cancelled')}>
                                                 Yes, Cancel Order
+                                            </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                )}
+                                {isReturnEligible(order) && (
+                                     <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="outline">Return Order</Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>Request a Return</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Are you sure you want to request a return for this order? Our team will review your request.
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleOrderStatusUpdate(order.id, 'Return Requested')}>
+                                                Confirm Return Request
                                             </AlertDialogAction>
                                             </AlertDialogFooter>
                                         </AlertDialogContent>

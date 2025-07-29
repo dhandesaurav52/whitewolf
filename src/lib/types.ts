@@ -62,7 +62,17 @@ export type Reel = {
   videoUrl: string;
 };
 
-export type OrderStatus = 'Pending' | 'Confirmed' | 'Shipped' | 'Delivered' | 'Cancelled';
+export type OrderStatus = 
+  | 'Pending' 
+  | 'Confirmed' 
+  | 'Shipped' 
+  | 'Delivered' 
+  | 'Cancelled'
+  | 'Return Requested'
+  | 'Return Accepted'
+  | 'Return Confirmed'
+  | 'Return Successful';
+
 
 export type CustomerDetails = {
     name: string;
@@ -82,5 +92,6 @@ export type Order = {
     total: number;
     status: OrderStatus;
     orderDate: string;
+    deliveryDate?: string;
     paymentId?: string;
 };
