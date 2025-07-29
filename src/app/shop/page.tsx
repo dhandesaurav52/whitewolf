@@ -214,16 +214,11 @@ export default function ShopPage() {
                 const activeAds: Advertisement[] = storedAds ? JSON.parse(storedAds).filter((ad: Advertisement) => ad.status === 'Active') : [];
                 const categoryAds = activeAds.filter(ad => ad.appliesTo === 'categories' && ad.selectedCategories.length > 0);
                 
-                const shopProducts = allProducts.filter(p => p.displaySection === 'shop');
+                let shopProducts = allProducts.filter(p => p.displaySection === 'shop');
 
-                if (categoryAds.length === 0) {
-                    setProducts(shopProducts); // Reset to original if no offers
-                    return;
-                }
-                
                 const updatedProducts = shopProducts.map(p => {
                     let productPrice = parseFloat(p.price);
-                    let originalProductPrice = p.originalPrice ? parseFloat(p.originalPrice) : productPrice;
+                    let originalProductPrice = p.originalPrice ? parseFloat(p.originalPrice) : parseFloat(p.price);
                     let appliedDiscount = p.discount;
                     
                     const applicableAd = categoryAds.find(ad => ad.selectedCategories.includes(p.category));
@@ -236,16 +231,22 @@ export default function ShopPage() {
                             productPrice = originalProductPrice - applicableAd.discountValue;
                             appliedDiscount = `₹${applicableAd.discountValue} OFF`;
                         }
+                        return {
+                            ...p,
+                            price: Math.round(productPrice).toString(),
+                            originalPrice: originalProductPrice.toString(),
+                            discount: appliedDiscount,
+                        }
                     }
 
+                    // Reset if no ad applies
                     return {
                         ...p,
-                        price: Math.round(productPrice).toString(),
-                        originalPrice: appliedDiscount ? originalProductPrice.toString() : p.originalPrice,
-                        discount: appliedDiscount,
-                    }
+                        originalPrice: p.originalPrice, // Keep original if it existed
+                        discount: p.discount, // Keep original discount
+                    };
                 });
-
+                
                 setProducts(updatedProducts);
 
             } catch (error) {
@@ -336,3 +337,5 @@ export default function ShopPage() {
     </div>
   );
 }
+
+    

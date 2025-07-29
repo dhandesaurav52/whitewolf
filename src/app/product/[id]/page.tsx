@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Minus, Plus, Heart, Ruler, ShoppingBag } from 'lucide-react';
-import type { Product as ProductType } from '@/lib/types';
+import type { Product as ProductType, CartItem } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { useWishlist } from '@/hooks/useWishlist';
@@ -99,6 +99,7 @@ export default function ProductDetailPage() {
   const [complementaryProducts, setComplementaryProducts] = useState<ProductType[]>([]);
   const [moreProducts, setMoreProducts] = useState<ProductType[]>([]);
   const [isConfirming, setIsConfirming] = useState(false);
+  const [productToBuy, setProductToBuy] = useState<CartItem | null>(null);
   
   const { addToCart, clearCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
@@ -152,7 +153,10 @@ export default function ProductDetailPage() {
   }, [id]);
 
   const handleBuyNow = () => {
-    setIsConfirming(true);
+    if (product) {
+      setProductToBuy({ product, quantity });
+      setIsConfirming(true);
+    }
   }
 
   if (loading) {
@@ -314,12 +318,14 @@ export default function ProductDetailPage() {
           <ConfirmPurchaseDialog
               isOpen={isConfirming}
               onClose={() => setIsConfirming(false)}
-              cartItems={[]} // Not used when productToBuy is present
-              cartTotal={0} // Not used when productToBuy is present
-              clearCart={clearCart} // Pass clearCart from useCart
-              productToBuy={{product, quantity}}
+              cartItems={[]} 
+              cartTotal={0} 
+              clearCart={clearCart}
+              productToBuy={productToBuy}
           />
       )}
     </>
   );
 }
+
+    

@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { X, Pencil } from "lucide-react";
+import { Pencil } from "lucide-react";
 import type { CustomerDetails, CartItem, Order } from "@/lib/types";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -38,7 +38,7 @@ interface ConfirmPurchaseDialogProps {
   cartTotal: number;
   cartItems: CartItem[];
   clearCart: () => void;
-  productToBuy?: CartItem;
+  productToBuy?: CartItem | null;
 }
 
 export default function ConfirmPurchaseDialog({
@@ -93,10 +93,12 @@ export default function ConfirmPurchaseDialog({
         
         toast({
             title: "Order Placed!",
-            description: `Thank you for your purchase. Your order is being processed with ${payment === 'cod' ? 'Cash on Delivery' : 'Online Payment'}.`,
+            description: `Thank you for your purchase. Your order is being processed.`,
         });
         
-        clearCart();
+        if (!productToBuy) {
+            clearCart();
+        }
         onClose();
         router.push('/orders');
     } catch (error) {
@@ -229,3 +231,5 @@ export default function ConfirmPurchaseDialog({
     </Dialog>
   );
 }
+
+    

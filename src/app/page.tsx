@@ -14,10 +14,12 @@ import {
 } from "@/components/ui/carousel"
 import { Card, CardContent } from "@/components/ui/card";
 import { useState, useEffect } from "react";
-import type { Advertisement } from "@/lib/types";
+import type { Advertisement, Reel, Product as ProductType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const ADS_STORAGE_KEY = 'advertisements';
+const REELS_STORAGE_KEY = 'reels';
+const PRODUCTS_STORAGE_KEY = 'products';
 
 const defaultHero: Advertisement = {
     id: 'default-hero',
@@ -107,7 +109,78 @@ const HeroSection = () => {
     );
 };
 
+const WatchAndShopItem = ({ reel, product }: { reel: Reel, product?: ProductType }) => {
+  return (
+    <Link href={`/product/${product?.id}`} className="block p-1">
+      <Card className="bg-card border-none overflow-hidden group relative aspect-[9/16]">
+        {reel.videoUrl ? (
+          <video
+            src={reel.videoUrl}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <Image
+            src="https://placehold.co/400x600.png"
+            alt={reel.reelTitle}
+            fill
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            data-ai-hint="fashion reel"
+          />
+        )}
+        <div className="absolute bottom-4 left-4 right-4">
+          {product && (
+            <Card className="bg-background/80 backdrop-blur-sm p-2 rounded-lg">
+              <div className="flex items-center gap-2">
+                <div className="relative w-12 h-12 rounded-md overflow-hidden flex-shrink-0">
+                  <Image
+                    src={product.images?.[0] || "https://placehold.co/100x100.png"}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                    data-ai-hint={product.aiHint}
+                  />
+                </div>
+                <div className="overflow-hidden">
+                  <h3 className="text-sm font-headline text-primary truncate">{product.name}</h3>
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-accent font-bold text-sm">₹{product.price}</p>
+                    {product.originalPrice && (
+                      <p className="text-muted-foreground text-xs line-through">₹{product.originalPrice}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </Card>
+          )}
+        </div>
+      </Card>
+    </Link>
+  );
+};
+
 export default function Home() {
+  const [reels, setReels] = useState<Reel[]>([]);
+  const [products, setProducts] = useState<ProductType[]>([]);
+
+  useEffect(() => {
+    try {
+      const storedReels = localStorage.getItem(REELS_STORAGE_KEY);
+      if (storedReels) {
+        setReels(JSON.parse(storedReels));
+      }
+      const storedProducts = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+      if (storedProducts) {
+        setProducts(JSON.parse(storedProducts));
+      }
+    } catch (error) {
+      console.error("Failed to load data from localStorage", error);
+    }
+  }, []);
+
   const oversizeTees = [
     {
       name: "Anxious Tshirt",
@@ -170,54 +243,6 @@ export default function Home() {
       price: "349",
       image: "https://placehold.co/400x500.png",
       aiHint: "winter hat"
-    }
-  ];
-
-  const watchAndShopItems = [
-    {
-      mainImage: "https://placehold.co/400x600.png",
-      mainAiHint: "blue tshirt",
-      productImage: "https://placehold.co/100x100.png",
-      productAiHint: "orange shirt",
-      productName: "Supima: Sparkling Orange",
-      price: "999",
-      originalPrice: "1199"
-    },
-    {
-      mainImage: "https://placehold.co/400x600.png",
-      mainAiHint: "stadium soccer",
-      productImage: "https://placehold.co/100x100.png",
-      productAiHint: "red backpack",
-      productName: "Fcb: Legacy",
-      price: "2999",
-      originalPrice: ""
-    },
-    {
-      mainImage: "https://placehold.co/400x600.png",
-      mainAiHint: "bear mask",
-      productImage: "https://placehold.co/100x100.png",
-      productAiHint: "white tshirt space",
-      productName: "Ted: Space",
-      price: "1199",
-      originalPrice: ""
-    },
-    {
-      mainImage: "https://placehold.co/400x600.png",
-      mainAiHint: "green sneaker",
-      productImage: "https://placehold.co/100x100.png",
-      productAiHint: "green shoe",
-      productName: "Marvel: Doctor Doom",
-      price: "2899",
-      originalPrice: "3699"
-    },
-    {
-      mainImage: "https://placehold.co/400x600.png",
-      mainAiHint: "black tshirt",
-      productImage: "https://placehold.co/100x100.png",
-      productAiHint: "tshirt design",
-      productName: "Anime Cloud Tee",
-      price: "1299",
-      originalPrice: ""
     }
   ];
 
@@ -390,45 +415,14 @@ export default function Home() {
               className="w-full"
             >
               <CarouselContent>
-                {watchAndShopItems.map((item, index) => (
-                  <CarouselItem key={index} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
-                    <div className="p-1">
-                      <Card className="bg-card border-none overflow-hidden group relative aspect-[9/16]">
-                        <Image
-                          src={item.mainImage}
-                          alt={item.productName}
-                          fill
-                          className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          data-ai-hint={item.mainAiHint}
-                        />
-                        <div className="absolute bottom-4 left-4 right-4">
-                          <Card className="bg-background/80 backdrop-blur-sm p-2 rounded-lg">
-                            <div className="flex items-center gap-2">
-                              <div className="relative w-12 h-12 rounded-md overflow-hidden flex-shrink-0">
-                                <Image
-                                  src={item.productImage}
-                                  alt={item.productName}
-                                  fill
-                                  className="object-cover"
-                                  data-ai-hint={item.productAiHint}
-                                />
-                              </div>
-                              <div className="overflow-hidden">
-                                <h3 className="text-sm font-headline text-primary truncate">{item.productName}</h3>
-                                <div className="flex items-baseline gap-2">
-                                  <p className="text-accent font-bold text-sm">₹{item.price}</p>
-                                  {item.originalPrice && (
-                                    <p className="text-muted-foreground text-xs line-through">₹{item.originalPrice}</p>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </Card>
-                        </div>
-                      </Card>
-                    </div>
-                  </CarouselItem>
-                ))}
+                {reels.map((reel) => {
+                  const product = products.find(p => p.name === reel.linkedProduct);
+                  return (
+                    <CarouselItem key={reel.id} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
+                      <WatchAndShopItem reel={reel} product={product} />
+                    </CarouselItem>
+                  )
+                })}
                  <CarouselItem className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 flex items-center justify-center">
                     <Button asChild variant="outline" size="icon" className="w-16 h-16 rounded-full">
                       <Link href="/shop" >
@@ -489,3 +483,5 @@ export default function Home() {
     </div>
   );
 }
+
+    

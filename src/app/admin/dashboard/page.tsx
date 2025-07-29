@@ -167,12 +167,25 @@ export default function AdminDashboardPage() {
         setEditingProduct(product);
     };
 
+    const handleDelete = (productId: string) => {
+        const newProducts = products.filter(p => p.id !== productId);
+        updateProducts(newProducts);
+        toast({
+            title: "Product Deleted",
+            description: "The product has been successfully removed.",
+        });
+    };
+
     const handleSave = (updatedProduct: ProductType) => {
         // Here you would typically update the product in your database
         console.log("Saving product:", updatedProduct);
         const newProducts = products.map(p => p.id === updatedProduct.id ? updatedProduct : p);
         updateProducts(newProducts);
         setEditingProduct(null);
+        toast({
+            title: "Product Updated",
+            description: `${updatedProduct.name} has been successfully updated.`,
+        });
     };
 
     const stats = [
@@ -506,7 +519,7 @@ export default function AdminDashboardPage() {
                                         <TableCell>
                                             <div className="relative h-12 w-12 rounded-md overflow-hidden">
                                                 <Image 
-                                                    src={product.images && product.images.length > 0 ? product.images[0] : "https://placehold.co/100x100.png"} 
+                                                    src={(product.images && product.images.length > 0) ? product.images[0] : "https://placehold.co/100x100.png"} 
                                                     alt={product.name} 
                                                     fill 
                                                     className="object-cover" 
@@ -524,7 +537,7 @@ export default function AdminDashboardPage() {
                                                 <Button variant="ghost" size="icon" onClick={() => handleEdit(product)}>
                                                     <Pencil className="h-4 w-4" />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDelete(product.id)}>
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
                                             </div>
@@ -546,5 +559,7 @@ export default function AdminDashboardPage() {
         </div>
     );
 }
+
+    
 
     

@@ -214,14 +214,9 @@ export default function AccessoriesPage() {
                 
                 const accessoryProducts = allProducts.filter(p => p.displaySection === 'accessories');
 
-                if (categoryAds.length === 0) {
-                    setProducts(accessoryProducts); // Reset to original if no offers
-                    return;
-                }
-                
                 const updatedProducts = accessoryProducts.map(p => {
                     let productPrice = parseFloat(p.price);
-                    let originalProductPrice = p.originalPrice ? parseFloat(p.originalPrice) : productPrice;
+                    let originalProductPrice = p.originalPrice ? parseFloat(p.originalPrice) : parseFloat(p.price);
                     let appliedDiscount = p.discount;
                     
                     const applicableAd = categoryAds.find(ad => ad.selectedCategories.includes(p.category));
@@ -234,14 +229,20 @@ export default function AccessoriesPage() {
                             productPrice = originalProductPrice - applicableAd.discountValue;
                             appliedDiscount = `₹${applicableAd.discountValue} OFF`;
                         }
+                        return {
+                            ...p,
+                            price: Math.round(productPrice).toString(),
+                            originalPrice: originalProductPrice.toString(),
+                            discount: appliedDiscount,
+                        }
                     }
-
+                    
+                    // Reset if no ad applies
                     return {
                         ...p,
-                        price: Math.round(productPrice).toString(),
-                        originalPrice: appliedDiscount ? originalProductPrice.toString() : p.originalPrice,
-                        discount: appliedDiscount,
-                    }
+                        originalPrice: p.originalPrice, // Keep original if it existed
+                        discount: p.discount, // Keep original discount
+                    };
                 });
 
                 setProducts(updatedProducts);
@@ -332,3 +333,5 @@ export default function AccessoriesPage() {
     </div>
   );
 }
+
+    
