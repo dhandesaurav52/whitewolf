@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useSavedOutfits } from "@/hooks/useSavedOutfits";
@@ -9,13 +10,13 @@ import { Trash2, ShoppingBag, ExternalLink } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 
-export default function SavedPage() {
+export default function WishlistPage() {
   const { savedOutfits, removeOutfit, isLoaded } = useSavedOutfits();
 
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-4xl font-bold font-headline">Saved Outfits</h1>
+        <h1 className="text-4xl font-bold font-headline">Wishlist</h1>
         <p className="text-muted-foreground mt-2">Your favorite styles, all in one place.</p>
       </div>
 
@@ -39,12 +40,12 @@ export default function SavedPage() {
       {isLoaded && savedOutfits.length === 0 && (
         <div className="text-center py-20 bg-card border rounded-lg">
             <ShoppingBag className="mx-auto h-12 w-12 text-muted-foreground" />
-            <h3 className="mt-4 text-lg font-medium">No Outfits Saved Yet</h3>
+            <h3 className="mt-4 text-lg font-medium">No Items in Wishlist</h3>
             <p className="mt-1 text-sm text-muted-foreground">
-                Head over to the Style Advisor to find and save your perfect look.
+                You haven't added any items to your wishlist yet.
             </p>
             <Button asChild className="mt-6">
-                <Link href="/">Find a Style</Link>
+                <Link href="/shop">Start Shopping</Link>
             </Button>
         </div>
       )}

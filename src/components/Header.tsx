@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { ShoppingBag, LogOut, User as UserIcon, Heart, Settings } from "lucide-react";
+import { ShoppingBag, LogOut, User as UserIcon, Heart, Settings, LayoutDashboard, Package, Undo2, Megaphone, Clapperboard } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,7 +31,7 @@ const WhiteWolfLogo = () => (
 
 export default function Header() {
   const pathname = usePathname();
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, isAdmin, signOut } = useAuth();
 
   const navLinks = [
     { href: "/shop", label: "Shop" },
@@ -85,13 +85,33 @@ export default function Header() {
                   <DropdownMenuContent className="w-56" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{user.displayName || 'User'}</p>
+                        <p className="text-sm font-medium leading-none">Hi, {user.displayName || 'User'}</p>
                         <p className="text-xs leading-none text-muted-foreground">
                           {user.email}
                         </p>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
+                    {isAdmin ? (
+                      <>
+                        <DropdownMenuItem asChild>
+                            <Link href="/admin/dashboard"><LayoutDashboard className="mr-2 h-4 w-4" />Dashboard</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href="/admin/orders"><Package className="mr-2 h-4 w-4" />Manage Orders</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href="/admin/returns"><Undo2 className="mr-2 h-4 w-4" />Return Orders</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href="/admin/ads"><Megaphone className="mr-2 h-4 w-4" />Advertise & Offers</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href="/admin/reels"><Clapperboard className="mr-2 h-4 w-4" />Manage Reels</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                      </>
+                    ) : null}
                     <DropdownMenuItem asChild>
                       <Link href="/profile">
                         <UserIcon className="mr-2 h-4 w-4" />
@@ -99,9 +119,9 @@ export default function Header() {
                       </Link>
                     </DropdownMenuItem>
                      <DropdownMenuItem asChild>
-                      <Link href="/saved">
+                      <Link href="/wishlist">
                         <Heart className="mr-2 h-4 w-4" />
-                        <span>Saved</span>
+                        <span>Wishlist</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
