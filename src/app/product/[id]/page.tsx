@@ -17,6 +17,7 @@ import { useWishlist } from '@/hooks/useWishlist';
 import { useCart } from '@/hooks/useCart';
 import { cn } from '@/lib/utils';
 import ConfirmPurchaseDialog from '@/components/ConfirmPurchaseDialog';
+import { useAuth } from '@/hooks/useAuth';
 
 const PRODUCTS_STORAGE_KEY = 'products';
 
@@ -103,6 +104,7 @@ export default function ProductDetailPage() {
   const [isConfirming, setIsConfirming] = useState(false);
   const [productToBuy, setProductToBuy] = useState<CartItem | null>(null);
   
+  const { user } = useAuth();
   const { addToCart, clearCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
@@ -135,6 +137,10 @@ export default function ProductDetailPage() {
   }, [id]);
 
   const handleBuyNow = () => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
     if (product) {
       setProductToBuy({ product, quantity });
       setIsConfirming(true);
@@ -296,7 +302,7 @@ export default function ProductDetailPage() {
           </div>
       </div>
 
-      {isConfirming && (
+      {isConfirming && user && (
           <ConfirmPurchaseDialog
               isOpen={isConfirming}
               onClose={() => setIsConfirming(false)}
@@ -309,5 +315,3 @@ export default function ProductDetailPage() {
     </>
   );
 }
-
-    

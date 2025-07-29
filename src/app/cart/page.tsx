@@ -10,10 +10,14 @@ import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import ConfirmPurchaseDialog from "@/components/ConfirmPurchaseDialog";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, cartTotal, cartCount, isLoaded, clearCart } = useCart();
   const [isConfirming, setIsConfirming] = useState(false);
+  const { user } = useAuth();
+  const router = useRouter();
 
   if (!isLoaded) {
     return <div>Loading...</div>; // Or a skeleton loader
@@ -32,6 +36,14 @@ export default function CartPage() {
             </Button>
         </div>
     );
+  }
+
+  const handleCheckout = () => {
+    if (user) {
+      setIsConfirming(true);
+    } else {
+      router.push('/login');
+    }
   }
 
   return (
@@ -101,7 +113,7 @@ export default function CartPage() {
                 </div>
               </div>
               <div className="p-6 pt-0">
-                <Button className="w-full" size="lg" onClick={() => setIsConfirming(true)}>
+                <Button className="w-full" size="lg" onClick={handleCheckout}>
                   Proceed to Checkout
                 </Button>
               </div>
@@ -109,7 +121,7 @@ export default function CartPage() {
           </div>
         </div>
       </div>
-      {isConfirming && (
+      {isConfirming && user && (
         <ConfirmPurchaseDialog
             isOpen={isConfirming}
             onClose={() => setIsConfirming(false)}
@@ -121,5 +133,3 @@ export default function CartPage() {
     </>
   );
 }
-
-    
