@@ -17,35 +17,35 @@ export default function Home() {
     {
       name: "Anxious Tshirt",
       category: "Oversized T Shirts",
-      price: "25.00",
+      price: "1199",
       image: "https://placehold.co/400x500.png",
       aiHint: "graphic tee fashion"
     },
     {
       name: "Classic Tee",
       category: "Oversized T Shirts",
-      price: "22.00",
+      price: "999",
       image: "https://placehold.co/400x500.png",
       aiHint: "mens fashion"
     },
     {
       name: "Vintage Wash Tee",
       category: "Oversized T Shirts",
-      price: "28.00",
+      price: "1299",
       image: "https://placehold.co/400x500.png",
       aiHint: "streetwear fashion"
     },
     {
       name: "Graphic Print Tee",
       category: "Oversized T Shirts",
-      price: "30.00",
+      price: "1399",
       image: "https://placehold.co/400x500.png",
       aiHint: "urban style"
     },
      {
       name: "Minimalist Tee",
       category: "Oversized T Shirts",
-      price: "24.00",
+      price: "1099",
       image: "https://placehold.co/400x500.png",
       aiHint: "simple fashion"
     },
@@ -54,25 +54,25 @@ export default function Home() {
   const accessories = [
     {
       name: "Silver Chain",
-      price: "89.99",
+      price: "899",
       image: "https://placehold.co/400x500.png",
       aiHint: "mens jewelry"
     },
     {
       name: "Leather Belt",
-      price: "45.00",
+      price: "499",
       image: "https://placehold.co/400x500.png",
       aiHint: "leather good"
     },
     {
       name: "Classic Watch",
-      price: "199.99",
+      price: "1999",
       image: "https://placehold.co/400x500.png",
       aiHint: "timepiece watch"
     },
     {
       name: "Wool Beanie",
-      price: "35.00",
+      price: "349",
       image: "https://placehold.co/400x500.png",
       aiHint: "winter hat"
     }
@@ -86,7 +86,7 @@ export default function Home() {
       productAiHint: "orange shirt",
       productName: "Supima: Sparkling Orange",
       price: "999",
-      originalPrice: "1,199"
+      originalPrice: "1199"
     },
     {
       mainImage: "https://placehold.co/400x600.png",
@@ -94,7 +94,7 @@ export default function Home() {
       productImage: "https://placehold.co/100x100.png",
       productAiHint: "red backpack",
       productName: "Fcb: Legacy",
-      price: "2,999",
+      price: "2999",
       originalPrice: ""
     },
     {
@@ -103,7 +103,7 @@ export default function Home() {
       productImage: "https://placehold.co/100x100.png",
       productAiHint: "white tshirt space",
       productName: "Ted: Space",
-      price: "1,199",
+      price: "1199",
       originalPrice: ""
     },
     {
@@ -112,8 +112,8 @@ export default function Home() {
       productImage: "https://placehold.co/100x100.png",
       productAiHint: "green shoe",
       productName: "Marvel: Doctor Doom",
-      price: "2,899",
-      originalPrice: "3,699"
+      price: "2899",
+      originalPrice: "3699"
     },
     {
       mainImage: "https://placehold.co/400x600.png",
@@ -121,7 +121,7 @@ export default function Home() {
       productImage: "https://placehold.co/100x100.png",
       productAiHint: "tshirt design",
       productName: "Anime Cloud Tee",
-      price: "1,299",
+      price: "1299",
       originalPrice: ""
     }
   ];
@@ -210,7 +210,7 @@ export default function Home() {
                     />
                   </div>
                   <h3 className="mt-4 text-lg font-headline">Stylish Shirt {i+1}</h3>
-                  <p className="text-accent font-semibold">$49.99</p>
+                  <p className="text-accent font-semibold">₹499</p>
                 </div>
               ))}
             </div>
@@ -257,7 +257,7 @@ export default function Home() {
                               <p className="text-sm text-muted-foreground">White Wolf</p>
                               <h3 className="text-lg font-headline text-primary">{tee.name}</h3>
                               <p className="text-sm text-muted-foreground">{tee.category}</p>
-                              <p className="text-accent font-bold mt-2">${tee.price}</p>
+                              <p className="text-accent font-bold mt-2">₹{tee.price}</p>
                            </div>
                         </CardContent>
                       </Card>
@@ -291,7 +291,7 @@ export default function Home() {
                     />
                   </div>
                   <h3 className="mt-4 text-lg font-headline">{item.name}</h3>
-                  <p className="text-accent font-semibold">${item.price}</p>
+                  <p className="text-accent font-semibold">₹{item.price}</p>
                 </div>
               ))}
             </div>

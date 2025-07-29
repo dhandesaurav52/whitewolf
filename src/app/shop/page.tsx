@@ -20,7 +20,7 @@ import Link from 'next/link';
 const products = [
   {
     name: 'Vintage Wash Tee',
-    price: '28.00',
+    price: '1299',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
     aiHint: 'streetwear fashion',
@@ -29,16 +29,16 @@ const products = [
   },
   {
     name: 'Slim-Fit Chinos',
-    price: '55.00',
-    originalPrice: '70.00',
+    price: '1599',
+    originalPrice: '1999',
     image: 'https://placehold.co/400x500.png',
     aiHint: 'mens trousers',
-    discount: '21% OFF',
+    discount: '20% OFF',
     new: false,
   },
   {
     name: 'Linen Button-Down',
-    price: '48.00',
+    price: '1499',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
     aiHint: 'summer shirt',
@@ -47,7 +47,7 @@ const products = [
   },
   {
     name: 'Dark Wash Jeans',
-    price: '65.00',
+    price: '1899',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
     aiHint: 'denim jeans',
@@ -56,7 +56,7 @@ const products = [
   },
     {
     name: 'Graphic Print Tee',
-    price: '30.00',
+    price: '1399',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
     aiHint: 'urban style',
@@ -65,7 +65,7 @@ const products = [
   },
   {
     name: 'Utility Cargo Pants',
-    price: '75.00',
+    price: '2199',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
     aiHint: 'cargo pants',
@@ -74,7 +74,7 @@ const products = [
   },
   {
     name: 'Anxious Tshirt',
-    price: '25.00',
+    price: '1199',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
     aiHint: 'graphic tee fashion',
@@ -83,11 +83,11 @@ const products = [
   },
     {
     name: 'Classic Tee',
-    price: '22.00',
-    originalPrice: '25.00',
+    price: '999',
+    originalPrice: '1199',
     image: 'https://placehold.co/400x500.png',
     aiHint: 'mens fashion',
-    discount: '12% OFF',
+    discount: '17% OFF',
     new: false,
   },
 ];
@@ -132,9 +132,9 @@ const ProductCard = ({ product }: { product: typeof products[0] }) => {
       <CardContent className="p-4">
         <h3 className="font-headline text-lg text-primary truncate">{product.name}</h3>
         <div className="flex items-baseline gap-2 mt-1">
-          <p className="text-accent font-semibold text-base">${product.price}</p>
+          <p className="text-accent font-semibold text-base">₹{product.price}</p>
           {product.originalPrice && (
-            <p className="text-muted-foreground text-sm line-through">${product.originalPrice}</p>
+            <p className="text-muted-foreground text-sm line-through">₹{product.originalPrice}</p>
           )}
         </div>
       </CardContent>

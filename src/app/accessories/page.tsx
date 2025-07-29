@@ -20,7 +20,7 @@ import Link from 'next/link';
 const products = [
   {
     name: 'Classic Leather Belt',
-    price: '45.00',
+    price: '499',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
     aiHint: 'leather belt',
@@ -29,7 +29,7 @@ const products = [
   },
   {
     name: 'Silver-plated Chain',
-    price: '89.99',
+    price: '899',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
     aiHint: 'silver chain',
@@ -38,8 +38,8 @@ const products = [
   },
   {
     name: 'Chronograph Watch',
-    price: '159.99',
-    originalPrice: '199.99',
+    price: '1599',
+    originalPrice: '1999',
     image: 'https://placehold.co/400x500.png',
     aiHint: 'men\'s watch',
     discount: '20% OFF',
@@ -47,7 +47,7 @@ const products = [
   },
   {
     name: 'Wool Knit Beanie',
-    price: '35.00',
+    price: '349',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
     aiHint: 'wool beanie',
@@ -56,7 +56,7 @@ const products = [
   },
   {
     name: 'Aviator Sunglasses',
-    price: '75.00',
+    price: '749',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
     aiHint: 'sunglasses fashion',
@@ -65,7 +65,7 @@ const products = [
   },
   {
     name: 'Canvas Backpack',
-    price: '95.00',
+    price: '949',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
     aiHint: 'canvas backpack',
@@ -74,7 +74,7 @@ const products = [
   },
   {
     name: 'Leather Cardholder',
-    price: '30.00',
+    price: '299',
     originalPrice: null,
     image: 'https://placehold.co/400x500.png',
     aiHint: 'leather wallet',
@@ -83,8 +83,8 @@ const products = [
   },
   {
     name: 'Patterned Silk Tie',
-    price: '55.00',
-    originalPrice: '65.00',
+    price: '549',
+    originalPrice: '649',
     image: 'https://placehold.co/400x500.png',
     aiHint: 'silk tie',
     discount: '15% OFF',
@@ -133,9 +133,9 @@ const ProductCard = ({ product }: { product: typeof products[0] }) => {
       <CardContent className="p-4">
         <h3 className="font-headline text-lg text-primary truncate">{product.name}</h3>
         <div className="flex items-baseline gap-2 mt-1">
-          <p className="text-accent font-semibold text-base">${product.price}</p>
+          <p className="text-accent font-semibold text-base">₹{product.price}</p>
           {product.originalPrice && (
-            <p className="text-muted-foreground text-sm line-through">${product.originalPrice}</p>
+            <p className="text-muted-foreground text-sm line-through">₹{product.originalPrice}</p>
           )}
         </div>
       </CardContent>
