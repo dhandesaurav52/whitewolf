@@ -14,7 +14,8 @@ import type { CustomerDetails, CartItem, Order } from "@/lib/types";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, Pencil } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const ORDERS_STORAGE_KEY = 'orders';
 
@@ -55,13 +56,14 @@ export default function ConfirmPurchaseDialog({
 }: ConfirmPurchaseDialogProps) {
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cod" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [addressOption, setAddressOption] = useState("default");
   const { toast } = useToast();
   const { user } = useAuth();
   const router = useRouter();
   
   const itemsToPurchase = productToBuy ? [productToBuy] : cartItems;
   const totalToCharge = productToBuy ? (parseFloat(productToBuy.product.price) * productToBuy.quantity) : cartTotal;
-  const shippingCost = 0; // Free shipping
+  const shippingCost = 100.00;
   const totalAmount = totalToCharge + shippingCost;
   const productNames = itemsToPurchase.map(item => item.product.name).join(', ');
 
@@ -117,7 +119,6 @@ export default function ConfirmPurchaseDialog({
 
   const handleRazorpayPayment = async (shippingDetails: CustomerDetails) => {
     setIsLoading(true);
-    setPaymentMethod('online');
 
     const createOrderOnServer = async () => {
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -146,7 +147,7 @@ export default function ConfirmPurchaseDialog({
                 address: `${shippingDetails.address}, ${shippingDetails.city}, ${shippingDetails.pincode}`
             },
             theme: {
-                color: "#09090B"
+                color: "#F15A24"
             },
             modal: {
                 ondismiss: function() {
@@ -178,15 +179,12 @@ export default function ConfirmPurchaseDialog({
   
   const handleCashOnDelivery = (shippingDetails: CustomerDetails) => {
     setIsLoading(true);
-    setPaymentMethod('cod');
-    // Simulate processing time for COD
     setTimeout(() => {
         placeOrder(shippingDetails);
         setIsLoading(false);
         setPaymentMethod(null);
     }, 1000);
   };
-
 
   const onFormSubmit = (data: CheckoutFormValues) => {
     if (paymentMethod === 'online') {
@@ -196,6 +194,23 @@ export default function ConfirmPurchaseDialog({
     }
   };
   
+  const handlePayment = (method: "online" | "cod") => {
+    setPaymentMethod(method);
+    if (addressOption === 'new') {
+        form.handleSubmit(onFormSubmit)();
+    } else {
+        // Here you would use the default saved address.
+        // For now, we'll use the form data, assuming it's pre-filled or edited.
+        const defaultAddressData = form.getValues();
+        if(!defaultAddressData.address || !defaultAddressData.phone) {
+            toast({ title: "Missing Address", description: "Please add a default address in your profile or ship to a new address.", variant: "destructive"});
+            setPaymentMethod(null);
+            return;
+        }
+        onFormSubmit(defaultAddressData);
+    }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
       if (!open) {
@@ -211,9 +226,32 @@ export default function ConfirmPurchaseDialog({
             Confirm your shipping details for "{productNames}".
           </DialogDescription>
         </DialogHeader>
+
         <div className="px-6 space-y-4 max-h-[60vh] overflow-y-auto">
+             <RadioGroup value={addressOption} onValueChange={setAddressOption}>
+                <div className="rounded-md border p-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <RadioGroupItem value="default" id="default-address" />
+                            <Label htmlFor="default-address" className="font-semibold">Use Default Address</Label>
+                        </div>
+                        <Button variant="ghost" size="sm" onClick={() => router.push('/profile')}><Pencil className="mr-2 h-3 w-3" />Change</Button>
+                    </div>
+                    <div className="pl-7 pt-2 text-sm text-destructive">
+                        No default address and/or phone number found. Please add them in your profile.
+                    </div>
+                </div>
+                <div className="rounded-md border p-4">
+                     <div className="flex items-center gap-3">
+                        <RadioGroupItem value="new" id="new-address" />
+                        <Label htmlFor="new-address" className="font-semibold">Ship to a New Address</Label>
+                    </div>
+                </div>
+            </RadioGroup>
+
+            {addressOption === 'new' && (
               <Form {...form}>
-                <form id="shipping-form" onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-4 pt-4">
+                <form id="shipping-form" className="space-y-4 pt-4 border-t">
                     <FormField control={form.control} name="name" render={({ field }) => (
                         <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input {...field} placeholder="Your Name" /></FormControl><FormMessage /></FormItem>
                     )} />
@@ -241,45 +279,39 @@ export default function ConfirmPurchaseDialog({
                     </div>
                 </form>
               </Form>
-
+            )}
+            
             <Separator/>
 
             <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal</span>
-                    <span>{totalToCharge.toFixed(2)}</span>
+                    <span>₹{totalToCharge.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Shipping</span>
-                    <span className="text-green-600">Free</span>
+                    <span>₹{shippingCost.toFixed(2)}</span>
                 </div>
                  <Separator/>
                 <div className="flex justify-between font-bold text-lg">
                     <span>Total Amount</span>
-                    <span>{totalAmount.toFixed(2)}</span>
+                    <span>₹{totalAmount.toFixed(2)}</span>
                 </div>
             </div>
         </div>
 
         <DialogFooter className="p-6 bg-muted/50 flex-col sm:flex-row gap-2">
             <Button
-                variant={'default'}
-                className="flex-1"
-                onClick={() => {
-                  setPaymentMethod('online');
-                  form.handleSubmit(onFormSubmit)();
-                }}
+                className="flex-1 bg-[#f87171] text-white hover:bg-[#f87171]/90"
+                onClick={() => handlePayment('online')}
                 disabled={isLoading}
             >
                 {isLoading && paymentMethod === 'online' ? <Loader2 className="animate-spin" /> : "Pay Online"}
             </Button>
             <Button
-                variant={'outline'}
+                variant={'secondary'}
                 className="flex-1"
-                onClick={() => {
-                  setPaymentMethod('cod');
-                  form.handleSubmit(onFormSubmit)();
-                }}
+                onClick={() => handlePayment('cod')}
                 disabled={isLoading}
             >
                 {isLoading && paymentMethod === 'cod' ? <Loader2 className="animate-spin" /> : "Cash on Delivery"}
