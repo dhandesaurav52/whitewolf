@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
-import type { CustomerDetails, CartItem, Order } from "@/lib/types";
+import type { CustomerDetails, CartItem, Order, ProfileAddress } from "@/lib/types";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -19,6 +19,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
 const ORDERS_STORAGE_KEY = 'orders';
+const PROFILE_STORAGE_KEY_PREFIX = 'user_profile_';
 
 const checkoutSchema = z.object({
     name: z.string().min(1, "Full name is required"),
@@ -58,6 +59,7 @@ export default function ConfirmPurchaseDialog({
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cod" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [addressOption, setAddressOption] = useState("default");
+  const [defaultAddress, setDefaultAddress] = useState<ProfileAddress | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
   const router = useRouter();
@@ -77,6 +79,24 @@ export default function ConfirmPurchaseDialog({
     if (user && isOpen) {
         form.setValue('name', user.displayName || '');
         form.setValue('email', user.email || '');
+
+        try {
+            const profileDataRaw = localStorage.getItem(`${PROFILE_STORAGE_KEY_PREFIX}${user.uid}`);
+            if (profileDataRaw) {
+                const profileData = JSON.parse(profileDataRaw);
+                setDefaultAddress(profileData);
+                form.setValue('phone', profileData.mobile || '');
+                form.setValue('address', profileData.address?.street || '');
+                form.setValue('city', profileData.address?.city || '');
+                form.setValue('state', profileData.address?.state || '');
+                form.setValue('pincode', profileData.address?.pincode || '');
+            } else {
+                 setDefaultAddress(null);
+            }
+        } catch (e) {
+            console.error("Failed to load profile data", e);
+            setDefaultAddress(null);
+        }
     }
   }, [user, form, isOpen]);
   
@@ -200,10 +220,8 @@ export default function ConfirmPurchaseDialog({
     if (addressOption === 'new') {
         form.handleSubmit(onFormSubmit)();
     } else {
-        // Here you would use the default saved address.
-        // For now, we'll use the form data, assuming it's pre-filled or edited.
         const defaultAddressData = form.getValues();
-        if(!defaultAddressData.address || !defaultAddressData.phone) {
+        if(!defaultAddress?.address?.street || !defaultAddress?.mobile) {
             toast({ title: "Missing Address", description: "Please add a default address in your profile or ship to a new address.", variant: "destructive"});
             setPaymentMethod(null);
             return;
@@ -211,6 +229,8 @@ export default function ConfirmPurchaseDialog({
         onFormSubmit(defaultAddressData);
     }
   }
+
+  const hasDefaultAddress = defaultAddress && defaultAddress.address && defaultAddress.address.street && defaultAddress.mobile;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
@@ -229,18 +249,45 @@ export default function ConfirmPurchaseDialog({
         </DialogHeader>
 
         <div className="px-6 space-y-4 max-h-[60vh] overflow-y-auto">
-             <RadioGroup value={addressOption} onValueChange={setAddressOption}>
+             <RadioGroup value={addressOption} onValueChange={(value) => {
+                 setAddressOption(value);
+                 if(value === 'default' && defaultAddress) {
+                    form.reset({
+                        name: user?.displayName || '',
+                        email: user?.email || '',
+                        phone: defaultAddress.mobile,
+                        address: defaultAddress.address.street,
+                        city: defaultAddress.address.city,
+                        state: defaultAddress.address.state,
+                        pincode: defaultAddress.address.pincode,
+                    });
+                 } else if (value === 'new') {
+                     form.reset({
+                        name: user?.displayName || '',
+                        email: user?.email || '',
+                        phone: '', address: '', city: '', state: '', pincode: ''
+                     });
+                 }
+             }}>
                 <div className="rounded-md border p-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <RadioGroupItem value="default" id="default-address" />
                             <Label htmlFor="default-address" className="font-semibold">Use Default Address</Label>
                         </div>
-                        <Button variant="ghost" size="sm" onClick={() => router.push('/profile')}><Pencil className="mr-2 h-3 w-3" />Change</Button>
+                         {hasDefaultAddress && <Button variant="ghost" size="sm" onClick={() => router.push('/profile')}><Pencil className="mr-2 h-3 w-3" />Change</Button>}
                     </div>
-                    <div className="pl-7 pt-2 text-sm text-destructive">
-                        No default address and/or phone number found. Please add them in your profile.
-                    </div>
+                    {hasDefaultAddress ? (
+                        <div className="pl-7 pt-2 text-sm text-muted-foreground">
+                            <p className="font-medium">{defaultAddress?.address?.street}</p>
+                            <p>{defaultAddress?.address?.city}, {defaultAddress?.address?.state} - {defaultAddress?.address?.pincode}</p>
+                            <p>Mobile: {defaultAddress?.mobile}</p>
+                        </div>
+                    ) : (
+                        <div className="pl-7 pt-2 text-sm text-destructive">
+                           No default address and/or phone number found. Please add them in your profile.
+                        </div>
+                    )}
                 </div>
                 <div className="rounded-md border p-4">
                      <div className="flex items-center gap-3">

@@ -11,6 +11,9 @@ import { User, Mail, Phone, MapPin, Pencil } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import type { ProfileAddress } from "@/lib/types";
+
+const PROFILE_STORAGE_KEY_PREFIX = 'user_profile_';
 
 export default function ProfilePage() {
   const { user, loading, refreshUser } = useAuth();
@@ -30,8 +33,16 @@ export default function ProfilePage() {
   useEffect(() => {
     if (user) {
       setDisplayName(user.displayName || "");
-      setMobile(user.phoneNumber || "");
-      // You would typically fetch and set address from your database here
+      try {
+        const profileDataRaw = localStorage.getItem(`${PROFILE_STORAGE_KEY_PREFIX}${user.uid}`);
+        if (profileDataRaw) {
+          const profileData: ProfileAddress = JSON.parse(profileDataRaw);
+          setMobile(profileData.mobile || "");
+          setAddress(profileData.address || { street: "", city: "", state: "", pincode: "" });
+        }
+      } catch (e) {
+        console.error("Failed to load profile data from localStorage", e);
+      }
     }
   }, [user]);
 
@@ -94,7 +105,7 @@ export default function ProfilePage() {
   }
   
   const profileDetails = [
-      { icon: User, label: "Full Name", value: user.displayName || "Not provided" },
+      { icon: User, label: "Full Name", value: displayName || "Not provided" },
       { icon: Mail, label: "Email Address", value: user.email || "Not provided" },
       { icon: Phone, label: "Mobile Number", value: mobile || "Not provided" },
       { icon: MapPin, label: "Address", value: address.street ? `${address.street}, ${address.city}, ${address.state} - ${address.pincode}` : "Not provided" },
@@ -104,7 +115,10 @@ export default function ProfilePage() {
     if (!user) return;
     try {
         await updateProfile(user, { displayName });
-        // Here you would also save mobile and address to your database
+
+        const profileData: ProfileAddress = { mobile, address };
+        localStorage.setItem(`${PROFILE_STORAGE_KEY_PREFIX}${user.uid}`, JSON.stringify(profileData));
+        
         await refreshUser();
         toast({
             title: "Success",

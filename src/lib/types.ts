@@ -95,3 +95,13 @@ export type Order = {
     deliveryDate?: string;
     paymentId?: string;
 };
+
+export type ProfileAddress = {
+  mobile: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    pincode: string;
+  }
+}
