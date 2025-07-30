@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import PolicyDialog from "./PolicyDialog";
+import ContactUsDialog from "./ContactUsDialog";
 
 const RATINGS_STORAGE_KEY = 'appRatings';
 
@@ -25,6 +26,7 @@ export default function Footer() {
   const [ratings, setRatings] = useState<number[]>([]);
   const [isMounted, setIsMounted] = useState(false);
   const [isPolicyDialogOpen, setIsPolicyDialogOpen] = useState(false);
+  const [isContactUsOpen, setIsContactUsOpen] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -58,7 +60,7 @@ export default function Footer() {
 
   const aboutLinks = [
     { href: "/about", label: "Our Story" },
-    { href: "https://merchant.razorpay.com/policy/QoAs3QqvUvUpdi/contact_us", label: "Contact Us", external: true },
+    { id: "contact-us", label: "Contact Us", onClick: () => setIsContactUsOpen(true) },
   ];
 
   const supportLinks = [
@@ -104,15 +106,16 @@ export default function Footer() {
               <h3 className="font-bold text-sm text-accent-foreground tracking-wider uppercase mb-4">About</h3>
               <ul className="space-y-2">
                 {aboutLinks.map((link) => (
-                  <li key={link.href}>
-                    <Link 
-                      href={link.href} 
-                      className="text-sm text-muted-foreground hover:text-accent-foreground transition-colors"
-                      target={link.external ? "_blank" : undefined}
-                      rel={link.external ? "noopener noreferrer" : undefined}
-                    >
-                      {link.label}
-                    </Link>
+                  <li key={link.id || link.href}>
+                    {link.href ? (
+                       <Link href={link.href} className="text-sm text-muted-foreground hover:text-accent-foreground transition-colors">
+                        {link.label}
+                      </Link>
+                    ) : (
+                      <button onClick={link.onClick} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors">
+                        {link.label}
+                      </button>
+                    )}
                   </li>
                 ))}
                 <li>
@@ -155,6 +158,7 @@ export default function Footer() {
         </div>
       </footer>
       <PolicyDialog isOpen={isPolicyDialogOpen} onClose={() => setIsPolicyDialogOpen(false)} />
+      <ContactUsDialog isOpen={isContactUsOpen} onClose={() => setIsContactUsOpen(false)} />
     </>
   );
 }
