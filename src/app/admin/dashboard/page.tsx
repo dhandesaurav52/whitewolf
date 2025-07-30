@@ -23,6 +23,7 @@ import { Loader2 } from "lucide-react";
 import { uploadFile, storage } from "@/lib/firebase";
 import * as db from '@/lib/firestore';
 import { serverTimestamp } from "firebase/firestore";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const initialCategories = [
     { value: 't-shirts', label: 'T-Shirts' },
@@ -495,7 +496,7 @@ export default function AdminDashboardPage() {
                                             <TableCell><Skeleton className="h-6 w-20 rounded-full"/></TableCell>
                                             <TableCell><Skeleton className="h-4 w-12"/></TableCell>
                                             <TableCell><Skeleton className="h-4 w-8"/></TableCell>
-                                            <TableCell><Skeleton className="h-8 w-20"/></TableCell>
+                                            <TableCell className="text-right"><Skeleton className="h-8 w-20 ml-auto"/></TableCell>
                                         </TableRow>
                                     ))
                                 ) : products.map((product, index) => (
@@ -543,4 +544,6 @@ export default function AdminDashboardPage() {
         </div>
     );
 }
+    
+
     
