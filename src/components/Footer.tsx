@@ -14,7 +14,7 @@ const RATINGS_STORAGE_KEY = 'appRatings';
 
 const WhiteWolfLogo = () => (
     <div className="flex items-center">
-        <Image src="https://firebasestorage.googleapis.com/v0/b/white-wolf-style-advisor.firebasestorage.app/o/thewhitewolf.png?alt=media&token=81874feb-9e37-4131-a808-161b5853a4a1" alt="White Wolf Logo" width={40} height={40} />
+        <Image src="https://firebasestorage.googleapis.com/v0/b/white-wolf-style-advisor.firebasestorage.app/o/WhiteWolfLogo.png?alt=media&token=3accae8b-9687-41f4-99a3-31856cdeaa91" alt="White Wolf Logo" width={40} height={40} />
         <span className="ml-2 text-2xl font-bold font-headline">White Wolf</span>
     </div>
 )
