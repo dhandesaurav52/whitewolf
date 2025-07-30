@@ -3,13 +3,13 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { BarChart, ShoppingCart, Package, Users, DollarSign, TrendingUp, PackageX } from "lucide-react";
+import { BarChart as BarChartIcon, ShoppingCart, Package, Users, DollarSign, TrendingUp, PackageX } from "lucide-react";
 import type { Product as ProductType, Order } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import * as db from '@/lib/firestore';
 import { Timestamp } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Bar, BarChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Badge } from "@/components/ui/badge";
 
@@ -95,7 +95,7 @@ export default function AdminDashboardPage() {
     const totalUsers = new Set(orders.map(order => order.customer.email)).size;
 
     const stats = [
-        { title: "Total Revenue", value: `${totalRevenue.toFixed(2)}`, description: "Based on delivered orders", icon: BarChart },
+        { title: "Total Revenue", value: `${totalRevenue.toFixed(2)}`, description: "Based on delivered orders", icon: DollarSign },
         { title: "New Orders", value: newOrdersCount.toString(), description: "Orders pending fulfillment", icon: ShoppingCart },
         { title: "Total Products", value: productsCount.toString(), description: "Total products in catalog", icon: Package },
         { title: "Total Users", value: totalUsers.toString(), description: "Unique customers with orders", icon: Users },
@@ -116,7 +116,7 @@ export default function AdminDashboardPage() {
                              {isDataLoading ? (
                                 <Skeleton className="h-8 w-1/2" />
                             ) : (
-                                <div className="text-2xl font-bold">{stat.value}</div>
+                                <div className="text-2xl font-bold">{stat.title === 'Total Revenue' ? `₹${stat.value}` : stat.value}</div>
                             )}
                             <p className="text-xs text-muted-foreground">{stat.description}</p>
                         </CardContent>
@@ -128,7 +128,7 @@ export default function AdminDashboardPage() {
                 <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle className="text-2xl font-headline text-accent flex items-center gap-2">
-                            <DollarSign className="h-6 w-6" /> Monthly Sales Overview
+                            <BarChartIcon className="h-6 w-6" /> Monthly Sales Overview
                         </CardTitle>
                         <CardDescription>A summary of your revenue from delivered orders each month.</CardDescription>
                     </CardHeader>
@@ -136,22 +136,27 @@ export default function AdminDashboardPage() {
                         {isDataLoading ? (
                             <Skeleton className="w-full h-full" />
                         ) : analyticsData.salesChartData.length > 0 ? (
-                           <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={analyticsData.salesChartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                                     <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="month" fontSize={12} tickLine={false} axisLine={false} />
-                                    <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
+                           <ChartContainer config={{
+                                sales: {
+                                    label: "Sales",
+                                    color: "hsl(var(--primary))",
+                                }
+                           }} className="h-full w-full">
+                                <BarChart accessibilityLayer data={analyticsData.salesChartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                                     <CartesianGrid vertical={false} />
+                                    <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} fontSize={12} />
+                                    <YAxis tickLine={false} axisLine={false} tickMargin={8} fontSize={12} tickFormatter={(value) => `₹${value / 1000}k`} />
                                     <ChartTooltip
                                         cursor={false}
                                         content={<ChartTooltipContent 
-                                            formatter={(value) => `${value.toLocaleString()}`}
+                                            formatter={(value) => `₹${value.toLocaleString()}`}
                                             labelClassName="font-bold"
                                             indicator="dot"
                                         />}
                                     />
-                                    <Bar dataKey="sales" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                                    <Bar dataKey="sales" radius={[4, 4, 0, 0]} />
                                 </BarChart>
-                            </ResponsiveContainer>
+                            </ChartContainer>
                         ) : (
                             <div className="flex items-center justify-center h-full text-muted-foreground">
                                 No sales data available yet.
