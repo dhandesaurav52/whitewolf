@@ -1,14 +1,14 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BarChart, ShoppingCart, Package, Users, UploadCloud, Pencil, Trash2, Search, Check, ChevronsUpDown, PlusCircle } from "lucide-react";
+import { BarChart, ShoppingCart, Package, Users, UploadCloud, Pencil, Trash2, Search, Check, ChevronsUpDown, PlusCircle, TrendingUp, PackageX, DollarSign } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Image from "next/image";
@@ -22,8 +22,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { uploadFile, storage } from "@/lib/firebase";
 import * as db from '@/lib/firestore';
-import { serverTimestamp } from "firebase/firestore";
+import { serverTimestamp, Timestamp } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 const initialCategories = [
     { value: 't-shirts', label: 'T-Shirts' },
@@ -138,6 +140,47 @@ export default function AdminDashboardPage() {
             });
         }
     };
+
+    const analyticsData = useMemo(() => {
+        const deliveredOrders = orders.filter(order => order.status === 'Delivered');
+
+        // Monthly Sales
+        const monthlySales: { [key: string]: number } = {};
+        deliveredOrders.forEach(order => {
+            const date = order.orderDate instanceof Timestamp ? order.orderDate.toDate() : new Date(order.orderDate);
+            const month = date.toLocaleString('default', { month: 'short', year: '2-digit' });
+            if (!monthlySales[month]) {
+                monthlySales[month] = 0;
+            }
+            monthlySales[month] += order.total;
+        });
+
+        const salesChartData = Object.entries(monthlySales)
+            .map(([month, sales]) => ({ month, sales }))
+            .sort((a, b) => new Date(`1 ${a.month}`).getTime() - new Date(`1 ${b.month}`).getTime());
+
+
+        // Top Selling Products
+        const productSales: { [key: string]: { name: string; count: number } } = {};
+        deliveredOrders.forEach(order => {
+            order.items.forEach(item => {
+                if (!productSales[item.product.id]) {
+                    productSales[item.product.id] = { name: item.product.name, count: 0 };
+                }
+                productSales[item.product.id].count += item.quantity;
+            });
+        });
+
+        const topSellingProducts = Object.values(productSales)
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 5);
+        
+        // Low Stock Products
+        const lowStockProducts = products.filter(p => p.stock < 10).sort((a, b) => a.stock - b.stock);
+
+        return { salesChartData, topSellingProducts, lowStockProducts };
+    }, [orders, products]);
+
 
     const totalRevenue = orders
         .filter(order => order.status === 'Delivered')
@@ -294,6 +337,84 @@ export default function AdminDashboardPage() {
                         </CardContent>
                     </Card>
                 ))}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <Card className="lg:col-span-2">
+                    <CardHeader>
+                        <CardTitle className="text-2xl font-headline text-accent flex items-center gap-2">
+                            <DollarSign className="h-6 w-6" /> Monthly Sales Overview
+                        </CardTitle>
+                        <CardDescription>A summary of your revenue from delivered orders each month.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-[300px]">
+                        {isDataLoading ? (
+                            <Skeleton className="w-full h-full" />
+                        ) : analyticsData.salesChartData.length > 0 ? (
+                           <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={analyticsData.salesChartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                                     <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="month" fontSize={12} tickLine={false} axisLine={false} />
+                                    <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
+                                    <ChartTooltip
+                                        cursor={false}
+                                        content={<ChartTooltipContent 
+                                            formatter={(value) => `${value.toLocaleString()}`}
+                                            labelClassName="font-bold"
+                                            indicator="dot"
+                                        />}
+                                    />
+                                    <Bar dataKey="sales" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-muted-foreground">
+                                No sales data available yet.
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                <div className="space-y-8">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-xl font-headline text-accent flex items-center gap-2">
+                                <TrendingUp className="h-5 w-5" /> Top Selling Products
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                           {isDataLoading ? <Skeleton className="h-24 w-full" /> : analyticsData.topSellingProducts.length > 0 ? (
+                               <ul className="space-y-2">
+                                {analyticsData.topSellingProducts.map(p => (
+                                    <li key={p.name} className="flex justify-between items-center text-sm">
+                                        <span className="font-medium truncate pr-2">{p.name}</span>
+                                        <Badge variant="secondary">{p.count} sold</Badge>
+                                    </li>
+                                ))}
+                               </ul>
+                           ) : <p className="text-sm text-muted-foreground">No sales data yet.</p>}
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-xl font-headline text-accent flex items-center gap-2">
+                                <PackageX className="h-5 w-5" /> Low Stock Alerts
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                           {isDataLoading ? <Skeleton className="h-24 w-full" /> : analyticsData.lowStockProducts.length > 0 ? (
+                               <ul className="space-y-2">
+                                {analyticsData.lowStockProducts.map(p => (
+                                    <li key={p.id} className="flex justify-between items-center text-sm">
+                                        <span className="font-medium truncate pr-2">{p.name}</span>
+                                        <Badge variant="destructive">{p.stock} left</Badge>
+                                    </li>
+                                ))}
+                               </ul>
+                           ) : <p className="text-sm text-muted-foreground">All products are well-stocked.</p>}
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
@@ -547,3 +668,4 @@ export default function AdminDashboardPage() {
     
 
     
+
