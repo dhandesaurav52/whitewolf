@@ -118,7 +118,7 @@ export default function AccessoriesPage() {
                     let originalProductPrice = p.originalPrice ? parseFloat(p.originalPrice) : parseFloat(p.price);
                     let appliedDiscount = p.discount;
                     
-                    const applicableAd = categoryAds.find(ad => ad.selectedCategories.includes(p.category));
+                    const applicableAd = categoryAds.find(ad => ad.selectedCategories.map(c=>c.toLowerCase()).includes(p.category.toLowerCase()));
 
                     if (applicableAd) {
                          if (applicableAd.discountType === 'percentage') {
@@ -130,7 +130,7 @@ export default function AccessoriesPage() {
                         }
                         return {
                             ...p,
-                            price: Math.round(productPrice).toString(),
+                            price: productPrice.toFixed(2),
                             originalPrice: originalProductPrice.toString(),
                             discount: appliedDiscount,
                         }
@@ -289,3 +289,5 @@ export default function AccessoriesPage() {
     </div>
   );
 }
+
+    

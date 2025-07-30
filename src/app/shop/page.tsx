@@ -143,7 +143,7 @@ export default function ShopPage() {
                         }
                         return {
                             ...p,
-                            price: Math.round(productPrice).toString(),
+                            price: productPrice.toFixed(2),
                             originalPrice: originalProductPrice.toString(),
                             discount: appliedDiscount,
                         }
@@ -302,3 +302,5 @@ export default function ShopPage() {
     </div>
   );
 }
+
+    
