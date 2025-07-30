@@ -20,26 +20,7 @@ import EditOfferDialog from "@/components/EditOfferDialog";
 import Image from "next/image";
 import CreateHeroDialog from "@/components/CreateHeroDialog";
 import { uploadFile, storage } from "@/lib/firebase";
-
-const ADS_STORAGE_KEY = 'advertisements';
-
-const generateUniqueId = () => `ad_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 9)}`;
-
-const initialAds: Advertisement[] = [
-    {
-        id: generateUniqueId(),
-        text: 'Default Hero Banner',
-        appliesTo: 'hero',
-        status: 'Active',
-        discountType: 'fixed',
-        discountValue: 0,
-        selectedCategories: [],
-        heroHeadline: "Define Your Style",
-        heroSubtext: "Timeless style, uncompromising quality, and conscious craftsmanship for the modern individual.",
-        heroButton: "Shop New Arrivals",
-        heroImageUrl: "https://placehold.co/1600x900.png",
-    }
-];
+import * as db from "@/lib/firestore";
 
 const productCategories = [
     { value: 't-shirts', label: 'T-Shirts' },
@@ -66,51 +47,42 @@ export default function AdvertiseOffersPage() {
     const [editingHero, setEditingHero] = useState<Advertisement | null>(null);
     const [isMounted, setIsMounted] = useState(false);
     const [isSavingHero, setIsSavingHero] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
 
-    const updateAds = useCallback((newAds: Advertisement[]) => {
-        setAds(newAds);
+    const loadAds = useCallback(async () => {
+        setIsLoading(true);
         try {
-            localStorage.setItem(ADS_STORAGE_KEY, JSON.stringify(newAds));
-            window.dispatchEvent(new Event('storage'));
+            const adsData = await db.ads.getAll();
+            setAds(adsData);
         } catch (error) {
-            console.error("Failed to save ads to localStorage", error);
-            toast({
-                title: "Storage Error",
-                description: "Could not save changes to local storage.",
-                variant: "destructive"
-            });
+            console.error("Failed to load ads from Firestore", error);
+            toast({ title: "Error", description: "Could not load ads.", variant: "destructive" });
+        } finally {
+            setIsLoading(false);
         }
     }, [toast]);
 
     useEffect(() => {
         setIsMounted(true);
-        try {
-            const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
-            if (storedAds) {
-                const parsedAds = JSON.parse(storedAds);
-                setAds(parsedAds);
-            } else {
-                updateAds(initialAds);
-            }
-        } catch (error) {
-            console.error("Failed to load ads from localStorage", error);
-            updateAds(initialAds);
-        }
-    }, [updateAds]);
+        loadAds();
+    }, [loadAds]);
 
-    const handleDeleteAd = (id: string) => {
-        const newAds = ads.filter(ad => ad.id !== id);
-        updateAds(newAds);
-        toast({
-            title: "Item Removed",
-            description: "The item has been successfully deleted.",
-        });
+    const handleDeleteAd = async (id: string) => {
+        try {
+            await db.ads.remove(id);
+            setAds(ads.filter(ad => ad.id !== id));
+            toast({
+                title: "Item Removed",
+                description: "The item has been successfully deleted.",
+            });
+        } catch (error) {
+            toast({ title: "Error", description: "Could not delete item.", variant: "destructive" });
+        }
     };
 
-    const handleCreateOffer = (newOfferData: { text: string; discountType: any; discountValue: string; appliesTo: any; selectedCategories: string[]; isActive: boolean; }) => {
-        const newAd: Advertisement = {
-            id: generateUniqueId(),
+    const handleCreateOffer = async (newOfferData: { text: string; discountType: any; discountValue: string; appliesTo: any; selectedCategories: string[]; isActive: boolean; }) => {
+        const newAd: Omit<Advertisement, 'id'> = {
             text: newOfferData.text,
             discountType: newOfferData.discountType,
             discountValue: parseFloat(newOfferData.discountValue) || 0,
@@ -118,16 +90,20 @@ export default function AdvertiseOffersPage() {
             selectedCategories: newOfferData.selectedCategories,
             status: newOfferData.isActive ? 'Active' : 'Inactive',
         };
-
-        updateAds([...ads, newAd]);
-        toast({
-            title: "Offer Created",
-            description: "The new promotional offer has been successfully added.",
-        });
-        setIsCreateOfferDialogOpen(false);
+        try {
+            const addedAd = await db.ads.add(newAd);
+            setAds([...ads, addedAd]);
+            toast({
+                title: "Offer Created",
+                description: "The new promotional offer has been successfully added.",
+            });
+            setIsCreateOfferDialogOpen(false);
+        } catch(error) {
+            toast({ title: "Error", description: "Could not create offer.", variant: "destructive" });
+        }
     };
 
-    const handleUpdateOffer = (updatedOfferData: { text: string; discountType: any; discountValue: string; appliesTo: any; selectedCategories: string[]; isActive: boolean; }) => {
+    const handleUpdateOffer = async (updatedOfferData: { text: string; discountType: any; discountValue: string; appliesTo: any; selectedCategories: string[]; isActive: boolean; }) => {
         if (!editingOffer) return;
 
         const updatedAd: Advertisement = {
@@ -139,13 +115,17 @@ export default function AdvertiseOffersPage() {
             selectedCategories: updatedOfferData.selectedCategories,
             status: updatedOfferData.isActive ? 'Active' : 'Inactive',
         };
-
-        updateAds(ads.map(ad => ad.id === updatedAd.id ? updatedAd : ad));
-        toast({
-            title: "Offer Updated",
-            description: "The promotional offer has been successfully updated.",
-        });
-        setEditingOffer(null);
+        try {
+            await db.ads.update(updatedAd.id, updatedAd);
+            setAds(ads.map(ad => ad.id === updatedAd.id ? updatedAd : ad));
+            toast({
+                title: "Offer Updated",
+                description: "The promotional offer has been successfully updated.",
+            });
+            setEditingOffer(null);
+        } catch (error) {
+            toast({ title: "Error", description: "Could not update offer.", variant: "destructive" });
+        }
     };
     
     const handleSaveHero = async (heroData: Partial<Advertisement>, imageFile: File | null) => {
@@ -170,11 +150,11 @@ export default function AdvertiseOffersPage() {
 
             if (editingHero) { // Update existing
                 const updatedHero = { ...editingHero, ...finalHeroData, status: finalHeroData.status || editingHero.status };
-                updateAds(ads.map(ad => ad.id === editingHero.id ? updatedHero : ad));
+                await db.ads.update(editingHero.id, updatedHero);
+                setAds(ads.map(ad => ad.id === editingHero.id ? updatedHero : ad));
                 toast({ title: "Hero Updated", description: "The hero banner has been successfully updated." });
             } else { // Create new
-                const newHeroAd: Advertisement = {
-                    id: generateUniqueId(),
+                const newHeroAd: Omit<Advertisement, 'id'> = {
                     text: 'Hero Banner',
                     appliesTo: 'hero',
                     status: 'Active',
@@ -183,7 +163,8 @@ export default function AdvertiseOffersPage() {
                     selectedCategories: [],
                     ...finalHeroData
                 };
-                updateAds([...ads, newHeroAd]);
+                const addedHero = await db.ads.add(newHeroAd);
+                setAds([...ads, addedHero]);
                 toast({ title: "Hero Created", description: "The new hero banner has been added." });
             }
         } catch (error) {
@@ -219,7 +200,7 @@ export default function AdvertiseOffersPage() {
     }
 
     if (!isMounted) {
-        return <div>Loading...</div>;
+        return <div className="flex justify-center items-center h-screen"><Loader2 className="animate-spin h-8 w-8"/></div>;
     }
 
     const nonHeroAds = ads.filter(ad => ad.appliesTo !== 'hero');
@@ -251,7 +232,9 @@ export default function AdvertiseOffersPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {heroAds.length > 0 ? heroAds.map((ad) => (
+                            {isLoading ? (
+                                <TableRow><TableCell colSpan={4} className="text-center"><Loader2 className="animate-spin mx-auto"/></TableCell></TableRow>
+                            ) : heroAds.length > 0 ? heroAds.map((ad) => (
                                 <TableRow key={ad.id}>
                                     <TableCell>
                                         <Image src={ad.heroImageUrl || "https://placehold.co/100x100.png"} alt={ad.heroHeadline || "Hero Image"} width={80} height={45} className="rounded-md object-cover" />
@@ -306,7 +289,9 @@ export default function AdvertiseOffersPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {nonHeroAds.length > 0 ? nonHeroAds.map((ad) => (
+                             {isLoading ? (
+                                <TableRow><TableCell colSpan={5} className="text-center"><Loader2 className="animate-spin mx-auto"/></TableCell></TableRow>
+                            ) : nonHeroAds.length > 0 ? nonHeroAds.map((ad) => (
                                 <TableRow key={ad.id}>
                                     <TableCell className="font-medium">{ad.text}</TableCell>
                                     <TableCell>{getDiscountDisplay(ad)}</TableCell>

@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Truck, Package, CheckCircle, Ban, RefreshCw, Undo2, Check, Star, Search, MapPin, Phone } from "lucide-react";
+import { MoreHorizontal, Truck, Package, CheckCircle, Ban, RefreshCw, Undo2, Check, Star, Search, MapPin, Phone, Loader2 } from "lucide-react";
 import type { Order, OrderStatus, Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,8 +23,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-const ORDERS_STORAGE_KEY = 'orders';
+import * as db from '@/lib/firestore';
+import { useToast } from "@/hooks/use-toast";
+import { Timestamp } from "firebase/firestore";
 
 const statusStyles: { [key in OrderStatus]: { color: string, text: string } } = {
   Pending: "bg-yellow-100 text-yellow-800 border-yellow-300",
@@ -50,50 +51,59 @@ const statusIcons: { [key in OrderStatus]: React.ElementType } = {
   "Return Successful": Star,
 };
 
+const formatDate = (timestamp: any): string => {
+    if (timestamp instanceof Timestamp) {
+        return timestamp.toDate().toLocaleDateString();
+    }
+    if (typeof timestamp === 'string') {
+        return new Date(timestamp).toLocaleDateString();
+    }
+    return 'N/A';
+};
+
 export default function ManageOrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [isMounted, setIsMounted] = useState(false);
     const [imagesInView, setImagesInView] = useState<string[] | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
+    const [isLoading, setIsLoading] = useState(false);
+    const { toast } = useToast();
 
-    const loadOrders = useCallback(() => {
+    const loadOrders = useCallback(async () => {
+        setIsLoading(true);
         try {
-            const allOrdersRaw = localStorage.getItem(ORDERS_STORAGE_KEY);
-            const allOrders: Order[] = allOrdersRaw ? JSON.parse(allOrdersRaw) : [];
-            setOrders(allOrders.sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()));
+            const allOrders = await db.orders.getAll();
+            setOrders(allOrders.sort((a, b) => {
+                const dateA = a.orderDate instanceof Timestamp ? a.orderDate.toMillis() : new Date(a.orderDate).getTime();
+                const dateB = b.orderDate instanceof Timestamp ? b.orderDate.toMillis() : new Date(b.orderDate).getTime();
+                return dateB - dateA;
+            }));
         } catch (error) {
             console.error("Failed to load orders", error);
+            toast({ title: "Error", description: "Failed to load orders.", variant: "destructive" });
+        } finally {
+            setIsLoading(false);
         }
-    }, []);
+    }, [toast]);
 
     useEffect(() => {
         setIsMounted(true);
         loadOrders();
-        window.addEventListener('storage', loadOrders);
-        return () => {
-            window.removeEventListener('storage', loadOrders);
-        }
     }, [loadOrders]);
 
-    const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
+    const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
         try {
-            const allOrdersRaw = localStorage.getItem(ORDERS_STORAGE_KEY);
-            const allOrders: Order[] = allOrdersRaw ? JSON.parse(allOrdersRaw) : [];
-            const updatedOrders = allOrders.map(order => {
-                if (order.id === orderId) {
-                    const updatedOrder = { ...order, status: newStatus };
-                    if (newStatus === 'Delivered') {
-                        updatedOrder.deliveryDate = new Date().toISOString();
-                    }
-                    return updatedOrder;
-                }
-                return order;
-            });
-            localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(updatedOrders));
-            window.dispatchEvent(new Event('storage')); // This will trigger the re-load
+            let updateData: Partial<Order> = { status: newStatus };
+            if (newStatus === 'Delivered') {
+                updateData.deliveryDate = new Date();
+            }
+            await db.orders.update(orderId, updateData);
+            setOrders(orders.map(order => order.id === orderId ? { ...order, ...updateData } : order));
+            toast({ title: "Status Updated", description: `Order marked as ${newStatus}.` });
         } catch (error) {
             console.error("Failed to update order status", error);
+            toast({ title: "Error", description: "Failed to update status.", variant: "destructive" });
         }
     };
     
@@ -109,7 +119,7 @@ export default function ManageOrdersPage() {
         const statusMatches = statusFilter === 'all' || order.status.toLowerCase() === statusFilter;
         
         const searchMatches = searchTermLower === '' ||
-            order.id.split('_')[1].toLowerCase().includes(searchTermLower) ||
+            order.id.toLowerCase().includes(searchTermLower) ||
             order.customer.name.toLowerCase().includes(searchTermLower) ||
             order.customer.email.toLowerCase().includes(searchTermLower) ||
             order.status.toLowerCase().includes(searchTermLower);
@@ -195,7 +205,9 @@ export default function ManageOrdersPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredOrders.length > 0 ? filteredOrders.map((order) => (
+                                {isLoading ? (
+                                     <TableRow><TableCell colSpan={8} className="text-center py-8"><Loader2 className="h-6 w-6 animate-spin mx-auto"/></TableCell></TableRow>
+                                ) : filteredOrders.length > 0 ? filteredOrders.map((order) => (
                                     <CollapsibleTableRow
                                       key={order.id}
                                       content={
@@ -239,12 +251,12 @@ export default function ManageOrdersPage() {
                                           </div>
                                       }
                                     >
-                                        <TableCell className="font-medium">#{order.id.split('_')[1]}</TableCell>
+                                        <TableCell className="font-medium">#{order.id.substring(0, 6)}</TableCell>
                                         <TableCell>
                                             <div className="font-medium">{order.customer.name}</div>
                                             <div className="text-sm text-muted-foreground">{order.customer.email}</div>
                                         </TableCell>
-                                        <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
+                                        <TableCell>{formatDate(order.orderDate)}</TableCell>
                                         <TableCell>{order.items.reduce((acc, item) => acc + item.quantity, 0)}</TableCell>
                                         <TableCell>{order.total.toFixed(2)}</TableCell>
                                         <TableCell>
@@ -316,3 +328,4 @@ export default function ManageOrdersPage() {
 }
 
     
+

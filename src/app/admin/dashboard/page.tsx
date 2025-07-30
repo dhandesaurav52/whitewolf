@@ -21,14 +21,8 @@ import type { Product as ProductType, Order } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { uploadFile, storage } from "@/lib/firebase";
-
-
-const PRODUCTS_STORAGE_KEY = 'products';
-const ORDERS_STORAGE_KEY = 'orders';
-
-const initialProducts: ProductType[] = [];
-
-const generateUniqueId = () => `prod_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 9)}`;
+import * as db from '@/lib/firestore';
+import { serverTimestamp } from "firebase/firestore";
 
 const initialCategories = [
     { value: 't-shirts', label: 'T-Shirts' },
@@ -79,69 +73,68 @@ export default function AdminDashboardPage() {
     const [newVideoFile, setNewVideoFile] = useState<File | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    const loadData = useCallback(() => {
-        let storedProducts: ProductType[] = [];
+    const loadData = useCallback(async () => {
+        setIsLoading(true);
         try {
-            const productsFromStorage = localStorage.getItem(PRODUCTS_STORAGE_KEY);
-            storedProducts = productsFromStorage ? JSON.parse(productsFromStorage) : initialProducts;
+            const [productsData, ordersData] = await Promise.all([
+                db.products.getAll(),
+                db.orders.getAll()
+            ]);
+            setProducts(productsData);
+            setOrders(ordersData);
         } catch (error) {
-            console.error("Failed to load products from storage, using initial products.", error);
-            storedProducts = initialProducts;
+            console.error("Failed to load data from Firestore", error);
+            toast({
+                title: "Error",
+                description: "Could not fetch data. Please try again.",
+                variant: "destructive"
+            });
         }
-        setProducts(storedProducts);
-
-        let storedOrders: Order[] = [];
-        try {
-            const ordersFromStorage = localStorage.getItem(ORDERS_STORAGE_KEY);
-            storedOrders = ordersFromStorage ? JSON.parse(ordersFromStorage) : [];
-        } catch (error) {
-            console.error("Failed to load orders from storage.", error);
-        }
-        setOrders(storedOrders);
-    }, []);
+        setIsLoading(false);
+    }, [toast]);
 
     useEffect(() => {
         loadData();
-        window.addEventListener('storage', loadData);
-        return () => window.removeEventListener('storage', loadData);
     }, [loadData]);
 
-    const updateProducts = (newProducts: ProductType[]) => {
-        setProducts(newProducts);
-        try {
-            localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(newProducts));
-            window.dispatchEvent(new Event('storage'));
-        } catch (error) {
-            console.error("Failed to save products to localStorage", error);
-            toast({
-                title: "Storage Error",
-                description: "Could not save product data. The browser storage might be full.",
-                variant: "destructive",
-            });
-        }
-    };
 
     const handleEdit = (product: ProductType) => {
         setEditingProduct(product);
     };
 
-    const handleDelete = (productId: string) => {
-        const newProducts = products.filter(p => p.id !== productId);
-        updateProducts(newProducts);
-        toast({
-            title: "Product Deleted",
-            description: "The product has been successfully removed.",
-        });
+    const handleDelete = async (productId: string) => {
+        try {
+            await db.products.remove(productId);
+            setProducts(products.filter(p => p.id !== productId));
+            toast({
+                title: "Product Deleted",
+                description: "The product has been successfully removed.",
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to delete product.",
+                variant: "destructive"
+            });
+        }
     };
 
-    const handleSave = (updatedProduct: ProductType) => {
-        const newProducts = products.map(p => p.id === updatedProduct.id ? updatedProduct : p);
-        updateProducts(newProducts);
-        setEditingProduct(null);
-        toast({
-            title: "Product Updated",
-            description: `${updatedProduct.name} has been successfully updated.`,
-        });
+    const handleSave = async (updatedProduct: ProductType) => {
+        try {
+            await db.products.update(updatedProduct.id, updatedProduct);
+            setProducts(products.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+            setEditingProduct(null);
+            toast({
+                title: "Product Updated",
+                description: `${updatedProduct.name} has been successfully updated.`,
+            });
+        } catch (error) {
+             toast({
+                title: "Error",
+                description: "Failed to update product.",
+                variant: "destructive"
+            });
+        }
     };
 
     const totalRevenue = orders
@@ -234,8 +227,7 @@ export default function AdminDashboardPage() {
 
             const categoryLabel = categories.find(c => c.value === newSelectedCategory)?.label || newSelectedCategory;
 
-            const newProduct: ProductType = {
-                id: generateUniqueId(),
+            const newProductData: Omit<ProductType, 'id'> = {
                 name: newProductName,
                 brand: newBrandName,
                 price: newPrice,
@@ -252,15 +244,16 @@ export default function AdminDashboardPage() {
                 aiHint: newProductName.toLowerCase(),
                 originalPrice: null,
                 discount: null,
+                createdAt: serverTimestamp(),
             };
+            
+            const addedProduct = await db.products.add(newProductData);
+            setProducts([...products, addedProduct]);
 
-            const currentProducts = JSON.parse(localStorage.getItem(PRODUCTS_STORAGE_KEY) || '[]');
-            const newProducts = [...currentProducts, newProduct];
-            updateProducts(newProducts);
 
             toast({
                 title: "Product Added",
-                description: `${newProduct.name} has been added to the store.`,
+                description: `${addedProduct.name} has been added to the store.`,
             });
 
             resetForm();

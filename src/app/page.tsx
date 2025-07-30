@@ -17,10 +17,7 @@ import { useState, useEffect, useCallback } from "react";
 import type { Advertisement, Reel, Product as ProductType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const ADS_STORAGE_KEY = 'advertisements';
-const REELS_STORAGE_KEY = 'reels';
-const PRODUCTS_STORAGE_KEY = 'products';
+import * as db from "@/lib/firestore";
 
 const defaultHero: Advertisement = {
     id: 'default-hero',
@@ -41,22 +38,18 @@ const HeroSection = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isMounted, setIsMounted] = useState(false);
 
-    const loadHeroSlides = useCallback(() => {
+    const loadHeroSlides = useCallback(async () => {
         try {
-            const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
-            if (storedAds) {
-                const parsedAds: Advertisement[] = JSON.parse(storedAds);
-                const activeHeroAds = parsedAds.filter(ad => ad.appliesTo === 'hero' && ad.status === 'Active');
-                if (activeHeroAds.length > 0) {
-                    setHeroSlides(activeHeroAds);
-                } else {
-                    setHeroSlides([defaultHero]);
-                }
+            const allAds = await db.ads.getAll();
+            const activeHeroAds = allAds.filter(ad => ad.appliesTo === 'hero' && ad.status === 'Active');
+            
+            if (activeHeroAds.length > 0) {
+                setHeroSlides(activeHeroAds);
             } else {
                 setHeroSlides([defaultHero]);
             }
         } catch (error) {
-            console.error("Failed to load hero configuration from localStorage", error);
+            console.error("Failed to load hero configuration from Firestore", error);
             setHeroSlides([defaultHero]);
         }
     }, []);
@@ -64,8 +57,6 @@ const HeroSection = () => {
     useEffect(() => {
         setIsMounted(true);
         loadHeroSlides();
-        window.addEventListener('storage', loadHeroSlides);
-        return () => window.removeEventListener('storage', loadHeroSlides);
     }, [loadHeroSlides]);
 
     useEffect(() => {
@@ -184,45 +175,40 @@ export default function Home() {
   const [categories, setCategories] = useState<{name: string, href: string, image: string, aiHint: string}[]>([]);
   const [isMounted, setIsMounted] = useState(false);
 
-  const loadData = useCallback(() => {
+  const loadData = useCallback(async () => {
     try {
-      const storedReels = localStorage.getItem(REELS_STORAGE_KEY);
-      if (storedReels) {
-        setReels(JSON.parse(storedReels));
-      }
-      const storedProducts = localStorage.getItem(PRODUCTS_STORAGE_KEY);
-      if (storedProducts) {
-        const allProducts: ProductType[] = JSON.parse(storedProducts);
-        setProducts(allProducts);
-        
-        setNewArrivals(allProducts.filter(p => p.new).slice(0, 4));
-        setOversizeTees(allProducts.filter(p => p.category.toLowerCase() === 'oversized t-shirts').slice(0, 5));
-        setAccessories(allProducts.filter(p => p.displaySection === 'accessories').slice(0, 4));
-        
-        const uniqueCategories = [...new Set(allProducts.map(p => p.category))];
-        const categoryData = uniqueCategories.map(cat => {
-            const productForCategory = allProducts.find(p => p.category === cat && p.images && p.images.length > 0);
-            return {
-                name: cat,
-                href: `/shop?category=${encodeURIComponent(cat.toLowerCase())}`,
-                image: productForCategory?.images[0] || "https://placehold.co/400x500.png",
-                aiHint: `${cat} model`
-            };
-        }).filter(c => c.name); // Filter out categories with no name
-        setCategories(categoryData);
-      }
+      const [allReels, allProducts] = await Promise.all([
+          db.reels.getAll(),
+          db.products.getAll()
+      ]);
+      
+      setReels(allReels);
+      setProducts(allProducts);
+      
+      setNewArrivals(allProducts.filter(p => p.new).slice(0, 4));
+      setOversizeTees(allProducts.filter(p => p.category.toLowerCase() === 'oversized t-shirts').slice(0, 5));
+      setAccessories(allProducts.filter(p => p.displaySection === 'accessories').slice(0, 4));
+      
+      const uniqueCategories = [...new Set(allProducts.map(p => p.category))];
+      const categoryData = uniqueCategories.map(cat => {
+          const productForCategory = allProducts.find(p => p.category === cat && p.images && p.images.length > 0);
+          return {
+              name: cat,
+              href: `/shop?category=${encodeURIComponent(cat.toLowerCase())}`,
+              image: productForCategory?.images[0] || "https://placehold.co/400x500.png",
+              aiHint: `${cat} model`
+          };
+      }).filter(c => c.name); // Filter out categories with no name
+      setCategories(categoryData);
+      
     } catch (error) {
-      console.error("Failed to load data from localStorage", error);
+      console.error("Failed to load data from Firestore", error);
     }
   }, []);
 
   useEffect(() => {
     setIsMounted(true);
     loadData();
-    window.addEventListener('storage', loadData);
-    return () => {
-      window.removeEventListener('storage', loadData);
-    };
   }, [loadData]);
   
     if (!isMounted) {

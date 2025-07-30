@@ -1,4 +1,5 @@
 
+
 export type Garment = {
     name: string;
     description: string;
@@ -48,6 +49,7 @@ export type Product = {
   displaySection: 'shop' | 'accessories';
   discount: string | null;
   videoUrl?: string;
+  createdAt?: any; // For Firestore timestamp
 };
 
 export type CartItem = {
@@ -91,8 +93,8 @@ export type Order = {
     items: CartItem[];
     total: number;
     status: OrderStatus;
-    orderDate: string;
-    deliveryDate?: string;
+    orderDate: any; // For Firestore timestamp
+    deliveryDate?: any; // For Firestore timestamp
     paymentId?: string;
 };
 
@@ -104,4 +106,11 @@ export type ProfileAddress = {
     state: string;
     pincode: string;
   }
+}
+
+export type User = {
+    id: string;
+    email: string;
+    displayName?: string;
+    role: 'customer' | 'admin';
 }

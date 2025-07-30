@@ -1,7 +1,10 @@
 
+
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { getAuth, Auth } from "firebase/auth";
 import { getStorage, ref, uploadBytes, getDownloadURL, FirebaseStorage } from "firebase/storage";
+import { getFirestore } from "firebase/firestore";
+
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -15,6 +18,7 @@ const firebaseConfig = {
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
 let storage: FirebaseStorage | null = null;
+let db = null;
 
 function initializeFirebase() {
     if (firebaseConfig.apiKey && !getApps().length) {
@@ -22,16 +26,19 @@ function initializeFirebase() {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             storage = getStorage(app);
+            db = getFirestore(app);
         } catch (error) {
             console.error("Firebase initialization error:", error);
             app = null;
             auth = null;
             storage = null;
+            db = null;
         }
     } else if (getApps().length > 0) {
         app = getApp();
         auth = getAuth(app);
         storage = getStorage(app);
+        db = getFirestore(app);
     } else {
         console.warn("Firebase API key is not defined. Firebase services will be disabled.");
     }
@@ -51,4 +58,4 @@ const uploadFile = async (file: File, path: string): Promise<string> => {
     return downloadURL;
 };
 
-export { app, auth, storage, uploadFile };
+export { app, auth, storage, db, uploadFile };

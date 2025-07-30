@@ -21,9 +21,7 @@ import { useWishlist } from '@/hooks/useWishlist';
 import { useCart } from '@/hooks/useCart';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
-
-const ADS_STORAGE_KEY = 'advertisements';
-const PRODUCTS_STORAGE_KEY = 'products';
+import * as db from "@/lib/firestore";
 
 const ProductCard = ({ product }: { product: ProductType }) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
@@ -92,108 +90,100 @@ export default function AccessoriesPage() {
     const [selectedSize, setSelectedSize] = useState('all');
     const [sortOption, setSortOption] = useState('latest');
 
-    const loadData = useCallback(() => {
-        let storedProducts: ProductType[] = [];
+    const loadData = useCallback(async () => {
+        setIsMounted(true);
         try {
-            const productsFromStorage = localStorage.getItem(PRODUCTS_STORAGE_KEY);
-            if (productsFromStorage) {
-                storedProducts = JSON.parse(productsFromStorage);
-            }
+            const productsData = await db.products.getAll();
+            const accessoryProducts = productsData.filter(p => p.displaySection === 'accessories');
+            setAllProducts(accessoryProducts);
         } catch (error) {
-            console.error("Failed to load products from storage, using initial products.", error);
+            console.error("Failed to load products from firestore", error);
         }
-        
-        const accessoryProducts = storedProducts.filter(p => p.displaySection === 'accessories');
-        setAllProducts(accessoryProducts);
-
     }, []);
 
     useEffect(() => {
-        setIsMounted(true);
         loadData();
-        window.addEventListener('storage', loadData);
-        return () => {
-            window.removeEventListener('storage', loadData);
-        };
     }, [loadData]);
     
     useEffect(() => {
-        let productsWithDiscounts = allProducts;
-        try {
-            const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
-            const activeAds: Advertisement[] = storedAds ? JSON.parse(storedAds).filter((ad: Advertisement) => ad.status === 'Active') : [];
-            const categoryAds = activeAds.filter(ad => ad.appliesTo === 'categories' && ad.selectedCategories.length > 0);
-            
-            productsWithDiscounts = allProducts.map(p => {
-                let productPrice = parseFloat(p.price);
-                let originalProductPrice = p.originalPrice ? parseFloat(p.originalPrice) : parseFloat(p.price);
-                let appliedDiscount = p.discount;
+        const applyDiscountsAndFilters = async () => {
+            let productsWithDiscounts = allProducts;
+            try {
+                const allAds = await db.ads.getAll();
+                const activeAds: Advertisement[] = allAds.filter((ad: Advertisement) => ad.status === 'Active');
+                const categoryAds = activeAds.filter(ad => ad.appliesTo === 'categories' && ad.selectedCategories.length > 0);
                 
-                const applicableAd = categoryAds.find(ad => ad.selectedCategories.includes(p.category));
+                productsWithDiscounts = allProducts.map(p => {
+                    let productPrice = parseFloat(p.price);
+                    let originalProductPrice = p.originalPrice ? parseFloat(p.originalPrice) : parseFloat(p.price);
+                    let appliedDiscount = p.discount;
+                    
+                    const applicableAd = categoryAds.find(ad => ad.selectedCategories.includes(p.category));
 
-                if (applicableAd) {
-                     if (applicableAd.discountType === 'percentage') {
-                        productPrice = originalProductPrice * (1 - applicableAd.discountValue / 100);
-                        appliedDiscount = `${applicableAd.discountValue}% OFF`;
-                    } else { // fixed
-                        productPrice = originalProductPrice - applicableAd.discountValue;
-                        appliedDiscount = `${applicableAd.discountValue} OFF`;
+                    if (applicableAd) {
+                         if (applicableAd.discountType === 'percentage') {
+                            productPrice = originalProductPrice * (1 - applicableAd.discountValue / 100);
+                            appliedDiscount = `${applicableAd.discountValue}% OFF`;
+                        } else { // fixed
+                            productPrice = originalProductPrice - applicableAd.discountValue;
+                            appliedDiscount = `${applicableAd.discountValue} OFF`;
+                        }
+                        return {
+                            ...p,
+                            price: Math.round(productPrice).toString(),
+                            originalPrice: originalProductPrice.toString(),
+                            discount: appliedDiscount,
+                        }
                     }
+                    
+                    // Reset if no ad applies
                     return {
                         ...p,
-                        price: Math.round(productPrice).toString(),
-                        originalPrice: originalProductPrice.toString(),
-                        discount: appliedDiscount,
-                    }
-                }
-                
-                // Reset if no ad applies
-                return {
-                    ...p,
-                    price: p.price,
-                    originalPrice: p.originalPrice,
-                    discount: p.discount,
-                };
-            });
+                        price: p.price,
+                        originalPrice: p.originalPrice,
+                        discount: p.discount,
+                    };
+                });
 
-        } catch (error) {
-            console.error("Failed to apply discounts", error);
-        }
+            } catch (error) {
+                console.error("Failed to apply discounts", error);
+            }
 
-        let processedProducts = productsWithDiscounts;
+            let processedProducts = productsWithDiscounts;
 
-        // Filtering
-        if (searchTerm) {
-            processedProducts = processedProducts.filter(p => 
-                p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                (p.brand && p.brand.toLowerCase().includes(searchTerm.toLowerCase()))
-            );
-        }
-        if (selectedCategory !== 'all') {
-            processedProducts = processedProducts.filter(p => p.category.toLowerCase() === selectedCategory);
-        }
-        if (selectedBrand !== 'all') {
-            processedProducts = processedProducts.filter(p => p.brand?.toLowerCase() === selectedBrand);
-        }
-        if (selectedColor !== 'all') {
-            processedProducts = processedProducts.filter(p => p.colors?.toLowerCase().split(',').map(c => c.trim()).includes(selectedColor));
-        }
-        if (selectedSize !== 'all') {
-            processedProducts = processedProducts.filter(p => p.textSizes?.toLowerCase().split(',').map(s => s.trim()).includes(selectedSize));
-        }
+            // Filtering
+            if (searchTerm) {
+                processedProducts = processedProducts.filter(p => 
+                    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                    (p.brand && p.brand.toLowerCase().includes(searchTerm.toLowerCase()))
+                );
+            }
+            if (selectedCategory !== 'all') {
+                processedProducts = processedProducts.filter(p => p.category.toLowerCase() === selectedCategory);
+            }
+            if (selectedBrand !== 'all') {
+                processedProducts = processedProducts.filter(p => p.brand?.toLowerCase() === selectedBrand);
+            }
+            if (selectedColor !== 'all') {
+                processedProducts = processedProducts.filter(p => p.colors?.toLowerCase().split(',').map(c => c.trim()).includes(selectedColor));
+            }
+            if (selectedSize !== 'all') {
+                processedProducts = processedProducts.filter(p => p.textSizes?.toLowerCase().split(',').map(s => s.trim()).includes(selectedSize));
+            }
 
-        // Sorting
-        if (sortOption === 'price-asc') {
-            processedProducts.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
-        } else if (sortOption === 'price-desc') {
-            processedProducts.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
-        } else if (sortOption === 'latest') {
-            // Assuming newer products are added later. This is a proxy.
-            // For a real 'latest', you'd need a timestamp on product creation.
-            processedProducts.reverse();
-        }
+            // Sorting
+            if (sortOption === 'price-asc') {
+                processedProducts.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+            } else if (sortOption === 'price-desc') {
+                processedProducts.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+            } else if (sortOption === 'latest') {
+                 processedProducts.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+            }
 
-        setFilteredProducts(processedProducts);
+            setFilteredProducts(processedProducts);
+        };
+
+        applyDiscountsAndFilters();
     }, [allProducts, searchTerm, selectedCategory, selectedBrand, selectedColor, selectedSize, sortOption]);
 
     const filterOptions = useMemo(() => {
@@ -299,5 +289,3 @@ export default function AccessoriesPage() {
     </div>
   );
 }
-
-    

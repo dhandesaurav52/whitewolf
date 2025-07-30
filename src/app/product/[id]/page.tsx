@@ -18,8 +18,7 @@ import { useCart } from '@/hooks/useCart';
 import { cn } from '@/lib/utils';
 import ConfirmPurchaseDialog from '@/components/ConfirmPurchaseDialog';
 import { useAuth } from '@/hooks/useAuth';
-
-const PRODUCTS_STORAGE_KEY = 'products';
+import * as db from '@/lib/firestore';
 
 const ProductCard = ({ product }: { product: ProductType }) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
@@ -109,31 +108,32 @@ export default function ProductDetailPage() {
   const { toggleWishlist, isInWishlist } = useWishlist();
 
   useEffect(() => {
-    let allProducts: ProductType[] = [];
-    if (id) {
-      try {
-        const storedProducts = localStorage.getItem(PRODUCTS_STORAGE_KEY);
-        if (storedProducts) {
-          allProducts = JSON.parse(storedProducts);
+    const fetchProductData = async () => {
+        if (typeof id !== 'string') return;
+        setLoading(true);
+        try {
+            const [foundProduct, allProducts] = await Promise.all([
+                db.products.getById(id),
+                db.products.getAll()
+            ]);
+
+            setProduct(foundProduct);
+            
+            if (foundProduct) {
+                const similar = allProducts.filter(p => p.category === foundProduct.category && p.id !== foundProduct.id);
+                setSimilarProducts(similar);
+
+                const complementary = allProducts.filter(p => p.category !== foundProduct.category);
+                setComplementaryProducts(complementary.slice(0, 8));
+                setMoreProducts(allProducts.filter(p => p.id !== foundProduct.id).slice(0, 4));
+            }
+        } catch (error) {
+            console.error("Error fetching product data:", error);
+        } finally {
+            setLoading(false);
         }
-      } catch (error) {
-        console.error("Could not parse products from local storage", error);
-      }
-      
-      const foundProduct = allProducts.find(p => p.id === id);
-      setProduct(foundProduct || null);
-
-      if (foundProduct) {
-        const similar = allProducts.filter(p => p.category === foundProduct.category && p.id !== foundProduct.id);
-        setSimilarProducts(similar);
-
-        const complementary = allProducts.filter(p => p.category !== foundProduct.category);
-        setComplementaryProducts(complementary.slice(0, 8));
-        setMoreProducts(allProducts.filter(p => p.id !== foundProduct.id).slice(0, 4));
-      }
-
-      setLoading(false);
     }
+    fetchProductData();
   }, [id]);
 
   const handleBuyNow = () => {

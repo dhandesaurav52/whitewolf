@@ -2,45 +2,28 @@
 "use client";
 
 import { Tag } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Advertisement } from '@/lib/types';
-
-const ADS_STORAGE_KEY = 'advertisements';
-
-const initialAds: Advertisement[] = [];
+import * as db from '@/lib/firestore';
 
 export default function AdBanner() {
     const [ads, setAds] = useState<Advertisement[]>([]);
     const [isClient, setIsClient] = useState(false);
 
+    const loadAds = useCallback(async () => {
+        try {
+            const adsData = await db.ads.getAll();
+            setAds(adsData);
+        } catch (error) {
+            console.error("Failed to load ads from Firestore", error);
+        }
+    }, []);
+    
     useEffect(() => {
         setIsClient(true);
-        try {
-            const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
-            if (storedAds) {
-                setAds(JSON.parse(storedAds));
-            } else {
-                setAds(initialAds);
-            }
-        } catch (error) {
-            console.error("Failed to load ads from localStorage", error);
-            setAds(initialAds);
-        }
+        loadAds();
+    }, [loadAds]);
 
-        const handleStorageChange = () => {
-             try {
-                const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
-                if (storedAds) {
-                    setAds(JSON.parse(storedAds));
-                }
-            } catch (error) {
-                console.error("Failed to reload ads from localStorage", error);
-            }
-        };
-        window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
-
-    }, []);
 
     if (!isClient) {
         return null;

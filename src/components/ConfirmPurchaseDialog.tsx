@@ -17,8 +17,10 @@ import { useRouter } from "next/navigation";
 import { Loader2, Pencil } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import * as db from '@/lib/firestore';
+import { serverTimestamp } from "firebase/firestore";
 
-const ORDERS_STORAGE_KEY = 'orders';
+
 const PROFILE_STORAGE_KEY_PREFIX = 'user_profile_';
 
 const checkoutSchema = z.object({
@@ -100,24 +102,22 @@ export default function ConfirmPurchaseDialog({
     }
   }, [user, form, isOpen]);
   
-  const placeOrder = (shippingDetails: CustomerDetails, paymentId?: string) => {
-    const newOrder: Order = {
-        id: `order_${Date.now()}`,
-        customer: { ...shippingDetails, userId: user?.uid },
+  const placeOrder = async (shippingDetails: CustomerDetails, paymentId?: string) => {
+    if (!user) {
+        toast({ title: "Not Authenticated", description: "You must be logged in to place an order.", variant: "destructive" });
+        return;
+    }
+    const newOrder: Omit<Order, 'id'> = {
+        customer: { ...shippingDetails, userId: user.uid },
         items: itemsToPurchase,
         total: totalAmount,
         status: 'Pending',
-        orderDate: new Date().toISOString(),
+        orderDate: serverTimestamp(),
         paymentId,
     };
 
     try {
-        const existingOrdersRaw = localStorage.getItem(ORDERS_STORAGE_KEY);
-        const existingOrders: Order[] = existingOrdersRaw ? JSON.parse(existingOrdersRaw) : [];
-        const updatedOrders = [...existingOrders, newOrder];
-        localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(updatedOrders));
-        window.dispatchEvent(new Event('storage'));
-        
+        await db.orders.add(newOrder);
         toast({
             title: "Order Placed!",
             description: `Thank you for your purchase. Your order is being processed.`,
@@ -141,8 +141,11 @@ export default function ConfirmPurchaseDialog({
   const handleRazorpayPayment = async (shippingDetails: CustomerDetails) => {
     setIsLoading(true);
 
+    // This is a mock function. In a real app, you would call your backend to create a Razorpay order.
     const createOrderOnServer = async () => {
+        // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 1000));
+        // In a real app, this would return a real order_id from Razorpay API
         return `mock_order_${Date.now()}`;
     };
 
@@ -151,7 +154,7 @@ export default function ConfirmPurchaseDialog({
         
         const options = {
             key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_your_key_here',
-            amount: totalAmount * 100,
+            amount: totalAmount * 100, // Amount in paise
             currency: "INR",
             name: "White Wolf",
             description: `Purchase of ${productNames}`,
@@ -369,5 +372,3 @@ export default function ConfirmPurchaseDialog({
     </Dialog>
   );
 }
-
-    

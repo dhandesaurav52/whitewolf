@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { Order, OrderStatus } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Truck, Package, CheckCircle, Ban, Undo2, Star } from "lucide-react";
+import { Truck, Package, CheckCircle, Ban, Undo2, Star, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -23,9 +23,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-
-
-const ORDERS_STORAGE_KEY = 'orders';
+import * as db from "@/lib/firestore";
+import { Timestamp } from "firebase/firestore";
 
 const statusStyles: { [key in Order['status']]: { icon: React.ElementType, color: string, text: string } } = {
   Pending: { icon: Package, color: "bg-yellow-500", text: "text-yellow-50" },
@@ -39,45 +38,52 @@ const statusStyles: { [key in Order['status']]: { icon: React.ElementType, color
   "Return Successful": { icon: Star, color: "bg-purple-500", text: "text-purple-50" },
 };
 
+const formatDate = (timestamp: any): string => {
+    if (timestamp instanceof Timestamp) {
+        return timestamp.toDate().toLocaleDateString();
+    }
+    if (typeof timestamp === 'string') {
+        return new Date(timestamp).toLocaleDateString();
+    }
+    return 'N/A';
+};
+
 export default function OrdersPage() {
-    const { user, loading } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const [orders, setOrders] = useState<Order[]>([]);
     const [isClient, setIsClient] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
 
-    const loadUserOrders = useCallback(() => {
+    const loadUserOrders = useCallback(async () => {
         if (user) {
+            setIsLoading(true);
             try {
-                const allOrdersRaw = localStorage.getItem(ORDERS_STORAGE_KEY);
-                const allOrders: Order[] = allOrdersRaw ? JSON.parse(allOrdersRaw) : [];
-                const userOrders = allOrders.filter(order => order.customer.userId === user.uid);
-                setOrders(userOrders.sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()));
+                const userOrders = await db.orders.getByUser(user.uid);
+                setOrders(userOrders);
             } catch (error) {
                 console.error("Failed to load orders", error);
+                 toast({ title: "Error", description: "Could not fetch your orders.", variant: "destructive" });
+            } finally {
+                setIsLoading(false);
             }
         } else {
             setOrders([]);
+            setIsLoading(false);
         }
-    }, [user]);
+    }, [user, toast]);
 
     useEffect(() => {
         setIsClient(true);
-        loadUserOrders();
-        window.addEventListener('storage', loadUserOrders);
-        return () => {
-            window.removeEventListener('storage', loadUserOrders);
+        if (!authLoading) {
+            loadUserOrders();
         }
-    }, [loadUserOrders]);
+    }, [authLoading, loadUserOrders]);
     
-    const handleOrderStatusUpdate = (orderId: string, newStatus: OrderStatus) => {
+    const handleOrderStatusUpdate = async (orderId: string, newStatus: OrderStatus) => {
         try {
-            const allOrdersRaw = localStorage.getItem(ORDERS_STORAGE_KEY);
-            const allOrders: Order[] = allOrdersRaw ? JSON.parse(allOrdersRaw) : [];
-            const updatedOrders = allOrders.map(order => 
-                order.id === orderId ? { ...order, status: newStatus } : order
-            );
-            localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(updatedOrders));
-            window.dispatchEvent(new Event('storage'));
+            await db.orders.update(orderId, { status: newStatus });
+            loadUserOrders(); // Reload orders to reflect the change
             toast({
                 title: `Order Updated`,
                 description: `Your order status is now "${newStatus}".`,
@@ -96,7 +102,7 @@ export default function OrdersPage() {
         if (order.status !== 'Delivered' || !order.deliveryDate) {
             return false;
         }
-        const deliveryDate = new Date(order.deliveryDate);
+        const deliveryDate = order.deliveryDate instanceof Timestamp ? order.deliveryDate.toDate() : new Date(order.deliveryDate);
         const sevenDaysAfterDelivery = new Date(deliveryDate);
         sevenDaysAfterDelivery.setDate(deliveryDate.getDate() + 7);
         
@@ -106,8 +112,8 @@ export default function OrdersPage() {
     };
 
 
-    if (loading || !isClient) {
-        return <div>Loading orders...</div>;
+    if (authLoading || !isClient || isLoading) {
+        return <div className="flex justify-center items-center h-screen"><Loader2 className="animate-spin h-8 w-8"/></div>;
     }
 
     if (!user) {
@@ -142,10 +148,10 @@ export default function OrdersPage() {
                         <Card key={order.id}>
                             <CardHeader className="flex flex-row justify-between items-start">
                                 <div>
-                                    <CardTitle>Order #{order.id.split('_')[1]}</CardTitle>
+                                    <CardTitle>Order #{order.id.substring(0,6)}</CardTitle>
                                     <CardDescription>
-                                        Placed on {new Date(order.orderDate).toLocaleDateString()}
-                                        {order.status === 'Delivered' && order.deliveryDate && ` | Delivered on ${new Date(order.deliveryDate).toLocaleDateString()}`}
+                                        Placed on {formatDate(order.orderDate)}
+                                        {order.status === 'Delivered' && order.deliveryDate && ` | Delivered on ${formatDate(order.deliveryDate)}`}
                                     </CardDescription>
                                 </div>
                                  <Badge className={cn("text-sm", statusInfo.color, statusInfo.text)}>
