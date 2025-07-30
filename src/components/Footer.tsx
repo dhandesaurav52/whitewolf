@@ -66,13 +66,17 @@ export default function Footer() {
   const supportLinks = [
     { id: "shipping", label: "Shipping & Returns", action: () => setIsPolicyDialogOpen(true) },
     { href: "/size-guide", label: "Size Guide" },
-    { href: "/privacy", label: "Privacy Policy" },
-    { href: "/terms", label: "Terms & Conditions" },
+    { href: "https://merchant.razorpay.com/policy/QoAs3QqvUvUpdi/privacy", label: "Privacy Policy" },
+    { href: "https://merchant.razorpay.com/policy/QoAs3QqvUvUpdi/terms", label: "Terms & Conditions" },
   ];
 
   const handleLinkClick = (link: { href?: string, action?: () => void }) => {
     if (link.href) {
-      router.push(link.href);
+      if (link.href.startsWith("http")) {
+        window.open(link.href, "_blank");
+      } else {
+        router.push(link.href);
+      }
     } else if (link.action) {
       link.action();
     }
