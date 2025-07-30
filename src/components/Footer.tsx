@@ -16,10 +16,10 @@ const WhiteWolfLogo = () => (
 
 export default function Footer() {
   const shopLinks = [
-    { href: "/products", label: "All Products" },
-    { href: "/new-arrivals", label: "New Arrivals" },
-    { href: "/t-shirts", label: "T-Shirts" },
-    { href: "/jeans", label: "Jeans" },
+    { href: "/shop", label: "All Products" },
+    { href: "/shop?sort=latest", label: "New Arrivals" },
+    { href: "/shop?category=t-shirts", label: "T-Shirts" },
+    { href: "/shop?category=jeans", label: "Jeans" },
   ];
 
   const aboutLinks = [
