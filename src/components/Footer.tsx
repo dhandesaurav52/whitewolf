@@ -65,9 +65,9 @@ export default function Footer() {
 
   const supportLinks = [
     { id: "shipping", label: "Shipping & Returns", onClick: () => setIsPolicyDialogOpen(true) },
-    { id: "size-guide", label: "Size Guide", href: "/size-guide" },
-    { id: "privacy", label: "Privacy Policy", href: "/privacy" },
-    { id: "terms", label: "Terms & Conditions", href: "/terms" },
+    { href: "/size-guide", label: "Size Guide" },
+    { href: "/privacy", label: "Privacy Policy" },
+    { href: "/terms", label: "Terms & Conditions" },
   ];
 
   return (
@@ -112,7 +112,7 @@ export default function Footer() {
                         {link.label}
                       </Link>
                     ) : (
-                      <button onClick={link.onClick} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors">
+                      <button onClick={link.onClick} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer">
                         {link.label}
                       </button>
                     )}
@@ -135,13 +135,13 @@ export default function Footer() {
               <h3 className="font-bold text-sm text-accent-foreground tracking-wider uppercase mb-4">Support</h3>
               <ul className="space-y-2">
                 {supportLinks.map((link) => (
-                  <li key={link.id}>
+                  <li key={link.id || link.href}>
                     {link.href ? (
                        <Link href={link.href} className="text-sm text-muted-foreground hover:text-accent-foreground transition-colors">
                         {link.label}
                       </Link>
                     ) : (
-                      <button onClick={link.onClick} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors">
+                      <button onClick={link.onClick} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer">
                         {link.label}
                       </button>
                     )}
