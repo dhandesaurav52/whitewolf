@@ -20,9 +20,6 @@ import { Label } from "@/components/ui/label";
 import * as db from '@/lib/firestore';
 import { serverTimestamp } from "firebase/firestore";
 
-
-const PROFILE_STORAGE_KEY_PREFIX = 'user_profile_';
-
 const checkoutSchema = z.object({
     name: z.string().min(1, "Full name is required"),
     email: z.string().email("Invalid email address"),
@@ -61,7 +58,7 @@ export default function ConfirmPurchaseDialog({
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cod" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [addressOption, setAddressOption] = useState("default");
-  const [defaultAddress, setDefaultAddress] = useState<ProfileAddress | null>(null);
+  const [profileAddress, setProfileAddress] = useState<ProfileAddress | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
   const router = useRouter();
@@ -79,30 +76,37 @@ export default function ConfirmPurchaseDialog({
   
   useEffect(() => {
     if (user && isOpen) {
-        form.setValue('name', user.displayName || '');
-        form.setValue('email', user.email || '');
-
-        try {
-            const profileDataRaw = localStorage.getItem(`${PROFILE_STORAGE_KEY_PREFIX}${user.uid}`);
-            if (profileDataRaw) {
-                const profileData = JSON.parse(profileDataRaw);
-                setDefaultAddress(profileData);
-                form.setValue('phone', profileData.mobile || '');
-                form.setValue('address', profileData.address?.street || '');
-                form.setValue('city', profileData.address?.city || '');
-                form.setValue('state', profileData.address?.state || '');
-                form.setValue('pincode', profileData.address?.pincode || '');
+        setIsLoading(true);
+        db.profiles.get(user.uid).then(profileData => {
+            if (profileData) {
+                setProfileAddress(profileData);
+                form.reset({
+                    name: user.displayName || '',
+                    email: user.email || '',
+                    phone: profileData.mobile || '',
+                    address: profileData.address?.street || '',
+                    city: profileData.address?.city || '',
+                    state: profileData.address?.state || '',
+                    pincode: profileData.address?.pincode || '',
+                });
+                if (!profileData.address?.street || !profileData.mobile) {
+                    setAddressOption('new');
+                } else {
+                    setAddressOption('default');
+                }
             } else {
-                 setDefaultAddress(null);
+                 setProfileAddress(null);
                  setAddressOption('new');
             }
-        } catch (e) {
+        }).catch(e => {
             console.error("Failed to load profile data", e);
-            setDefaultAddress(null);
+            setProfileAddress(null);
             setAddressOption('new');
-        }
+        }).finally(() => {
+            setIsLoading(false);
+        });
     }
-  }, [user, form, isOpen]);
+  }, [user, isOpen, form]);
   
   const placeOrder = async (shippingDetails: CustomerDetails, paymentId?: string) => {
     if (!user) {
@@ -216,8 +220,8 @@ export default function ConfirmPurchaseDialog({
     }
   };
   
-  const handlePayment = (method: "online" | "cod") => {
-    const isFormValid = form.trigger();
+  const handlePayment = async (method: "online" | "cod") => {
+    const isFormValid = await form.trigger();
     if (!isFormValid) {
         toast({ title: "Invalid Address", description: "Please fill in all the required address fields.", variant: "destructive"});
         return;
@@ -226,7 +230,12 @@ export default function ConfirmPurchaseDialog({
     form.handleSubmit(onFormSubmit)();
   }
 
-  const hasDefaultAddress = defaultAddress && defaultAddress.address && defaultAddress.address.street && defaultAddress.mobile;
+  const hasDefaultAddress = profileAddress && profileAddress.address && profileAddress.address.street && profileAddress.mobile;
+
+  const handleEditAddressClick = () => {
+    onClose();
+    router.push('/profile');
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
@@ -247,15 +256,15 @@ export default function ConfirmPurchaseDialog({
         <div className="px-6 space-y-4 max-h-[60vh] overflow-y-auto">
              <RadioGroup value={addressOption} onValueChange={(value) => {
                  setAddressOption(value);
-                 if(value === 'default' && defaultAddress) {
+                 if(value === 'default' && profileAddress) {
                     form.reset({
                         name: user?.displayName || '',
                         email: user?.email || '',
-                        phone: defaultAddress.mobile,
-                        address: defaultAddress.address.street,
-                        city: defaultAddress.address.city,
-                        state: defaultAddress.address.state,
-                        pincode: defaultAddress.address.pincode,
+                        phone: profileAddress.mobile,
+                        address: profileAddress.address.street,
+                        city: profileAddress.address.city,
+                        state: profileAddress.address.state,
+                        pincode: profileAddress.address.pincode,
                     });
                  } else if (value === 'new') {
                      form.reset({
@@ -271,13 +280,13 @@ export default function ConfirmPurchaseDialog({
                             <RadioGroupItem value="default" id="default-address" disabled={!hasDefaultAddress} />
                             <Label htmlFor="default-address" className="font-semibold">Use Default Address</Label>
                         </div>
-                         {hasDefaultAddress && <Button variant="ghost" size="sm" onClick={() => router.push('/profile')}><Pencil className="mr-2 h-3 w-3" />Change</Button>}
+                         {hasDefaultAddress && <Button variant="ghost" size="sm" onClick={handleEditAddressClick}><Pencil className="mr-2 h-3 w-3" />Change</Button>}
                     </div>
                     {hasDefaultAddress ? (
                         <div className="pl-7 pt-2 text-sm text-muted-foreground">
-                            <p className="font-medium">{defaultAddress?.address?.street}</p>
-                            <p>{defaultAddress?.address?.city}, {defaultAddress?.address?.state} - {defaultAddress?.address?.pincode}</p>
-                            <p>Mobile: {defaultAddress?.mobile}</p>
+                            <p className="font-medium">{profileAddress?.address?.street}</p>
+                            <p>{profileAddress?.address?.city}, {profileAddress?.address?.state} - {profileAddress?.address?.pincode}</p>
+                            <p>Mobile: {profileAddress?.mobile}</p>
                         </div>
                     ) : (
                         <div className="pl-7 pt-2 text-sm text-destructive">

@@ -11,10 +11,11 @@ import {
     query,
     where,
     orderBy,
-    limit
+    limit,
+    setDoc
 } from "firebase/firestore";
 import { app } from "./firebase";
-import type { Product, Order, Advertisement, Reel, User } from './types';
+import type { Product, Order, Advertisement, Reel, User, ProfileAddress } from './types';
 
 if (!app) {
   throw new Error("Firebase is not initialized. Cannot use Firestore services.");
@@ -42,6 +43,11 @@ async function add<T>(collectionName: string, data: Omit<T, 'id'>): Promise<T> {
 async function update<T>(collectionName: string, id: string, data: Partial<T>): Promise<void> {
     const docRef = doc(db, collectionName, id);
     await updateDoc(docRef, data);
+}
+
+async function set<T>(collectionName: string, id: string, data: T): Promise<void> {
+    const docRef = doc(db, collectionName, id);
+    await setDoc(docRef, data, { merge: true });
 }
 
 async function remove(collectionName: string, id: string): Promise<void> {
@@ -92,4 +98,9 @@ export const reels = {
     add: (data: Omit<Reel, 'id'>) => add<Reel>('reels', data),
     update: (id: string, data: Partial<Reel>) => update<Reel>('reels', id, data),
     remove: (id: string) => remove('reels', id),
+};
+
+export const profiles = {
+    get: (userId: string) => getById<ProfileAddress>('profiles', userId),
+    set: (userId: string, data: ProfileAddress) => set<ProfileAddress>('profiles', userId, data),
 }
