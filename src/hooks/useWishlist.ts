@@ -4,63 +4,72 @@
 import { useState, useEffect, useCallback } from "react";
 import type { Product } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-
-const WISHLIST_STORAGE_KEY = "wishlist";
+import { useAuth } from "@/hooks/useAuth";
+import * as db from "@/lib/firestore";
 
 export function useWishlist() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [wishlist, setWishlist] = useState<Product[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  useEffect(() => {
-    try {
-      const items = window.localStorage.getItem(WISHLIST_STORAGE_KEY);
-      if (items) {
-        setWishlist(JSON.parse(items));
+  const fetchWishlist = useCallback(async () => {
+    if (user) {
+      const profileData = await db.profiles.get(user.uid);
+      if (profileData && profileData.wishlist) {
+        // To keep product details up-to-date, we fetch the latest product info
+        const allProducts = await db.products.getAll();
+        const wishlistProducts = allProducts.filter(p => profileData.wishlist!.includes(p.id));
+        setWishlist(wishlistProducts);
+      } else {
+        setWishlist([]);
       }
-    } catch (error) {
-      console.error("Failed to load wishlist from localStorage", error);
+    } else {
+      setWishlist([]); // Clear wishlist if user logs out
     }
     setIsLoaded(true);
-  }, []);
+  }, [user]);
 
-  const saveToLocalStorage = (items: Product[]) => {
-    try {
-      window.localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(items));
-    } catch (error) {
-      console.error("Failed to save wishlist to localStorage", error);
-      toast({
-        title: "Storage Error",
-        description: "Could not save wishlist changes.",
-        variant: "destructive",
-      });
-    }
-  };
+  useEffect(() => {
+    fetchWishlist();
+  }, [fetchWishlist]);
 
   const toggleWishlist = useCallback(
-    (product: Product) => {
-      let newWishlist;
+    async (product: Product) => {
+      if (!user) {
+        toast({ title: "Please Log In", description: "You must be logged in to manage your wishlist.", variant: "destructive" });
+        return;
+      }
+
+      let newWishlistProductIds;
       const existingIndex = wishlist.findIndex((item) => item.id === product.id);
 
       if (existingIndex > -1) {
         // Remove from wishlist
-        newWishlist = wishlist.filter((item) => item.id !== product.id);
+        newWishlistProductIds = wishlist.filter((item) => item.id !== product.id).map(p => p.id);
         toast({
           title: "Removed from Wishlist",
           description: `${product.name} has been removed from your wishlist.`,
         });
       } else {
         // Add to wishlist
-        newWishlist = [...wishlist, product];
+        newWishlistProductIds = [...wishlist.map(p => p.id), product.id];
         toast({
           title: "Added to Wishlist",
           description: `${product.name} has been added to your wishlist.`,
         });
       }
-      setWishlist(newWishlist);
-      saveToLocalStorage(newWishlist);
+      
+      try {
+        await db.profiles.set(user.uid, { wishlist: newWishlistProductIds });
+        // Refetch wishlist from DB to ensure UI is in sync
+        fetchWishlist();
+      } catch (error) {
+        console.error("Failed to update wishlist in Firestore", error);
+        toast({ title: "Error", description: "Could not update your wishlist. Please try again.", variant: "destructive" });
+      }
     },
-    [wishlist, toast]
+    [user, wishlist, fetchWishlist, toast]
   );
   
   const isInWishlist = useCallback(

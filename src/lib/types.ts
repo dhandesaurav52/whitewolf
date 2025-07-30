@@ -101,13 +101,14 @@ export type Order = {
 };
 
 export type ProfileAddress = {
-  mobile: string;
-  address: {
+  mobile?: string;
+  address?: {
     street: string;
     city: string;
     state: string;
     pincode: string;
-  }
+  },
+  wishlist?: string[];
 }
 
 export type User = {
