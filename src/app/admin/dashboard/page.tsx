@@ -145,14 +145,14 @@ export default function AdminDashboardPage() {
 
     const newOrdersCount = orders.filter(order => order.status === 'Pending').length;
     
-    const productsInStock = products.reduce((sum, product) => sum + (product.stock || 0), 0);
+    const productsCount = products.length;
 
     const totalUsers = new Set(orders.map(order => order.customer.email)).size;
 
     const stats = [
         { title: "Total Revenue", value: `${totalRevenue.toFixed(2)}`, description: "Based on delivered orders", icon: BarChart },
         { title: "New Orders", value: newOrdersCount.toString(), description: "Orders pending fulfillment", icon: ShoppingCart },
-        { title: "Products in Stock", value: productsInStock.toString(), description: "Total items in stock", icon: Package },
+        { title: "Total Products", value: productsCount.toString(), description: "Total products in catalog", icon: Package },
         { title: "Total Users", value: totalUsers.toString(), description: "Unique customers with orders", icon: Users },
     ];
 
