@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Loader2, Pencil } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 const ORDERS_STORAGE_KEY = 'orders';
 
@@ -302,7 +303,7 @@ export default function ConfirmPurchaseDialog({
 
         <DialogFooter className="p-6 bg-muted/50 flex-col sm:flex-row gap-2">
             <Button
-                className="flex-1 bg-[#f87171] text-white hover:bg-[#f87171]/90"
+                className="flex-1"
                 onClick={() => handlePayment('online')}
                 disabled={isLoading}
             >
