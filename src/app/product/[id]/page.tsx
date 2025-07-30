@@ -95,7 +95,7 @@ const ProductCarousel = ({ title, products }: { title: string, products: Product
         >
             <CarouselContent>
             {products.map((product) => (
-                <CarouselItem key={product.id} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                <CarouselItem key={product.id} className="basis-1/2 md:basis-1/3 lg:basis-1/4">
                 <div className="p-1">
                     <ProductCard product={product} />
                 </div>
@@ -363,16 +363,14 @@ export default function ProductDetailPage() {
               
               <Separator />
               
-              <div className="flex gap-3">
-                <div className="flex-grow flex flex-col gap-3">
-                    <Button variant="outline" size="lg" onClick={handleAddToCart}>
-                        <ShoppingBag className="mr-2 h-5 w-5" /> Add to Cart
-                    </Button>
-                    <Button size="lg" onClick={handleBuyNow}>
-                        Buy Now
-                    </Button>
-                </div>
-                <Button variant="outline" size="icon" className="h-auto w-12" onClick={handleWishlistClick}>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button variant="outline" size="lg" className="flex-1" onClick={handleAddToCart}>
+                    <ShoppingBag className="mr-2 h-5 w-5" /> Add to Cart
+                </Button>
+                <Button size="lg" className="flex-1" onClick={handleBuyNow}>
+                    Buy Now
+                </Button>
+                <Button variant="outline" size="icon" className="h-auto w-full sm:w-12 mt-2 sm:mt-0" onClick={handleWishlistClick}>
                     <Heart className={cn("h-5 w-5", user && isInWishlist(product.id) && "fill-destructive text-destructive")} />
                 </Button>
               </div>
@@ -387,7 +385,7 @@ export default function ProductDetailPage() {
           <Separator/>
            <div className="py-12">
               <h2 className="text-3xl font-bold font-headline text-center mb-8">More Products</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {moreProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
