@@ -3,7 +3,6 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface SizeGuideDialogProps {
     isOpen: boolean;
@@ -128,14 +127,14 @@ export default function SizeGuideDialog({ isOpen, onClose, category }: SizeGuide
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-xl p-0 flex flex-col max-h-[80vh]">
-                <DialogHeader className="p-6 pb-4 border-b">
+            <DialogContent className="sm:max-w-xl p-0">
+                <DialogHeader className="p-6 pb-4 border-b sticky top-0 bg-background">
                     <DialogTitle>Size Guide</DialogTitle>
                     <DialogDescription>
                         Find your perfect fit. Measurements are in inches unless specified.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="flex-1 overflow-y-auto">
+                <div className="overflow-y-auto max-h-[60vh]">
                     <div className="px-6 pb-6 space-y-6">
                         {charts.length > 0 ? charts.map((chart, index) => <div key={index}>{chart}</div>) : (
                             <div className="space-y-6">
