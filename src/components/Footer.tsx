@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Instagram, Star } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import PolicyDialog from "./PolicyDialog";
 import ContactUsDialog from "./ContactUsDialog";
@@ -27,6 +28,7 @@ export default function Footer() {
   const [isMounted, setIsMounted] = useState(false);
   const [isPolicyDialogOpen, setIsPolicyDialogOpen] = useState(false);
   const [isContactUsOpen, setIsContactUsOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setIsMounted(true);
@@ -70,6 +72,14 @@ export default function Footer() {
     { href: "/terms", label: "Terms & Conditions" },
   ];
 
+  const handleLinkClick = (link: { href?: string, onClick?: () => void }) => {
+    if (link.href) {
+      router.push(link.href);
+    } else if (link.onClick) {
+      link.onClick();
+    }
+  };
+
   return (
     <>
       <footer className="bg-primary text-primary-foreground">
@@ -94,9 +104,9 @@ export default function Footer() {
               <ul className="space-y-2">
                 {shopLinks.map((link) => (
                   <li key={link.href}>
-                    <Link href={link.href} className="text-sm text-muted-foreground hover:text-accent-foreground transition-colors">
+                    <button onClick={() => handleLinkClick(link)} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer">
                       {link.label}
-                    </Link>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -107,26 +117,20 @@ export default function Footer() {
               <ul className="space-y-2">
                 {aboutLinks.map((link) => (
                   <li key={link.id || link.href}>
-                    {link.href ? (
-                       <Link href={link.href} className="text-sm text-muted-foreground hover:text-accent-foreground transition-colors">
-                        {link.label}
-                      </Link>
-                    ) : (
-                      <button onClick={link.onClick} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer">
-                        {link.label}
-                      </button>
-                    )}
+                    <button onClick={() => handleLinkClick(link)} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer">
+                      {link.label}
+                    </button>
                   </li>
                 ))}
                 <li>
-                  <Link href="/faqs" className="text-sm text-muted-foreground hover:text-accent-foreground transition-colors flex items-center">
+                  <button onClick={() => router.push('/faqs')} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer flex items-center">
                     FAQs
                     {isMounted && averageRating > 0 && (
                         <span className="ml-2 flex items-center gap-1 text-yellow-400">
                           {averageRating.toFixed(1)} <Star className="w-4 h-4 fill-current" />
                         </span>
                     )}
-                  </Link>
+                  </button>
                 </li>
               </ul>
             </div>
@@ -136,15 +140,9 @@ export default function Footer() {
               <ul className="space-y-2">
                 {supportLinks.map((link) => (
                   <li key={link.id || link.href}>
-                    {link.href ? (
-                       <Link href={link.href} className="text-sm text-muted-foreground hover:text-accent-foreground transition-colors">
-                        {link.label}
-                      </Link>
-                    ) : (
-                      <button onClick={link.onClick} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer">
-                        {link.label}
-                      </button>
-                    )}
+                    <button onClick={() => handleLinkClick(link)} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer">
+                      {link.label}
+                    </button>
                   </li>
                 ))}
               </ul>
