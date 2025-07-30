@@ -1,6 +1,6 @@
 
 import Link from "next/link";
-import { Instagram, Star } from "lucide-react";
+import { Instagram } from "lucide-react";
 import Image from "next/image";
 
 const WhiteWolfLogo = () => (
@@ -79,10 +79,6 @@ export default function Footer() {
               <li>
                 <Link href="/faqs" className="text-sm text-muted-foreground hover:text-accent-foreground transition-colors flex items-center">
                   FAQs
-                  <span className="ml-2 inline-flex items-center">
-                    <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                    <span className="ml-1 text-xs">4.7</span>
-                  </span>
                 </Link>
               </li>
             </ul>
