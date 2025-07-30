@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { Order, OrderStatus } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Truck, Package, CheckCircle, Ban, Undo2, Star, Loader2 } from "lucide-react";
+import { Truck, Package, CheckCircle, Ban, Undo2, Star, Loader2, XCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,7 @@ const statusStyles: { [key in Order['status']]: { icon: React.ElementType, color
   "Return Accepted": { icon: CheckCircle, color: "bg-cyan-500", text: "text-cyan-50" },
   "Return Confirmed": { icon: Truck, color: "bg-indigo-500", text: "text-indigo-50" },
   "Return Successful": { icon: Star, color: "bg-purple-500", text: "text-purple-50" },
+  "Return Request Rejected": { icon: XCircle, color: "bg-red-600", text: "text-red-50" },
 };
 
 const formatDate = (timestamp: any): string => {

@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Truck, Package, CheckCircle, Ban, RefreshCw, Undo2, Check, Star, Search, MapPin, Phone, Loader2 } from "lucide-react";
+import { MoreHorizontal, Truck, Package, CheckCircle, Ban, RefreshCw, Undo2, Check, Star, Search, MapPin, Phone, Loader2, XCircle } from "lucide-react";
 import type { Order, OrderStatus, Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,6 +20,17 @@ import Image from "next/image";
 import CollapsibleTableRow from "@/components/CollapsibleTableRow";
 import Link from "next/link";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -37,6 +48,7 @@ const statusStyles: { [key in OrderStatus]: { color: string, text: string } } = 
   "Return Accepted": "bg-cyan-100 text-cyan-800 border-cyan-300",
   "Return Confirmed": "bg-indigo-100 text-indigo-800 border-indigo-300",
   "Return Successful": "bg-purple-100 text-purple-800 border-purple-300",
+  "Return Request Rejected": "bg-red-200 text-red-900 border-red-400",
 };
 
 const statusIcons: { [key in OrderStatus]: React.ElementType } = {
@@ -49,6 +61,7 @@ const statusIcons: { [key in OrderStatus]: React.ElementType } = {
   "Return Accepted": Check,
   "Return Confirmed": Truck,
   "Return Successful": Star,
+  "Return Request Rejected": XCircle,
 };
 
 const formatDate = (timestamp: any): string => {
@@ -69,6 +82,7 @@ export default function ManageOrdersPage() {
     const [statusFilter, setStatusFilter] = useState("all");
     const [isLoading, setIsLoading] = useState(false);
     const { toast } = useToast();
+    const [rejectionTarget, setRejectionTarget] = useState<Order | null>(null);
 
     const loadOrders = useCallback(async () => {
         setIsLoading(true);
@@ -108,7 +122,7 @@ export default function ManageOrdersPage() {
     };
     
     const getActionableStatuses = (currentStatus: OrderStatus): OrderStatus[] => {
-        if (currentStatus === 'Return Requested') return ['Return Accepted'];
+        if (currentStatus === 'Return Requested') return ['Return Accepted', 'Return Request Rejected'];
         if (currentStatus === 'Return Accepted') return ['Return Confirmed'];
         if (currentStatus === 'Return Confirmed') return ['Return Successful'];
         return (Object.keys(statusStyles) as OrderStatus[]).filter(s => !s.startsWith('Return'));
@@ -277,13 +291,19 @@ export default function ManageOrdersPage() {
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                     {getActionableStatuses(order.status).map((status) => (
-                                                        <DropdownMenuItem 
-                                                            key={status} 
-                                                            onClick={() => handleStatusChange(order.id, status as OrderStatus)}
-                                                            disabled={order.status === status}
-                                                        >
-                                                            Mark as {status}
-                                                        </DropdownMenuItem>
+                                                        status === 'Return Request Rejected' ? (
+                                                            <DropdownMenuItem key={status} onClick={() => setRejectionTarget(order)} className="text-destructive">
+                                                                Mark as Return Rejected
+                                                            </DropdownMenuItem>
+                                                        ) : (
+                                                            <DropdownMenuItem 
+                                                                key={status} 
+                                                                onClick={() => handleStatusChange(order.id, status as OrderStatus)}
+                                                                disabled={order.status === status}
+                                                            >
+                                                                Mark as {status}
+                                                            </DropdownMenuItem>
+                                                        )
                                                     ))}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -326,8 +346,31 @@ export default function ManageOrdersPage() {
                     </DialogContent>
                 </Dialog>
             )}
+
+            {rejectionTarget && (
+                <AlertDialog open={!!rejectionTarget} onOpenChange={(open) => !open && setRejectionTarget(null)}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This will reject the return request for order #{rejectionTarget.id.substring(0,6)}. This action cannot be undone.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                onClick={() => {
+                                    handleStatusChange(rejectionTarget.id, 'Return Request Rejected');
+                                    setRejectionTarget(null);
+                                }}
+                            >
+                                Yes, Reject Return
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            )}
         </>
     );
 }
-
-    

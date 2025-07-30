@@ -74,7 +74,8 @@ export type OrderStatus =
   | 'Return Requested'
   | 'Return Accepted'
   | 'Return Confirmed'
-  | 'Return Successful';
+  | 'Return Successful'
+  | 'Return Request Rejected';
 
 
 export type CustomerDetails = {
