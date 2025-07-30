@@ -160,7 +160,7 @@ const WatchAndShopItem = ({ reel, product }: { reel: Reel, product?: ProductType
                 <div className="overflow-hidden">
                   <h3 className="text-sm font-headline text-primary truncate">{product.name}</h3>
                   <div className="flex items-baseline gap-2">
-                    <p className="text-accent font-bold text-sm">{product.price}</p>
+                    <p className="text-accent font-bold text-sm">Amount: {product.price}</p>
                     {product.originalPrice && (
                       <p className="text-muted-foreground text-xs line-through">{product.originalPrice}</p>
                     )}
@@ -303,7 +303,7 @@ export default function Home() {
                       {product.brand && <p className="text-sm text-muted-foreground">{product.brand}</p>}
                       <h3 className="font-headline text-lg text-primary truncate">{product.name}</h3>
                       <p className="text-sm text-muted-foreground">{product.category}</p>
-                      <p className="text-accent font-semibold pt-1">{product.price}</p>
+                      <p className="text-accent font-semibold pt-1">Amount: {product.price}</p>
                     </div>
                   </Link>
                 ))}
@@ -356,7 +356,7 @@ export default function Home() {
                                 {tee.brand && <p className="text-sm text-muted-foreground">{tee.brand}</p>}
                                 <h3 className="text-lg font-headline text-primary truncate">{tee.name}</h3>
                                 <p className="text-sm text-muted-foreground">{tee.category}</p>
-                                <p className="text-accent font-bold pt-1">{tee.price}</p>
+                                <p className="text-accent font-bold pt-1">Amount: {tee.price}</p>
                             </div>
                           </CardContent>
                         </Card>
@@ -395,7 +395,7 @@ export default function Home() {
                       {item.brand && <p className="text-sm text-muted-foreground">{item.brand}</p>}
                       <h3 className="font-headline text-lg text-primary truncate">{item.name}</h3>
                       <p className="text-sm text-muted-foreground">{item.category}</p>
-                      <p className="text-accent font-semibold pt-1">{item.price}</p>
+                      <p className="text-accent font-semibold pt-1">Amount: {item.price}</p>
                     </div>
                   </Link>
                 ))}
