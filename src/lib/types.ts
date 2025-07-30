@@ -55,6 +55,7 @@ export type Product = {
 export type CartItem = {
     product: Product;
     quantity: number;
+    size?: string;
 };
 
 export type Reel = {

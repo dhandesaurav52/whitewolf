@@ -218,13 +218,16 @@ export default function ManageOrdersPage() {
                                                     {order.items.map(item => {
                                                         const imageUrls = item.product.images?.length > 0 ? item.product.images : ["https://placehold.co/100x100.png"];
                                                         return (
-                                                          <div key={item.product.id} className="flex items-center gap-4">
+                                                          <div key={`${item.product.id}-${item.size}`} className="flex items-center gap-4">
                                                               <button onClick={() => setImagesInView(imageUrls)} className="cursor-pointer">
                                                                 <Image src={imageUrls[0]} alt={item.product.name} width={48} height={48} className="rounded-md border" />
                                                               </button>
                                                               <div className="flex-grow">
                                                                   <p className="font-medium">{item.product.name}</p>
-                                                                  <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+                                                                  <div className="flex gap-2 text-sm text-muted-foreground">
+                                                                    <p>Qty: {item.quantity}</p>
+                                                                    {item.size && <p>Size: {item.size}</p>}
+                                                                  </div>
                                                               </div>
                                                               <p className="font-medium">{(parseFloat(item.product.price) * item.quantity).toFixed(2)}</p>
                                                           </div>
@@ -328,4 +331,3 @@ export default function ManageOrdersPage() {
 }
 
     
-

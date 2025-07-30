@@ -56,8 +56,8 @@ export default function CartPage() {
         
         <div className="grid lg:grid-cols-3 gap-12 items-start">
           <div className="lg:col-span-2 space-y-4">
-            {cart.map(({ product, quantity }) => (
-              <Card key={product.id} className="flex items-center p-4">
+            {cart.map(({ product, quantity, size }) => (
+              <Card key={`${product.id}-${size}`} className="flex items-center p-4">
                 <div className="relative h-24 w-24 rounded-md overflow-hidden mr-4">
                   <Image
                     src={product.images && product.images.length > 0 ? product.images[0] : "https://placehold.co/100x100.png"}
@@ -68,20 +68,20 @@ export default function CartPage() {
                 </div>
                 <div className="flex-grow">
                   <h3 className="font-semibold text-lg">{product.name}</h3>
-                  <p className="text-muted-foreground text-sm">{product.category}</p>
+                  {size && <p className="text-muted-foreground text-sm">Size: {size}</p>}
                   <p className="text-primary font-bold mt-1">{product.price}</p>
                 </div>
                 <div className="flex items-center gap-4">
                    <div className="flex items-center gap-2 border rounded-md">
-                      <Button variant="ghost" size="icon" onClick={() => updateQuantity(product.id, quantity - 1)} className="h-8 w-8">
+                      <Button variant="ghost" size="icon" onClick={() => updateQuantity(product.id, quantity - 1, size)} className="h-8 w-8">
                           <Minus className="h-4 w-4" />
                       </Button>
                       <span className="w-8 text-center font-medium">{quantity}</span>
-                      <Button variant="ghost" size="icon" onClick={() => updateQuantity(product.id, quantity + 1)} className="h-8 w-8">
+                      <Button variant="ghost" size="icon" onClick={() => updateQuantity(product.id, quantity + 1, size)} className="h-8 w-8">
                           <Plus className="h-4 w-4" />
                       </Button>
                    </div>
-                   <Button variant="ghost" size="icon" className="text-destructive" onClick={() => removeFromCart(product.id)}>
+                   <Button variant="ghost" size="icon" className="text-destructive" onClick={() => removeFromCart(product.id, size)}>
                       <Trash2 className="h-5 w-5" />
                    </Button>
                 </div>

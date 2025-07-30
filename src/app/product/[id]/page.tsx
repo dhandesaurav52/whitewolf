@@ -20,6 +20,7 @@ import ConfirmPurchaseDialog from '@/components/ConfirmPurchaseDialog';
 import { useAuth } from '@/hooks/useAuth';
 import * as db from '@/lib/firestore';
 import SizeGuideDialog from '@/components/SizeGuideDialog';
+import { useToast } from '@/hooks/use-toast';
 
 const ProductCard = ({ product }: { product: ProductType }) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
@@ -106,6 +107,7 @@ export default function ProductDetailPage() {
   const [productToBuy, setProductToBuy] = useState<CartItem | null>(null);
   
   const { user } = useAuth();
+  const { toast } = useToast();
   const { addToCart, clearCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
@@ -138,13 +140,35 @@ export default function ProductDetailPage() {
     fetchProductData();
   }, [id]);
 
+  const availableSizes = (product?.textSizes?.split(',') || []).map(s => s.trim()).filter(Boolean);
+
+  const handleAddToCart = () => {
+    if (availableSizes.length > 0 && !selectedSize) {
+      toast({
+        title: 'Please select a size',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (product) {
+      addToCart(product, quantity, selectedSize || undefined);
+    }
+  };
+
   const handleBuyNow = () => {
     if (!user) {
       router.push('/login');
       return;
     }
+    if (availableSizes.length > 0 && !selectedSize) {
+      toast({
+        title: 'Please select a size',
+        variant: 'destructive',
+      });
+      return;
+    }
     if (product) {
-      setProductToBuy({ product, quantity });
+      setProductToBuy({ product, quantity, size: selectedSize || undefined });
       setIsConfirming(true);
     }
   }
@@ -192,9 +216,6 @@ export default function ProductDetailPage() {
     setQuantity(q => Math.max(1, q - 1));
   }
 
-  const availableSizes = (product.textSizes?.split(',') || []).map(s => s.trim());
-
-
   return (
     <>
       <div className="container mx-auto px-4 py-6 md:py-12">
@@ -238,26 +259,28 @@ export default function ProductDetailPage() {
 
               <Separator />
 
-              <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-medium text-primary">Size</h3>
-                      <Button variant="link" size="sm" className="text-muted-foreground gap-1" onClick={() => setIsSizeGuideOpen(true)}>
-                          <Ruler className="h-4 w-4" /> Size Guide
-                      </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                      {availableSizes.map(size => (
-                          <Button 
-                              key={size}
-                              variant={selectedSize === size ? "default" : "outline"}
-                              onClick={() => handleSizeSelect(size)}
-                              className="w-16"
-                          >
-                              {size}
-                          </Button>
-                      ))}
-                  </div>
-              </div>
+              {availableSizes.length > 0 && (
+                <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-medium text-primary">Size</h3>
+                        <Button variant="link" size="sm" className="text-muted-foreground gap-1" onClick={() => setIsSizeGuideOpen(true)}>
+                            <Ruler className="h-4 w-4" /> Size Guide
+                        </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        {availableSizes.map(size => (
+                            <Button 
+                                key={size}
+                                variant={selectedSize === size ? "default" : "outline"}
+                                onClick={() => handleSizeSelect(size)}
+                                className="w-16"
+                            >
+                                {size}
+                            </Button>
+                        ))}
+                    </div>
+                </div>
+              )}
               
               <div className="flex items-center gap-4">
                   <h3 className="text-lg font-medium text-primary">Quantity</h3>
@@ -275,7 +298,7 @@ export default function ProductDetailPage() {
               <Separator />
               
               <div className="flex flex-col sm:flex-row gap-3">
-                  <Button variant="outline" size="lg" className="flex-1" onClick={() => addToCart(product, quantity)}>
+                  <Button variant="outline" size="lg" className="flex-1" onClick={handleAddToCart}>
                       <ShoppingBag className="mr-2 h-5 w-5" /> Add to Cart
                   </Button>
                   <Button size="lg" className="flex-1" onClick={handleBuyNow}>
