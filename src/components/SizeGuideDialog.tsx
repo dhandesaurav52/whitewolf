@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -127,15 +126,15 @@ export default function SizeGuideDialog({ isOpen, onClose, category }: SizeGuide
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-xl p-0">
-                <DialogHeader className="p-6 pb-4 border-b sticky top-0 bg-background">
+            <DialogContent className="sm:max-w-xl">
+                <DialogHeader>
                     <DialogTitle>Size Guide</DialogTitle>
                     <DialogDescription>
                         Find your perfect fit. Measurements are in inches unless specified.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="overflow-y-auto max-h-[60vh]">
-                    <div className="px-6 pb-6 space-y-6">
+                <div className="max-h-[60vh] overflow-y-auto pr-4">
+                    <div className="space-y-6">
                         {charts.length > 0 ? charts.map((chart, index) => <div key={index}>{chart}</div>) : (
                             <div className="space-y-6">
                                 <TShirtGuide/>
