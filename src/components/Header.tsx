@@ -28,7 +28,8 @@ import Image from "next/image";
 
 const WhiteWolfLogo = () => (
     <div className="flex items-center">
-        <Image src="https://firebasestorage.googleapis.com/v0/b/white-wolf-style-advisor.firebasestorage.app/o/Screenshot%202025-07-30%20at%204.04.16%E2%80%AFPM.png?alt=media&token=8580d5f4-a77e-45bc-ac31-85f2058958c7" alt="White Wolf Logo" width={120} height={40} className="h-10" />
+        <Image src="https://firebasestorage.googleapis.com/v0/b/white-wolf-style-advisor.firebasestorage.app/o/thewhitewolf.png?alt=media&token=81874feb-9e37-4131-a808-161b5853a4a1" alt="White Wolf Logo" width={40} height={40} />
+        <span className="ml-2 text-2xl font-bold font-headline">White Wolf</span>
     </div>
 )
 
