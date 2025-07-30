@@ -204,10 +204,16 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
                     <Input id="text-sizes" value={editedProduct.textSizes || ''} onChange={(e) => handleChange('textSizes', e.target.value)} />
                   </div>
               </div>
-               <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
                     <Label htmlFor="numeric-sizes" className="text-accent">Numeric Sizes (comma-separated)</Label>
                     <Input id="numeric-sizes" value={editedProduct.numericSizes || ''} onChange={(e) => handleChange('numericSizes', e.target.value)} />
                 </div>
+                <div className="space-y-2">
+                    <Label htmlFor="stock" className="text-accent">Stock Quantity</Label>
+                    <Input id="stock" type="number" value={editedProduct.stock} onChange={(e) => handleChange('stock', Number(e.target.value))} />
+                </div>
+              </div>
                 <div className="space-y-2">
                     <Label htmlFor="product-video" className="text-accent">Product Video</Label>
                     <Input id="product-video" value={editedProduct.videoUrl || ''} onChange={(e) => handleChange('videoUrl', e.target.value)} placeholder="Enter video URL..."/>
@@ -227,5 +233,3 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
     </Dialog>
   );
 }
-
-    
