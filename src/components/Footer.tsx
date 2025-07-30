@@ -56,7 +56,7 @@ export default function Footer() {
 
   const aboutLinks = [
     { href: "/about", label: "Our Story" },
-    { href: "/contact", label: "Contact Us" },
+    { href: "https://merchant.razorpay.com/policy/QoAs3QqvUvUpdi/contact_us", label: "Contact Us", external: true },
   ];
 
   const supportLinks = [
@@ -103,7 +103,12 @@ export default function Footer() {
             <ul className="space-y-2">
               {aboutLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-muted-foreground hover:text-accent-foreground transition-colors">
+                  <Link 
+                    href={link.href} 
+                    className="text-sm text-muted-foreground hover:text-accent-foreground transition-colors"
+                    target={link.external ? "_blank" : undefined}
+                    rel={link.external ? "noopener noreferrer" : undefined}
+                  >
                     {link.label}
                   </Link>
                 </li>
