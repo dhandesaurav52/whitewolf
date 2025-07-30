@@ -1,3 +1,4 @@
+
 import { 
     getFirestore, 
     collection, 
@@ -71,7 +72,7 @@ export const orders = {
     getAll: () => getAll<Order>('orders'),
     getById: (id: string) => getById<Order>('orders', id),
     getByUser: async (userId: string) => {
-        const q = query(collection(db, "orders"), where("customer.userId", "==", userId), orderBy("orderDate", "desc"));
+        const q = query(collection(db, "orders"), where("customer.userId", "==", userId));
         const querySnapshot = await getDocs(q);
         return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
     },

@@ -60,7 +60,13 @@ export default function OrdersPage() {
             setIsLoading(true);
             try {
                 const userOrders = await db.orders.getByUser(user.uid);
-                setOrders(userOrders);
+                // Sort orders by date on the client side
+                const sortedOrders = userOrders.sort((a, b) => {
+                    const dateA = a.orderDate instanceof Timestamp ? a.orderDate.toMillis() : new Date(a.orderDate).getTime();
+                    const dateB = b.orderDate instanceof Timestamp ? b.orderDate.toMillis() : new Date(b.orderDate).getTime();
+                    return dateB - dateA;
+                });
+                setOrders(sortedOrders);
             } catch (error) {
                 console.error("Failed to load orders", error);
                  toast({ title: "Error", description: "Could not fetch your orders.", variant: "destructive" });
