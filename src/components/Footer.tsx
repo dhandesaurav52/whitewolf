@@ -66,28 +66,30 @@ export default function Footer() {
   const supportLinks = [
     { id: "shipping", label: "Shipping & Returns", action: () => setIsPolicyDialogOpen(true) },
     { href: "/size-guide", label: "Size Guide" },
-    { href: "https://merchant.razorpay.com/policy/QoAs3QqvUvUpdi/privacy", label: "Privacy Policy" },
-    { href: "https://merchant.razorpay.com/policy/QoAs3QqvUvUpdi/terms", label: "Terms & Conditions" },
+    { href: "https://merchant.razorpay.com/policy/QoAs3QqvUvUpdi/privacy", label: "Privacy Policy", isExternal: true },
+    { href: "https://merchant.razorpay.com/policy/QoAs3QqvUvUpdi/terms", label: "Terms & Conditions", isExternal: true },
   ];
 
   const handleLinkClick = (link: { href?: string, action?: () => void }) => {
     if (link.href) {
-      if (link.href.startsWith("http")) {
-        window.open(link.href, "_blank");
-      } else {
-        router.push(link.href);
-      }
+      router.push(link.href);
     } else if (link.action) {
       link.action();
     }
   };
 
-  const renderLinks = (links: Array<{href?: string, id?: string, label: string, action?: () => void}>) => {
+  const renderLinks = (links: Array<{href?: string, id?: string, label: string, action?: () => void, isExternal?: boolean}>) => {
     return links.map(link => (
       <li key={link.id || link.href}>
+        {link.isExternal ? (
+           <a href={link.href} target="_blank" rel="noopener noreferrer" className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors">
+            {link.label}
+           </a>
+        ) : (
           <button onClick={() => handleLinkClick(link)} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer">
             {link.label}
           </button>
+        )}
       </li>
     ));
   }
