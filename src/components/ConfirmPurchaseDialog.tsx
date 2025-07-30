@@ -113,7 +113,7 @@ export default function ConfirmPurchaseDialog({
         total: totalAmount,
         status: 'Pending',
         orderDate: serverTimestamp(),
-        paymentId,
+        ...(paymentId && { paymentId }),
     };
 
     try {
