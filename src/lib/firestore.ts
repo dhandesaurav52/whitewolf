@@ -90,5 +90,6 @@ export const ads = {
 export const reels = {
     getAll: () => getAll<Reel>('reels'),
     add: (data: Omit<Reel, 'id'>) => add<Reel>('reels', data),
+    update: (id: string, data: Partial<Reel>) => update<Reel>('reels', id, data),
     remove: (id: string) => remove('reels', id),
 }

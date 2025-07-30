@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import CreateReelDialog from "@/components/CreateReelDialog";
+import EditReelDialog from "@/components/EditReelDialog";
 import type { Reel, Product as ProductType } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import * as db from '@/lib/firestore';
@@ -24,6 +25,7 @@ export default function ManageReelsPage() {
     const [reels, setReels] = useState<Reel[]>([]);
     const [products, setProducts] = useState<ProductType[]>([]);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const [editingReel, setEditingReel] = useState<Reel | null>(null);
     const [isMounted, setIsMounted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -63,6 +65,21 @@ export default function ManageReelsPage() {
             toast({ title: "Error", description: "Could not create reel.", variant: "destructive" });
         }
     };
+    
+    const handleUpdateReel = async (updatedReel: Reel) => {
+        if (!editingReel) return;
+        try {
+            await db.reels.update(updatedReel.id, updatedReel);
+            setReels(reels.map(r => r.id === updatedReel.id ? updatedReel : r));
+            toast({
+                title: "Reel Updated",
+                description: "The reel has been successfully updated.",
+            });
+            setEditingReel(null);
+        } catch (error) {
+             toast({ title: "Error", description: "Could not update reel.", variant: "destructive" });
+        }
+    }
     
     const handleDeleteReel = async (reelId: string) => {
         try {
@@ -130,7 +147,7 @@ export default function ManageReelsPage() {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuItem disabled>Edit</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => setEditingReel(reel)}>Edit</DropdownMenuItem>
                                                 <DropdownMenuItem 
                                                     onClick={() => handleDeleteReel(reel.id)} 
                                                     className="text-destructive"
@@ -153,6 +170,15 @@ export default function ManageReelsPage() {
                     onClose={() => setIsCreateDialogOpen(false)}
                     onSave={handleCreateReel}
                     products={products}
+                />
+            )}
+            {editingReel && (
+                <EditReelDialog
+                    isOpen={!!editingReel}
+                    onClose={() => setEditingReel(null)}
+                    onSave={handleUpdateReel}
+                    products={products}
+                    reel={editingReel}
                 />
             )}
         </div>
