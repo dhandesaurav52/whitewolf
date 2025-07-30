@@ -37,8 +37,9 @@ const defaultHero: Advertisement = {
 };
 
 const HeroSection = () => {
-    const [heroSlides, setHeroSlides] = useState<Advertisement[]>([defaultHero]);
+    const [heroSlides, setHeroSlides] = useState<Advertisement[]>([]);
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [isMounted, setIsMounted] = useState(false);
 
     const loadHeroSlides = useCallback(() => {
         try {
@@ -61,6 +62,7 @@ const HeroSection = () => {
     }, []);
     
     useEffect(() => {
+        setIsMounted(true);
         loadHeroSlides();
         window.addEventListener('storage', loadHeroSlides);
         return () => window.removeEventListener('storage', loadHeroSlides);
@@ -75,6 +77,14 @@ const HeroSection = () => {
 
         return () => clearInterval(timer);
     }, [heroSlides.length]);
+    
+    if (!isMounted || heroSlides.length === 0) {
+        return (
+             <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center text-center text-white bg-black overflow-hidden">
+                <Skeleton className="absolute inset-0" />
+             </section>
+        );
+    }
 
     return (
         <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center text-center text-white bg-black overflow-hidden">
