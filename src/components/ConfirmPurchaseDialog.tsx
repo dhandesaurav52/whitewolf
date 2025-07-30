@@ -138,49 +138,48 @@ export default function ConfirmPurchaseDialog({
     }
   };
 
-  const handleRazorpayPayment = async (shippingDetails: CustomerDetails) => {
+  const handleRazorpayPayment = (shippingDetails: CustomerDetails) => {
     setIsLoading(true);
 
-    // This is a mock function. In a real app, you would call your backend to create a Razorpay order.
-    const createOrderOnServer = async () => {
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        // In a real app, this would return a real order_id from Razorpay API
-        return `mock_order_${Date.now()}`;
+    const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: totalAmount * 100, // Amount in paise
+        currency: "INR",
+        name: "White Wolf",
+        description: `Purchase of ${productNames}`,
+        handler: function (response: any) {
+            placeOrder(shippingDetails, response.razorpay_payment_id);
+        },
+        prefill: {
+            name: shippingDetails.name,
+            email: shippingDetails.email,
+            contact: shippingDetails.phone,
+        },
+        notes: {
+            address: `${shippingDetails.address}, ${shippingDetails.city}, ${shippingDetails.pincode}`
+        },
+        theme: {
+            color: "#111827" // This can be your primary theme color
+        },
+        modal: {
+            ondismiss: function() {
+                setIsLoading(false);
+                setPaymentMethod(null);
+            }
+        }
     };
 
-    try {
-        const orderId = await createOrderOnServer();
-        
-        const options = {
-            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_your_key_here',
-            amount: totalAmount * 100, // Amount in paise
-            currency: "INR",
-            name: "White Wolf",
-            description: `Purchase of ${productNames}`,
-            order_id: orderId,
-            handler: function (response: any) {
-                placeOrder(shippingDetails, response.razorpay_payment_id);
-            },
-            prefill: {
-                name: shippingDetails.name,
-                email: shippingDetails.email,
-                contact: shippingDetails.phone,
-            },
-            notes: {
-                address: `${shippingDetails.address}, ${shippingDetails.city}, ${shippingDetails.pincode}`
-            },
-            theme: {
-                color: "#F15A24"
-            },
-            modal: {
-                ondismiss: function() {
-                    setIsLoading(false);
-                    setPaymentMethod(null);
-                }
-            }
-        };
+    if (!process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID) {
+        toast({
+            variant: 'destructive',
+            title: 'Razorpay Not Configured',
+            description: 'The Razorpay Key ID is not set. Please contact support.',
+        });
+        setIsLoading(false);
+        return;
+    }
 
+    try {
         const rzp = new window.Razorpay(options);
         rzp.on('payment.failed', function (response: any){
             toast({
@@ -192,22 +191,19 @@ export default function ConfirmPurchaseDialog({
             setPaymentMethod(null);
         });
         rzp.open();
-
-    } catch (error: any) {
+    } catch (error) {
         console.error("Razorpay Error:", error);
-        toast({ title: "Error", description: error.message || "Could not initiate payment.", variant: "destructive" });
+        toast({ title: "Error", description: "Could not initiate payment.", variant: "destructive" });
         setIsLoading(false);
-        setPaymentMethod(null);
     }
   }
   
   const handleCashOnDelivery = (shippingDetails: CustomerDetails) => {
     setIsLoading(true);
-    setTimeout(() => {
-        placeOrder(shippingDetails);
+    placeOrder(shippingDetails).finally(() => {
         setIsLoading(false);
         setPaymentMethod(null);
-    }, 1000);
+    });
   };
 
   const onFormSubmit = (data: CheckoutFormValues) => {
