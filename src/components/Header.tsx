@@ -104,9 +104,6 @@ export default function Header() {
                             <Link href="/admin/orders"><Package className="mr-2 h-4 w-4" />Manage Orders</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                            <Link href="/admin/returns"><Undo2 className="mr-2 h-4 w-4" />Return Orders</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
                             <Link href="/admin/ads"><Megaphone className="mr-2 h-4 w-4" />Advertise & Offers</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
