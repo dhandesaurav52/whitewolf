@@ -363,16 +363,18 @@ export default function ProductDetailPage() {
               
               <Separator />
               
-              <div className="flex flex-col sm:flex-row gap-3">
-                  <Button variant="outline" size="lg" className="flex-1" onClick={handleAddToCart}>
-                      <ShoppingBag className="mr-2 h-5 w-5" /> Add to Cart
-                  </Button>
-                  <Button size="lg" className="flex-1" onClick={handleBuyNow}>
-                      Buy Now
-                  </Button>
-                  <Button variant="outline" size="icon" className="h-12 w-12" onClick={handleWishlistClick}>
-                      <Heart className={cn("h-5 w-5", user && isInWishlist(product.id) && "fill-destructive text-destructive")} />
-                  </Button>
+              <div className="flex gap-3">
+                <div className="flex-grow flex flex-col gap-3">
+                    <Button variant="outline" size="lg" onClick={handleAddToCart}>
+                        <ShoppingBag className="mr-2 h-5 w-5" /> Add to Cart
+                    </Button>
+                    <Button size="lg" onClick={handleBuyNow}>
+                        Buy Now
+                    </Button>
+                </div>
+                <Button variant="outline" size="icon" className="h-auto w-12" onClick={handleWishlistClick}>
+                    <Heart className={cn("h-5 w-5", user && isInWishlist(product.id) && "fill-destructive text-destructive")} />
+                </Button>
               </div>
               </div>
           </div>
