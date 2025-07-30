@@ -17,6 +17,9 @@ export default function TermsPage() {
           <h1 className="text-4xl md:text-5xl font-bold font-headline text-accent mb-12 text-center">
             Redirecting to Terms & Conditions...
           </h1>
+            <div className="space-y-6 text-base text-muted-foreground leading-relaxed">
+                <p>If you are not redirected automatically, please <a href="https://merchant.razorpay.com/policy/QoAs3QqvUvUpdi/terms" className="underline">click here</a>.</p>
+            </div>
         </div>
       </main>
     </div>
