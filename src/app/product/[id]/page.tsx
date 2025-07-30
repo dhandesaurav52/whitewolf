@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import ConfirmPurchaseDialog from '@/components/ConfirmPurchaseDialog';
 import { useAuth } from '@/hooks/useAuth';
 import * as db from '@/lib/firestore';
+import SizeGuideDialog from '@/components/SizeGuideDialog';
 
 const ProductCard = ({ product }: { product: ProductType }) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
@@ -101,6 +102,7 @@ export default function ProductDetailPage() {
   const [complementaryProducts, setComplementaryProducts] = useState<ProductType[]>([]);
   const [moreProducts, setMoreProducts] = useState<ProductType[]>([]);
   const [isConfirming, setIsConfirming] = useState(false);
+  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [productToBuy, setProductToBuy] = useState<CartItem | null>(null);
   
   const { user } = useAuth();
@@ -240,7 +242,7 @@ export default function ProductDetailPage() {
                   <div className="space-y-3">
                       <div className="flex justify-between items-center">
                           <h3 className="text-lg font-medium text-primary">Size</h3>
-                          <Button variant="link" size="sm" className="text-muted-foreground gap-1">
+                          <Button variant="link" size="sm" className="text-muted-foreground gap-1" onClick={() => setIsSizeGuideOpen(true)}>
                               <Ruler className="h-4 w-4" /> Size Guide
                           </Button>
                       </div>
@@ -301,6 +303,12 @@ export default function ProductDetailPage() {
               </div>
           </div>
       </div>
+
+      <SizeGuideDialog 
+        isOpen={isSizeGuideOpen}
+        onClose={() => setIsSizeGuideOpen(false)}
+        category={product.category}
+      />
 
       {isConfirming && user && (
           <ConfirmPurchaseDialog
