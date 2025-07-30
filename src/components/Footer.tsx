@@ -62,23 +62,33 @@ export default function Footer() {
 
   const aboutLinks = [
     { href: "/about", label: "Our Story" },
-    { id: "contact-us", label: "Contact Us", onClick: () => setIsContactUsOpen(true) },
+    { id: "contact-us", label: "Contact Us", action: () => setIsContactUsOpen(true) },
   ];
 
   const supportLinks = [
-    { id: "shipping", label: "Shipping & Returns", onClick: () => setIsPolicyDialogOpen(true) },
+    { id: "shipping", label: "Shipping & Returns", action: () => setIsPolicyDialogOpen(true) },
     { href: "/size-guide", label: "Size Guide" },
     { href: "/privacy", label: "Privacy Policy" },
     { href: "/terms", label: "Terms & Conditions" },
   ];
 
-  const handleLinkClick = (link: { href?: string, onClick?: () => void }) => {
+  const handleLinkClick = (link: { href?: string, action?: () => void }) => {
     if (link.href) {
       router.push(link.href);
-    } else if (link.onClick) {
-      link.onClick();
+    } else if (link.action) {
+      link.action();
     }
   };
+
+  const renderLinks = (links: Array<{href?: string, id?: string, label: string, action?: () => void}>) => {
+    return links.map(link => (
+      <li key={link.id || link.href}>
+          <button onClick={() => handleLinkClick(link)} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer">
+            {link.label}
+          </button>
+      </li>
+    ));
+  }
 
   return (
     <>
@@ -102,26 +112,14 @@ export default function Footer() {
             <div className="col-span-1">
               <h3 className="font-bold text-sm text-accent-foreground tracking-wider uppercase mb-4">Shop</h3>
               <ul className="space-y-2">
-                {shopLinks.map((link) => (
-                  <li key={link.href}>
-                    <button onClick={() => handleLinkClick(link)} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer">
-                      {link.label}
-                    </button>
-                  </li>
-                ))}
+                {renderLinks(shopLinks)}
               </ul>
             </div>
             
             <div className="col-span-1">
               <h3 className="font-bold text-sm text-accent-foreground tracking-wider uppercase mb-4">About</h3>
               <ul className="space-y-2">
-                {aboutLinks.map((link) => (
-                  <li key={link.id || link.href}>
-                    <button onClick={() => handleLinkClick(link)} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer">
-                      {link.label}
-                    </button>
-                  </li>
-                ))}
+                {renderLinks(aboutLinks)}
                 <li>
                   <button onClick={() => router.push('/faqs')} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer flex items-center">
                     FAQs
@@ -138,13 +136,7 @@ export default function Footer() {
             <div className="col-span-1">
               <h3 className="font-bold text-sm text-accent-foreground tracking-wider uppercase mb-4">Support</h3>
               <ul className="space-y-2">
-                {supportLinks.map((link) => (
-                  <li key={link.id || link.href}>
-                    <button onClick={() => handleLinkClick(link)} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer">
-                      {link.label}
-                    </button>
-                  </li>
-                ))}
+                {renderLinks(supportLinks)}
               </ul>
             </div>
           </div>
