@@ -273,7 +273,7 @@ export default function Home() {
                 <h2 className="text-4xl font-headline font-bold">New Arrivals</h2>
                 <p className="text-muted-foreground mt-2">Check out the latest additions to our collection.</p>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
                 {newArrivals.map((product) => (
                   <Link key={product.id} href={`/product/${product.id}`} className="group block overflow-hidden rounded-lg border border-transparent hover:border-primary transition-colors duration-300">
                     <div className="relative aspect-[4/5] bg-muted overflow-hidden">
@@ -365,7 +365,7 @@ export default function Home() {
                 <h2 className="text-4xl font-headline font-bold">Our Accessories</h2>
                 <p className="text-muted-foreground mt-2">Complete your look with our curated selection of accessories.</p>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
                 {accessories.map((item, i) => (
                   <Link key={item.id || i} href={`/product/${item.id}`} className="group block overflow-hidden rounded-lg border border-transparent hover:border-primary transition-colors duration-300">
                     <div className="relative aspect-[4/5] bg-muted overflow-hidden">
