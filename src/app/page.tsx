@@ -216,7 +216,7 @@ export default function Home() {
         <div className="flex flex-col">
             <Skeleton className="h-[60vh] w-full" />
              <div className="container mx-auto py-16">
-                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+                 <div className="grid grid-cols-3 gap-12 text-center">
                     <Skeleton className="h-24 w-full" />
                     <Skeleton className="h-24 w-full" />
                     <Skeleton className="h-24 w-full" />
@@ -323,7 +323,7 @@ export default function Home() {
               >
                 <CarouselContent>
                   {oversizeTees.map((tee, index) => (
-                    <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                    <CarouselItem key={index} className="basis-1/2 md:basis-1/3 lg:basis-1/4">
                       <div className="p-1">
                         <Card className="bg-card border-border overflow-hidden group transition-all duration-300 hover:border-primary hover:shadow-md">
                           <CardContent className="p-0">
