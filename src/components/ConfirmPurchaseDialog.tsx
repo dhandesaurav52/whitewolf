@@ -247,7 +247,7 @@ export default function ConfirmPurchaseDialog({
             <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal</span>
-                    <span>₹{totalToCharge.toFixed(2)}</span>
+                    <span>{totalToCharge.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Shipping</span>
@@ -256,7 +256,7 @@ export default function ConfirmPurchaseDialog({
                  <Separator/>
                 <div className="flex justify-between font-bold text-lg">
                     <span>Total Amount</span>
-                    <span>₹{totalAmount.toFixed(2)}</span>
+                    <span>{totalAmount.toFixed(2)}</span>
                 </div>
             </div>
         </div>

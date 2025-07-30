@@ -202,7 +202,7 @@ export default function AdvertiseOffersPage() {
     
     const getDiscountDisplay = (ad: Advertisement) => {
         if (!ad.discountValue) return 'N/A';
-        return ad.discountType === 'percentage' ? `${ad.discountValue}%` : `₹${ad.discountValue}`;
+        return ad.discountType === 'percentage' ? `${ad.discountValue}%` : `${ad.discountValue}`;
     }
     
     const getAppliesToDisplay = (ad: Advertisement) => {
