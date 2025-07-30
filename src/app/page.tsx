@@ -237,27 +237,27 @@ export default function Home() {
         <HeroSection />
 
         {/* Features Section */}
-        <section className="bg-background py-16">
+        <section className="bg-background py-12 md:py-16">
           <div className="container mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+            <div className="grid grid-cols-3 gap-4 md:gap-12 text-center">
               <div className="flex flex-col items-center">
-                <ShieldCheck className="h-10 w-10 text-accent" />
-                <h3 className="mt-4 text-xl font-headline font-semibold">Exclusive Designs</h3>
-                <p className="mt-2 text-muted-foreground">
+                <ShieldCheck className="h-8 w-8 md:h-10 md:w-10 text-accent" />
+                <h3 className="mt-4 text-base md:text-xl font-headline font-semibold">Exclusive Designs</h3>
+                <p className="mt-1 md:mt-2 text-xs md:text-base text-muted-foreground">
                   Curated pieces you won't find anywhere else.
                 </p>
               </div>
               <div className="flex flex-col items-center">
-                <Shirt className="h-10 w-10 text-accent" />
-                <h3 className="mt-4 text-xl font-headline font-semibold">Premium Quality</h3>
-                <p className="mt-2 text-muted-foreground">
+                <Shirt className="h-8 w-8 md:h-10 md:w-10 text-accent" />
+                <h3 className="mt-4 text-base md:text-xl font-headline font-semibold">Premium Quality</h3>
+                <p className="mt-1 md:mt-2 text-xs md:text-base text-muted-foreground">
                   Crafted from the finest materials for lasting comfort.
                 </p>
               </div>
               <div className="flex flex-col items-center">
-                <Truck className="h-10 w-10 text-accent" />
-                <h3 className="mt-4 text-xl font-headline font-semibold">Fast Shipping</h3>
-                <p className="mt-2 text-muted-foreground">
+                <Truck className="h-8 w-8 md:h-10 md:w-10 text-accent" />
+                <h3 className="mt-4 text-base md:text-xl font-headline font-semibold">Fast Shipping</h3>
+                <p className="mt-1 md:mt-2 text-xs md:text-base text-muted-foreground">
                   Get your new look delivered to your door in days.
                 </p>
               </div>
