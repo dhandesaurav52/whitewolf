@@ -164,7 +164,7 @@ export default function AdvertiseOffersPage() {
                     ...finalHeroData
                 };
                 const addedHero = await db.ads.add(newHeroAd);
-                setAds([...ads, addedHero]);
+                setAds(prevAds => [...prevAds, addedHero]);
                 toast({ title: "Hero Created", description: "The new hero banner has been added." });
             }
         } catch (error) {
