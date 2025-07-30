@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -81,12 +81,19 @@ const ProductCard = ({ product }: { product: ProductType }) => {
 };
 
 export default function ShopPage() {
-    const [products, setProducts] = useState<ProductType[]>([]);
+    const [allProducts, setAllProducts] = useState<ProductType[]>([]);
+    const [filteredProducts, setFilteredProducts] = useState<ProductType[]>([]);
     const [isMounted, setIsMounted] = useState(false);
     const searchParams = useSearchParams();
-    const categoryQuery = searchParams.get('category');
+    
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('all');
+    const [selectedBrand, setSelectedBrand] = useState('all');
+    const [selectedColor, setSelectedColor] = useState('all');
+    const [selectedSize, setSelectedSize] = useState('all');
+    const [sortOption, setSortOption] = useState('latest');
 
-     const loadData = useCallback(() => {
+    const loadData = useCallback(() => {
         let storedProducts: ProductType[] = [];
         try {
             const productsFromStorage = localStorage.getItem(PRODUCTS_STORAGE_KEY);
@@ -96,24 +103,42 @@ export default function ShopPage() {
         } catch (error) {
             console.error("Failed to load products from storage, using initial products.", error);
         }
+        
+        const shopProducts = storedProducts.filter(p => p.displaySection === 'shop');
+        setAllProducts(shopProducts);
 
+    }, []);
+
+    useEffect(() => {
+        const categoryQuery = searchParams.get('category');
+        if (categoryQuery) {
+            setSelectedCategory(categoryQuery);
+        }
+    }, [searchParams]);
+    
+    useEffect(() => {
+        setIsMounted(true);
+        loadData();
+        window.addEventListener('storage', loadData);
+        return () => {
+            window.removeEventListener('storage', loadData);
+        };
+    }, [loadData]);
+
+
+    useEffect(() => {
+        let productsWithDiscounts = allProducts;
         try {
             const storedAds = localStorage.getItem(ADS_STORAGE_KEY);
             const activeAds: Advertisement[] = storedAds ? JSON.parse(storedAds).filter((ad: Advertisement) => ad.status === 'Active') : [];
             const categoryAds = activeAds.filter(ad => ad.appliesTo === 'categories' && ad.selectedCategories.length > 0);
             
-            let shopProducts = storedProducts.filter(p => p.displaySection === 'shop');
-            
-            if (categoryQuery) {
-                shopProducts = shopProducts.filter(p => p.category.toLowerCase() === categoryQuery);
-            }
-
-            const updatedProducts = shopProducts.map(p => {
+            productsWithDiscounts = allProducts.map(p => {
                 let productPrice = parseFloat(p.price);
                 let originalProductPrice = p.originalPrice ? parseFloat(p.originalPrice) : parseFloat(p.price);
                 let appliedDiscount = p.discount;
                 
-                const applicableAd = categoryAds.find(ad => ad.selectedCategories.includes(p.category));
+                const applicableAd = categoryAds.find(ad => ad.selectedCategories.map(c=>c.toLowerCase()).includes(p.category.toLowerCase()));
 
                 if (applicableAd) {
                      if (applicableAd.discountType === 'percentage') {
@@ -131,43 +156,62 @@ export default function ShopPage() {
                     }
                 }
 
-                // Reset if no ad applies
                 return {
                     ...p,
                     price: p.price,
-                    originalPrice: p.originalPrice, // Keep original if it existed
-                    discount: p.discount, // Keep original discount
+                    originalPrice: p.originalPrice,
+                    discount: p.discount,
                 };
             });
             
-            setProducts(updatedProducts);
-
         } catch (error) {
             console.error("Failed to apply discounts", error);
-            let filteredProducts = storedProducts.filter(p => p.displaySection === 'shop');
-            if (categoryQuery) {
-                filteredProducts = filteredProducts.filter(p => p.category.toLowerCase() === categoryQuery);
-            }
-            setProducts(filteredProducts);
         }
-    }, [categoryQuery]);
-    
-    useEffect(() => {
-        setIsMounted(true);
-        loadData();
-        window.addEventListener('storage', loadData);
-        return () => {
-            window.removeEventListener('storage', loadData);
-        };
-    }, [loadData]);
 
+        let processedProducts = productsWithDiscounts;
 
-    const filters = [
-        { placeholder: 'All Categories', options: ['T-Shirts', 'Shirts', 'Pants', 'Jeans'] },
-        { placeholder: 'All Brands', options: ['Brand A', 'Brand B'] },
-        { placeholder: 'All Colors', options: ['Black', 'White', 'Blue', 'Beige'] },
-        { placeholder: 'All Sizes', options: ['S', 'M', 'L', 'XL'] },
-    ];
+        // Filtering
+        if (searchTerm) {
+            processedProducts = processedProducts.filter(p => 
+                p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                (p.brand && p.brand.toLowerCase().includes(searchTerm.toLowerCase()))
+            );
+        }
+        if (selectedCategory !== 'all') {
+            processedProducts = processedProducts.filter(p => p.category.toLowerCase() === selectedCategory);
+        }
+        if (selectedBrand !== 'all') {
+            processedProducts = processedProducts.filter(p => p.brand?.toLowerCase() === selectedBrand);
+        }
+        if (selectedColor !== 'all') {
+            processedProducts = processedProducts.filter(p => p.colors?.toLowerCase().split(',').map(c => c.trim()).includes(selectedColor));
+        }
+        if (selectedSize !== 'all') {
+            processedProducts = processedProducts.filter(p => p.textSizes?.toLowerCase().split(',').map(s => s.trim()).includes(selectedSize));
+        }
+
+        // Sorting
+        if (sortOption === 'price-asc') {
+            processedProducts.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+        } else if (sortOption === 'price-desc') {
+            processedProducts.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+        } else if (sortOption === 'latest') {
+            // This is a proxy for 'latest' as we don't have a creation timestamp.
+            // Reversing the array places the most recently added items (at the end) first.
+            processedProducts.reverse(); 
+        }
+
+        setFilteredProducts(processedProducts);
+        
+    }, [allProducts, searchTerm, selectedCategory, selectedBrand, selectedColor, selectedSize, sortOption]);
+
+    const filterOptions = useMemo(() => {
+        const categories = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
+        const brands = [...new Set(allProducts.map(p => p.brand).filter(Boolean))];
+        const colors = [...new Set(allProducts.flatMap(p => p.colors?.split(',').map(c => c.trim()) || []).filter(Boolean))];
+        const sizes = [...new Set(allProducts.flatMap(p => p.textSizes?.split(',').map(s => s.trim()) || []).filter(Boolean))];
+        return { categories, brands, colors, sizes };
+    }, [allProducts]);
 
     if (!isMounted) {
       return (
@@ -205,33 +249,58 @@ export default function ShopPage() {
             <Input
               placeholder="Search products or brands..."
               className="w-full pl-10 h-12 text-base"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-4 mb-8">
             <div className="flex-grow grid grid-cols-2 sm:flex sm:flex-wrap sm:flex-grow-0 gap-4">
-                {filters.map((filter, idx) => (
-                <Select key={idx}>
-                    <SelectTrigger className="w-full sm:w-auto h-11">
-                    <SelectValue placeholder={filter.placeholder} />
-                    </SelectTrigger>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="w-full sm:w-auto h-11"><SelectValue placeholder="All Categories" /></SelectTrigger>
                     <SelectContent>
-                    {filter.options.map((option) => (
-                        <SelectItem key={option} value={option.toLowerCase()}>{option}</SelectItem>
-                    ))}
+                        <SelectItem value="all">All Categories</SelectItem>
+                        {filterOptions.categories.map((cat) => <SelectItem key={cat} value={cat.toLowerCase()}>{cat}</SelectItem>)}
                     </SelectContent>
                 </Select>
-                ))}
+                 <Select value={selectedBrand} onValueChange={setSelectedBrand}>
+                    <SelectTrigger className="w-full sm:w-auto h-11"><SelectValue placeholder="All Brands" /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Brands</SelectItem>
+                        {filterOptions.brands.map((brand) => <SelectItem key={brand} value={brand.toLowerCase()}>{brand}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+                <Select value={selectedColor} onValueChange={setSelectedColor}>
+                    <SelectTrigger className="w-full sm:w-auto h-11"><SelectValue placeholder="All Colors" /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Colors</SelectItem>
+                        {filterOptions.colors.map((color) => <SelectItem key={color} value={color.toLowerCase()}>{color}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+                <Select value={selectedSize} onValueChange={setSelectedSize}>
+                    <SelectTrigger className="w-full sm:w-auto h-11"><SelectValue placeholder="All Sizes" /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Sizes</SelectItem>
+                        {filterOptions.sizes.map((size) => <SelectItem key={size} value={size.toLowerCase()}>{size}</SelectItem>)}
+                    </SelectContent>
+                </Select>
             </div>
-            <Button variant="outline" className="h-11">
-                <SlidersHorizontal className="mr-2 h-4 w-4" />
-                Sort
-            </Button>
+            <Select value={sortOption} onValueChange={setSortOption}>
+                <SelectTrigger className="h-11 w-full sm:w-auto">
+                    <SlidersHorizontal className="mr-2 h-4 w-4" />
+                    <SelectValue placeholder="Sort" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="latest">Latest</SelectItem>
+                    <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                    <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                </SelectContent>
+            </Select>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.length > 0 ? products.map((product, index) => (
+          {filteredProducts.length > 0 ? filteredProducts.map((product, index) => (
             <ProductCard key={product.id || index} product={product} />
           )) : <p className="col-span-full text-center text-muted-foreground">No products found. Add some from the admin dashboard!</p>}
         </div>
@@ -239,3 +308,5 @@ export default function ShopPage() {
     </div>
   );
 }
+
+    
