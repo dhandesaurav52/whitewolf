@@ -79,9 +79,9 @@ export default function Footer() {
               Timeless style, uncompromising quality, and conscious craftsmanship for the modern individual.
             </p>
             <div className="flex mt-4 space-x-4">
-              <Link href="https://www.instagram.com/thewhitewolf0501/" target="_blank" rel="noopener noreferrer" className="hover:text-accent-foreground transition-colors">
+              <a href="https://www.instagram.com/thewhitewolf0501/" target="_blank" rel="noopener noreferrer" className="hover:text-accent-foreground transition-colors">
                 <Instagram className="h-6 w-6" />
-              </Link>
+              </a>
             </div>
           </div>
 
