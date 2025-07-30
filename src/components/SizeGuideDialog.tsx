@@ -128,15 +128,15 @@ export default function SizeGuideDialog({ isOpen, onClose, category }: SizeGuide
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-xl">
-                <DialogHeader>
+            <DialogContent className="sm:max-w-xl p-0 flex flex-col max-h-[80vh]">
+                <DialogHeader className="p-6 pb-4 border-b">
                     <DialogTitle>Size Guide</DialogTitle>
                     <DialogDescription>
                         Find your perfect fit. Measurements are in inches unless specified.
                     </DialogDescription>
                 </DialogHeader>
-                <ScrollArea className="max-h-[70vh] pr-6">
-                     <div className="space-y-6">
+                <div className="flex-1 overflow-y-auto">
+                    <div className="px-6 pb-6 space-y-6">
                         {charts.length > 0 ? charts.map((chart, index) => <div key={index}>{chart}</div>) : (
                             <div className="space-y-6">
                                 <TShirtGuide/>
@@ -146,7 +146,7 @@ export default function SizeGuideDialog({ isOpen, onClose, category }: SizeGuide
                             </div>
                         )}
                     </div>
-                </ScrollArea>
+                </div>
             </DialogContent>
         </Dialog>
     );
