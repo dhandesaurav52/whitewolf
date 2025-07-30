@@ -94,7 +94,7 @@ export default function AccessoriesPage() {
         setIsMounted(true);
         try {
             const productsData = await db.products.getAll();
-            const accessoryProducts = productsData.filter(p => p.displaySection === 'accessories');
+            const accessoryProducts = productsData.map(p => ({...p, originalPrice: p.originalPrice || p.price })).filter(p => p.displaySection === 'accessories');
             setAllProducts(accessoryProducts);
         } catch (error) {
             console.error("Failed to load products from firestore", error);
@@ -114,8 +114,8 @@ export default function AccessoriesPage() {
                 const categoryAds = activeAds.filter(ad => ad.appliesTo === 'categories' && ad.selectedCategories.length > 0);
                 
                 productsWithDiscounts = allProducts.map(p => {
-                    let productPrice = parseFloat(p.price);
-                    let originalProductPrice = p.originalPrice ? parseFloat(p.originalPrice) : parseFloat(p.price);
+                    const originalProductPrice = parseFloat(p.originalPrice || p.price);
+                    let productPrice = originalProductPrice;
                     let appliedDiscount = p.discount;
                     
                     const applicableAd = categoryAds.find(ad => ad.selectedCategories.map(c=>c.toLowerCase()).includes(p.category.toLowerCase()));
@@ -126,7 +126,7 @@ export default function AccessoriesPage() {
                             appliedDiscount = `${applicableAd.discountValue}% OFF`;
                         } else { // fixed
                             productPrice = originalProductPrice - applicableAd.discountValue;
-                            appliedDiscount = `${applicableAd.discountValue} OFF`;
+                             appliedDiscount = `₹${applicableAd.discountValue} OFF`;
                         }
                         return {
                             ...p,
@@ -139,9 +139,9 @@ export default function AccessoriesPage() {
                     // Reset if no ad applies
                     return {
                         ...p,
-                        price: p.price,
-                        originalPrice: p.originalPrice,
-                        discount: p.discount,
+                        price: originalProductPrice.toFixed(2),
+                        originalPrice: null,
+                        discount: null,
                     };
                 });
 
@@ -289,5 +289,3 @@ export default function AccessoriesPage() {
     </div>
   );
 }
-
-    

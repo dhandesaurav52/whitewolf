@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Minus, Plus, Heart, Ruler, ShoppingBag } from 'lucide-react';
-import type { Product as ProductType, CartItem } from '@/lib/types';
+import type { Product as ProductType, CartItem, Advertisement } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { useWishlist } from '@/hooks/useWishlist';
@@ -116,14 +116,48 @@ export default function ProductDetailPage() {
         if (typeof id !== 'string') return;
         setLoading(true);
         try {
-            const [foundProduct, allProducts] = await Promise.all([
+            const [foundProduct, allProducts, allAds] = await Promise.all([
                 db.products.getById(id),
-                db.products.getAll()
+                db.products.getAll(),
+                db.ads.getAll()
             ]);
 
-            setProduct(foundProduct);
-            
             if (foundProduct) {
+                const activeAds: Advertisement[] = allAds.filter((ad: Advertisement) => ad.status === 'Active');
+                const categoryAds = activeAds.filter(ad => ad.appliesTo === 'categories' && ad.selectedCategories.length > 0);
+                const applicableAd = categoryAds.find(ad => ad.selectedCategories.map(c=>c.toLowerCase()).includes(foundProduct.category.toLowerCase()));
+
+                let finalProduct = {...foundProduct, originalPrice: foundProduct.originalPrice || foundProduct.price};
+
+                if (applicableAd) {
+                    const originalProductPrice = parseFloat(finalProduct.originalPrice);
+                    let productPrice = originalProductPrice;
+                    let appliedDiscount = finalProduct.discount;
+
+                    if (applicableAd.discountType === 'percentage') {
+                        productPrice = originalProductPrice * (1 - applicableAd.discountValue / 100);
+                        appliedDiscount = `${applicableAd.discountValue}% OFF`;
+                    } else { // fixed
+                        productPrice = originalProductPrice - applicableAd.discountValue;
+                        appliedDiscount = `₹${applicableAd.discountValue} OFF`;
+                    }
+                    
+                    finalProduct = {
+                        ...finalProduct,
+                        price: productPrice.toFixed(2),
+                        originalPrice: originalProductPrice.toFixed(2),
+                        discount: appliedDiscount,
+                    }
+                } else {
+                     finalProduct = {
+                        ...finalProduct,
+                        price: parseFloat(finalProduct.originalPrice!).toFixed(2),
+                        originalPrice: null,
+                        discount: null,
+                     }
+                }
+                setProduct(finalProduct);
+            
                 const similar = allProducts.filter(p => p.category === foundProduct.category && p.id !== foundProduct.id);
                 setSimilarProducts(similar);
 
