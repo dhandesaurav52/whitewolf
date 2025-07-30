@@ -9,15 +9,34 @@ import Image from "next/image";
 import Link from "next/link";
 import { Trash2, ShoppingBag, Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 export default function WishlistPage() {
   const { wishlist, toggleWishlist, isLoaded } = useWishlist();
   const { addToCart } = useCart();
+  const { user } = useAuth();
+  const router = useRouter();
 
   if (!isLoaded) {
     return <div>Loading...</div>; // Or a skeleton loader
   }
   
+  if (!user) {
+    return (
+      <div className="text-center py-20 bg-card border rounded-lg container mx-auto">
+          <Heart className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-4 text-lg font-medium">Please Log In</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+              You need to be logged in to view your wishlist.
+          </p>
+          <Button asChild className="mt-6">
+              <Link href="/login">Login</Link>
+          </Button>
+      </div>
+    );
+  }
+
   if (isLoaded && wishlist.length === 0) {
     return (
       <div className="text-center py-20 bg-card border rounded-lg container mx-auto">
@@ -31,6 +50,14 @@ export default function WishlistPage() {
           </Button>
       </div>
     );
+  }
+
+  const handleAddToCart = (product: any) => {
+    if (!user) {
+        router.push('/login');
+    } else {
+        addToCart(product, 1);
+    }
   }
 
   return (
@@ -74,7 +101,7 @@ export default function WishlistPage() {
                     <Button size="icon" variant="outline" className="h-9 w-9 bg-background/80 hover:bg-background" onClick={() => toggleWishlist(product)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
-                    <Button size="icon" variant="outline" className="h-9 w-9 bg-background/80 hover:bg-background" onClick={() => addToCart(product, 1)}>
+                    <Button size="icon" variant="outline" className="h-9 w-9 bg-background/80 hover:bg-background" onClick={() => handleAddToCart(product)}>
                         <ShoppingBag className="h-4 w-4" />
                     </Button>
                 </div>

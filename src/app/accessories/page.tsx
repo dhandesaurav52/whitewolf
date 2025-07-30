@@ -22,10 +22,31 @@ import { useCart } from '@/hooks/useCart';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import * as db from "@/lib/firestore";
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
 
 const ProductCard = ({ product }: { product: ProductType }) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const { user } = useAuth();
+  const router = useRouter();
+
+  const handleWishlistClick = () => {
+    if (!user) {
+      router.push('/login');
+    } else {
+      toggleWishlist(product);
+    }
+  };
+
+  const handleAddToCartClick = () => {
+    if (!user) {
+      router.push('/login');
+    } else {
+      addToCart(product, 1);
+    }
+  };
+
   return (
     <Card className="group overflow-hidden rounded-lg bg-card text-card-foreground border-border relative transition-all duration-300 hover:border-primary hover:shadow-md">
        <Link href={`/product/${product.id}`} className="block">
@@ -55,10 +76,10 @@ const ProductCard = ({ product }: { product: ProductType }) => {
         </div>
       </Link>
       <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-        <Button size="icon" variant="outline" className="h-9 w-9 bg-background/80 hover:bg-background" onClick={() => toggleWishlist(product)}>
-          <Heart className={cn("h-4 w-4", isInWishlist(product.id) && "fill-destructive text-destructive")} />
+        <Button size="icon" variant="outline" className="h-9 w-9 bg-background/80 hover:bg-background" onClick={handleWishlistClick}>
+          <Heart className={cn("h-4 w-4", user && isInWishlist(product.id) && "fill-destructive text-destructive")} />
         </Button>
-        <Button size="icon" variant="outline" className="h-9 w-9 bg-background/80 hover:bg-background" onClick={() => addToCart(product, 1)}>
+        <Button size="icon" variant="outline" className="h-9 w-9 bg-background/80 hover:bg-background" onClick={handleAddToCartClick}>
           <ShoppingBag className="h-4 w-4" />
         </Button>
       </div>

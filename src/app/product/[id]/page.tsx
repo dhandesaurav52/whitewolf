@@ -25,6 +25,24 @@ import { useToast } from '@/hooks/use-toast';
 const ProductCard = ({ product }: { product: ProductType }) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const { user } = useAuth();
+  const router = useRouter();
+
+  const handleWishlistClick = () => {
+    if (!user) {
+      router.push('/login');
+    } else {
+      toggleWishlist(product);
+    }
+  };
+
+  const handleAddToCartClick = () => {
+    if (!user) {
+      router.push('/login');
+    } else {
+      addToCart(product, 1);
+    }
+  };
   
   return (
     <Card className="group overflow-hidden rounded-lg bg-card text-card-foreground border-border relative transition-all duration-300 hover:border-primary hover:shadow-md">
@@ -40,10 +58,10 @@ const ProductCard = ({ product }: { product: ProductType }) => {
         </div>
       </Link>
       <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-        <Button size="icon" variant="outline" className="h-9 w-9 bg-background/80 hover:bg-background" onClick={() => toggleWishlist(product)}>
-          <Heart className={cn("h-4 w-4", isInWishlist(product.id) && "fill-destructive text-destructive")} />
+        <Button size="icon" variant="outline" className="h-9 w-9 bg-background/80 hover:bg-background" onClick={handleWishlistClick}>
+          <Heart className={cn("h-4 w-4", user && isInWishlist(product.id) && "fill-destructive text-destructive")} />
         </Button>
-        <Button size="icon" variant="outline" className="h-9 w-9 bg-background/80 hover:bg-background" onClick={() => addToCart(product, 1)}>
+        <Button size="icon" variant="outline" className="h-9 w-9 bg-background/80 hover:bg-background" onClick={handleAddToCartClick}>
           <ShoppingBag className="h-4 w-4" />
         </Button>
       </div>
@@ -177,6 +195,10 @@ export default function ProductDetailPage() {
   const availableSizes = (product?.textSizes?.split(',') || []).map(s => s.trim()).filter(Boolean);
 
   const handleAddToCart = () => {
+    if (!user) {
+        router.push('/login');
+        return;
+    }
     if (availableSizes.length > 0 && !selectedSize) {
       toast({
         title: 'Please select a size',
@@ -206,6 +228,16 @@ export default function ProductDetailPage() {
       setIsConfirming(true);
     }
   }
+
+  const handleWishlistClick = () => {
+      if (!user) {
+          router.push('/login');
+          return;
+      }
+      if (product) {
+          toggleWishlist(product);
+      }
+  };
 
   if (loading) {
     return (
@@ -338,8 +370,8 @@ export default function ProductDetailPage() {
                   <Button size="lg" className="flex-1" onClick={handleBuyNow}>
                       Buy Now
                   </Button>
-                  <Button variant="outline" size="icon" className="h-12 w-12" onClick={() => toggleWishlist(product)}>
-                      <Heart className={cn("h-5 w-5", isInWishlist(product.id) && "fill-destructive text-destructive")} />
+                  <Button variant="outline" size="icon" className="h-12 w-12" onClick={handleWishlistClick}>
+                      <Heart className={cn("h-5 w-5", user && isInWishlist(product.id) && "fill-destructive text-destructive")} />
                   </Button>
               </div>
               </div>
