@@ -3,6 +3,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface SizeGuideDialogProps {
     isOpen: boolean;
@@ -111,16 +112,18 @@ const FootwearGuide = () => (
 export default function SizeGuideDialog({ isOpen, onClose, category }: SizeGuideDialogProps) {
     const lowerCategory = category.toLowerCase();
     
-    let chartToDisplay = null;
+    let charts = [];
     
     if (lowerCategory.includes('t-shirt') || lowerCategory.includes('tee')) {
-        chartToDisplay = <TShirtGuide />;
+        charts.push(<TShirtGuide key="tshirt"/>);
     } else if (lowerCategory.includes('shirt')) {
-        chartToDisplay = <ShirtGuide />;
+        charts.push(<ShirtGuide key="shirt"/>);
     } else if (lowerCategory.includes('jeans') || lowerCategory.includes('trousers') || lowerCategory.includes('pants')) {
-        chartToDisplay = <JeansGuide />;
+        charts.push(<JeansGuide key="jeans"/>);
     } else if (lowerCategory.includes('shoes')) {
-        chartToDisplay = <FootwearGuide />;
+        charts.push(<FootwearGuide key="footwear"/>);
+    } else {
+        charts.push(<TShirtGuide key="tshirt"/>, <ShirtGuide key="shirt"/>, <JeansGuide key="jeans"/>, <FootwearGuide key="footwear"/>);
     }
 
     return (
@@ -132,16 +135,18 @@ export default function SizeGuideDialog({ isOpen, onClose, category }: SizeGuide
                         Find your perfect fit. Measurements are in inches unless specified.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="py-4">
-                    {chartToDisplay ? chartToDisplay : (
-                        <div className="space-y-6">
-                            <TShirtGuide/>
-                            <ShirtGuide/>
-                            <JeansGuide/>
-                            <FootwearGuide/>
-                        </div>
-                    )}
-                </div>
+                <ScrollArea className="h-96 w-full rounded-md border p-4">
+                     <div className="space-y-6">
+                        {charts.length > 0 ? charts.map((chart, index) => <div key={index}>{chart}</div>) : (
+                            <div className="space-y-6">
+                                <TShirtGuide/>
+                                <ShirtGuide/>
+                                <JeansGuide/>
+                                <FootwearGuide/>
+                            </div>
+                        )}
+                    </div>
+                </ScrollArea>
             </DialogContent>
         </Dialog>
     );
