@@ -101,7 +101,7 @@ export default function Header() {
                             <Link href="/admin/dashboard"><LayoutDashboard className="mr-2 h-4 w-4" />Dashboard</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                            <Link href="/admin/dashboard"><Shirt className="mr-2 h-4 w-4" />Products</Link>
+                            <Link href="/admin/products"><Shirt className="mr-2 h-4 w-4" />Products</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                             <Link href="/admin/orders"><Package className="mr-2 h-4 w-4" />Manage Orders</Link>
