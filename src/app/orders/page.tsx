@@ -151,7 +151,7 @@ export default function OrdersPage() {
                                  <Badge className={cn("text-sm", statusInfo.color, statusInfo.text)}>
                                     <statusInfo.icon className="mr-2 h-4 w-4" />
                                     {order.status}
-                                </Badge>
+                                 </Badge>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-4">
