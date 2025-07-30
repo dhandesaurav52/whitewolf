@@ -14,11 +14,17 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormField, FormItem, FormControl, FormMessage, FormLabel } from "@/components/ui/form";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff, CheckCircle, XCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
+
 
 const signupSchema = z.object({
   fullName: z.string().min(1, { message: "Full name is required." }),
-  email: z.string().email({ message: "Please enter a valid email address." }),
+  email: z.string().email({ message: "Please enter a valid email address." }).refine(
+    (email) => email.endsWith('@gmail.com'), {
+      message: "Only @gmail.com addresses are currently accepted."
+    }
+  ),
   mobileNumber: z.string().min(10, { message: "Please enter a valid mobile number." }),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
   confirmPassword: z.string().min(6, { message: "Password must be at least 6 characters." }),
@@ -35,10 +41,12 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [emailStatus, setEmailStatus] = useState<'valid' | 'invalid' | 'neutral'>('neutral');
 
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
+    mode: "onChange",
     defaultValues: {
       fullName: "",
       email: "",
@@ -47,6 +55,21 @@ export default function SignupPage() {
       confirmPassword: "",
     },
   });
+  
+  const emailValue = form.watch("email");
+  
+  useState(() => {
+    if (emailValue) {
+        if (emailValue.endsWith('@gmail.com') && !form.getFieldState('email').error) {
+            setEmailStatus('valid');
+        } else {
+             setEmailStatus('invalid');
+        }
+    } else {
+        setEmailStatus('neutral');
+    }
+  });
+
 
   const onSubmit = async (data: SignupFormValues) => {
     setIsLoading(true);
@@ -111,8 +134,20 @@ export default function SignupPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-accent">Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="m@example.com" {...field} />
+                     <FormControl>
+                       <div className="relative">
+                          <Input 
+                            placeholder="m@example.com" 
+                            {...field} 
+                            className={cn(
+                                "pr-10",
+                                emailStatus === 'valid' && "border-green-500",
+                                emailStatus === 'invalid' && emailValue && "border-red-500",
+                            )}
+                          />
+                          {emailStatus === 'valid' && <CheckCircle className="absolute inset-y-0 right-3 my-auto h-5 w-5 text-green-500" />}
+                          {emailStatus === 'invalid' && emailValue && <XCircle className="absolute inset-y-0 right-3 my-auto h-5 w-5 text-red-500" />}
+                       </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
