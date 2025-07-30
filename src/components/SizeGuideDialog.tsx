@@ -1,7 +1,9 @@
+
 "use client";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ScrollArea } from "./ui/scroll-area";
 
 interface SizeGuideDialogProps {
     isOpen: boolean;
@@ -133,7 +135,7 @@ export default function SizeGuideDialog({ isOpen, onClose, category }: SizeGuide
                         Find your perfect fit. Measurements are in inches unless specified.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="max-h-[60vh] overflow-y-auto pr-4">
+                <ScrollArea className="max-h-[60vh] pr-6">
                     <div className="space-y-6">
                         {charts.length > 0 ? charts.map((chart, index) => <div key={index}>{chart}</div>) : (
                             <div className="space-y-6">
@@ -144,7 +146,7 @@ export default function SizeGuideDialog({ isOpen, onClose, category }: SizeGuide
                             </div>
                         )}
                     </div>
-                </div>
+                </ScrollArea>
             </DialogContent>
         </Dialog>
     );
