@@ -1,7 +1,13 @@
 
+"use client";
+
 import Link from "next/link";
-import { Instagram } from "lucide-react";
+import { Instagram, Star } from "lucide-react";
 import Image from "next/image";
+import { useState, useEffect, useMemo } from "react";
+import { cn } from "@/lib/utils";
+
+const RATINGS_STORAGE_KEY = 'appRatings';
 
 const WhiteWolfLogo = () => (
     <div className="flex items-center">
@@ -15,6 +21,32 @@ const WhiteWolfLogo = () => (
 
 
 export default function Footer() {
+  const [ratings, setRatings] = useState<number[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    const handleStorageChange = () => {
+       try {
+            const storedRatings = localStorage.getItem(RATINGS_STORAGE_KEY);
+            if (storedRatings) {
+                setRatings(JSON.parse(storedRatings));
+            }
+        } catch (error) {
+            console.error("Error accessing localStorage", error);
+        }
+    }
+    handleStorageChange();
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  const averageRating = useMemo(() => {
+    if (ratings.length === 0) return 0;
+    const sum = ratings.reduce((acc, r) => acc + r, 0);
+    return (sum / ratings.length);
+  }, [ratings]);
+
   const shopLinks = [
     { href: "/shop", label: "All Products" },
     { href: "/shop?sort=latest", label: "New Arrivals" },
@@ -79,6 +111,11 @@ export default function Footer() {
               <li>
                 <Link href="/faqs" className="text-sm text-muted-foreground hover:text-accent-foreground transition-colors flex items-center">
                   FAQs
+                   {isMounted && averageRating > 0 && (
+                      <span className="ml-2 flex items-center gap-1 text-yellow-400">
+                        {averageRating.toFixed(1)} <Star className="w-4 h-4 fill-current" />
+                      </span>
+                  )}
                 </Link>
               </li>
             </ul>
