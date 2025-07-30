@@ -72,9 +72,10 @@ export default function AdminDashboardPage() {
     const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
     const [newVideoFile, setNewVideoFile] = useState<File | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [isDataLoading, setIsDataLoading] = useState(true);
 
     const loadData = useCallback(async () => {
-        setIsLoading(true);
+        setIsDataLoading(true);
         try {
             const [productsData, ordersData] = await Promise.all([
                 db.products.getAll(),
@@ -90,7 +91,7 @@ export default function AdminDashboardPage() {
                 variant: "destructive"
             });
         }
-        setIsLoading(false);
+        setIsDataLoading(false);
     }, [toast]);
 
     useEffect(() => {
@@ -142,13 +143,15 @@ export default function AdminDashboardPage() {
         .reduce((sum, order) => sum + order.total, 0);
 
     const newOrdersCount = orders.filter(order => order.status === 'Pending').length;
+    
+    const productsInStock = products.reduce((sum, product) => sum + (product.stock || 0), 0);
 
     const totalUsers = new Set(orders.map(order => order.customer.email)).size;
 
     const stats = [
         { title: "Total Revenue", value: `${totalRevenue.toFixed(2)}`, description: "Based on delivered orders", icon: BarChart },
         { title: "New Orders", value: newOrdersCount.toString(), description: "Orders pending fulfillment", icon: ShoppingCart },
-        { title: "Products in Stock", value: products.length.toString(), description: "Total active products", icon: Package },
+        { title: "Products in Stock", value: productsInStock.toString(), description: "Total items in stock", icon: Package },
         { title: "Total Users", value: totalUsers.toString(), description: "Unique customers with orders", icon: Users },
     ];
 
@@ -281,7 +284,11 @@ export default function AdminDashboardPage() {
                             <stat.icon className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{stat.value}</div>
+                             {isDataLoading ? (
+                                <Skeleton className="h-8 w-1/2" />
+                            ) : (
+                                <div className="text-2xl font-bold">{stat.value}</div>
+                            )}
                             <p className="text-xs text-muted-foreground">{stat.description}</p>
                         </CardContent>
                     </Card>
@@ -480,7 +487,18 @@ export default function AdminDashboardPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {products.map((product, index) => (
+                                {isDataLoading ? (
+                                    [...Array(5)].map((_, i) => (
+                                        <TableRow key={i}>
+                                            <TableCell><Skeleton className="h-12 w-12 rounded-md"/></TableCell>
+                                            <TableCell><Skeleton className="h-4 w-32"/></TableCell>
+                                            <TableCell><Skeleton className="h-6 w-20 rounded-full"/></TableCell>
+                                            <TableCell><Skeleton className="h-4 w-12"/></TableCell>
+                                            <TableCell><Skeleton className="h-4 w-8"/></TableCell>
+                                            <TableCell><Skeleton className="h-8 w-20"/></TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : products.map((product, index) => (
                                     <TableRow key={product.id || index}>
                                         <TableCell>
                                             <div className="relative h-12 w-12 rounded-md overflow-hidden">
@@ -525,3 +543,4 @@ export default function AdminDashboardPage() {
         </div>
     );
 }
+    
