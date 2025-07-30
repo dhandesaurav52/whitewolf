@@ -17,9 +17,9 @@ const TShirtGuide = () => (
             <TableHeader>
                 <TableRow>
                     <TableHead>Size</TableHead>
-                    <TableHead>Chest (in)</TableHead>
-                    <TableHead>Length (in)</TableHead>
-                    <TableHead>Shoulder (in)</TableHead>
+                    <TableHead>Chest (inches)</TableHead>
+                    <TableHead>Length (inches)</TableHead>
+                    <TableHead>Shoulder (inches)</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -47,10 +47,10 @@ const ShirtGuide = () => (
             <TableHeader>
                 <TableRow>
                     <TableHead>Size</TableHead>
-                    <TableHead>Collar (in)</TableHead>
-                    <TableHead>Chest (in)</TableHead>
-                    <TableHead>Waist (in)</TableHead>
-                    <TableHead>Sleeve (in)</TableHead>
+                    <TableHead>Collar (inches)</TableHead>
+                    <TableHead>Chest (inches)</TableHead>
+                    <TableHead>Waist (inches)</TableHead>
+                    <TableHead>Sleeve Length (inches)</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -77,10 +77,10 @@ const JeansGuide = () => (
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead>Waist (in)</TableHead>
+                    <TableHead>Waist Size (inches)</TableHead>
                     <TableHead>Waist (cm)</TableHead>
-                    <TableHead>Hips (in)</TableHead>
-                    <TableHead>Inseam (in)</TableHead>
+                    <TableHead>Hips (inches)</TableHead>
+                    <TableHead>Length (inseam)</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -106,14 +106,14 @@ const JeansGuide = () => (
 
 const FootwearGuide = () => (
     <div>
-        <h3 className="text-lg font-bold font-headline text-accent mb-2">👟 Men's Footwear Size Guide</h3>
+        <h3 className="text-lg font-bold font-headline text-accent mb-2">👟 Men's Footwear Size Guide (Shoes & Slippers – India to UK/US)</h3>
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead>India</TableHead>
-                    <TableHead>UK</TableHead>
-                    <TableHead>US</TableHead>
-                    <TableHead>Length (cm)</TableHead>
+                    <TableHead>India Size</TableHead>
+                    <TableHead>UK Size</TableHead>
+                    <TableHead>US Size</TableHead>
+                    <TableHead>Foot Length (cm)</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -148,8 +148,8 @@ export default function SizeGuidePage() {
                         Find your perfect fit. Measurements are in inches unless specified.
                     </CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <ScrollArea className="h-[60vh] w-full rounded-md border p-4">
+                <CardContent className="p-0">
+                    <ScrollArea className="h-[60vh] w-full p-6">
                         <div className="space-y-8">
                             <TShirtGuide/>
                             <ShirtGuide/>

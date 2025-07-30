@@ -18,9 +18,9 @@ const TShirtGuide = () => (
             <TableHeader>
                 <TableRow>
                     <TableHead>Size</TableHead>
-                    <TableHead>Chest (in)</TableHead>
-                    <TableHead>Length (in)</TableHead>
-                    <TableHead>Shoulder (in)</TableHead>
+                    <TableHead>Chest (inches)</TableHead>
+                    <TableHead>Length (inches)</TableHead>
+                    <TableHead>Shoulder (inches)</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -31,6 +31,13 @@ const TShirtGuide = () => (
                 <TableRow><TableCell>XXL</TableCell><TableCell>44–46</TableCell><TableCell>30–31</TableCell><TableCell>20–21</TableCell></TableRow>
             </TableBody>
         </Table>
+         <div className="text-sm text-muted-foreground mt-2">
+            <p className="font-semibold text-primary">✅ Tips:</p>
+            <ul className="list-disc pl-5">
+                <li>Slim fit may run tighter on the chest.</li>
+                <li>Suggest customers measure their favorite T-shirt for a perfect comparison.</li>
+            </ul>
+        </div>
     </div>
 );
 
@@ -41,10 +48,10 @@ const ShirtGuide = () => (
             <TableHeader>
                 <TableRow>
                     <TableHead>Size</TableHead>
-                    <TableHead>Collar (in)</TableHead>
-                    <TableHead>Chest (in)</TableHead>
-                    <TableHead>Waist (in)</TableHead>
-                    <TableHead>Sleeve (in)</TableHead>
+                    <TableHead>Collar (inches)</TableHead>
+                    <TableHead>Chest (inches)</TableHead>
+                    <TableHead>Waist (inches)</TableHead>
+                    <TableHead>Sleeve Length (inches)</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -55,6 +62,13 @@ const ShirtGuide = () => (
                 <TableRow><TableCell>44 (XXL)</TableCell><TableCell>17</TableCell><TableCell>46</TableCell><TableCell>42</TableCell><TableCell>26.5</TableCell></TableRow>
             </TableBody>
         </Table>
+        <div className="text-sm text-muted-foreground mt-2">
+             <p className="font-semibold text-primary">✅ Tips:</p>
+            <ul className="list-disc pl-5">
+                <li>Indian shirt sizes often go by collar size in centimeters too (38, 39, etc.).</li>
+                <li>Allow for 1–2 inches of room for movement in formal shirts.</li>
+            </ul>
+        </div>
     </div>
 );
 
@@ -64,10 +78,10 @@ const JeansGuide = () => (
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead>Waist (in)</TableHead>
+                    <TableHead>Waist Size (inches)</TableHead>
                     <TableHead>Waist (cm)</TableHead>
-                    <TableHead>Hips (in)</TableHead>
-                    <TableHead>Inseam (in)</TableHead>
+                    <TableHead>Hips (inches)</TableHead>
+                    <TableHead>Length (inseam)</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -80,19 +94,27 @@ const JeansGuide = () => (
                 <TableRow><TableCell>40</TableCell><TableCell>101</TableCell><TableCell>46–47</TableCell><TableCell>32–35</TableCell></TableRow>
             </TableBody>
         </Table>
+         <div className="text-sm text-muted-foreground mt-2">
+            <p className="font-semibold text-primary">✅ Fit Types:</p>
+            <ul className="list-disc pl-5">
+               <li>Slim Fit: Snug from waist to ankle</li>
+               <li>Regular Fit: Straight cut</li>
+               <li>Relaxed Fit: More room in thigh/hip</li>
+            </ul>
+        </div>
     </div>
 );
 
 const FootwearGuide = () => (
     <div>
-        <h3 className="text-lg font-bold font-headline text-accent mb-2">👟 Men's Footwear Size Guide</h3>
+        <h3 className="text-lg font-bold font-headline text-accent mb-2">👟 Men's Footwear Size Guide (Shoes & Slippers – India to UK/US)</h3>
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead>India</TableHead>
-                    <TableHead>UK</TableHead>
-                    <TableHead>US</TableHead>
-                    <TableHead>Length (cm)</TableHead>
+                    <TableHead>India Size</TableHead>
+                    <TableHead>UK Size</TableHead>
+                    <TableHead>US Size</TableHead>
+                    <TableHead>Foot Length (cm)</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -105,6 +127,13 @@ const FootwearGuide = () => (
                 <TableRow><TableCell>12</TableCell><TableCell>12</TableCell><TableCell>13</TableCell><TableCell>29.6</TableCell></TableRow>
             </TableBody>
         </Table>
+        <div className="text-sm text-muted-foreground mt-2">
+            <p className="font-semibold text-primary">✅ How to Measure:</p>
+            <ul className="list-disc pl-5">
+                <li>Place foot on paper, draw outline, measure heel to toe.</li>
+                <li>Always round up if in between sizes.</li>
+            </ul>
+        </div>
     </div>
 );
 
@@ -128,15 +157,15 @@ export default function SizeGuideDialog({ isOpen, onClose, category }: SizeGuide
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-xl">
-                <DialogHeader>
+            <DialogContent className="sm:max-w-xl p-0">
+                <DialogHeader className="p-6 pb-4 border-b">
                     <DialogTitle>Size Guide</DialogTitle>
                     <DialogDescription>
                         Find your perfect fit. Measurements are in inches unless specified.
                     </DialogDescription>
                 </DialogHeader>
-                <ScrollArea className="max-h-[60vh] pr-6">
-                    <div className="space-y-6">
+                <ScrollArea className="max-h-[60vh]">
+                    <div className="space-y-6 p-6">
                         {charts.length > 0 ? charts.map((chart, index) => <div key={index}>{chart}</div>) : (
                             <div className="space-y-6">
                                 <TShirtGuide/>
