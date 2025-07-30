@@ -19,6 +19,8 @@ import {
 import {
   Sheet,
   SheetContent,
+  SheetHeader,
+  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -176,6 +178,9 @@ export default function Header() {
                         </Button>
                     </SheetTrigger>
                     <SheetContent side="left">
+                        <SheetHeader>
+                            <SheetTitle className="sr-only">Menu</SheetTitle>
+                        </SheetHeader>
                         <nav className="grid gap-6 text-lg font-medium pt-8">
                             {navLinks.map((link) => (
                                 <Link
