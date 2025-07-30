@@ -21,6 +21,7 @@ import { useAuth } from '@/hooks/useAuth';
 import * as db from '@/lib/firestore';
 import SizeGuideDialog from '@/components/SizeGuideDialog';
 import { useToast } from '@/hooks/use-toast';
+import { Timestamp } from 'firebase/firestore';
 
 const ProductCard = ({ product }: { product: ProductType }) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
@@ -89,7 +90,7 @@ const ProductCarousel = ({ title, products }: { title: string, products: Product
         <Carousel
             opts={{
             align: "start",
-            loop: products.length > 4,
+            loop: products.length > 2,
             }}
             className="w-full"
         >
@@ -148,7 +149,7 @@ export default function ProductDetailPage() {
                 let finalProduct = {...foundProduct, originalPrice: foundProduct.originalPrice || foundProduct.price};
 
                 if (applicableAd) {
-                    const originalProductPrice = parseFloat(finalProduct.originalPrice);
+                    const originalProductPrice = parseFloat(finalProduct.originalPrice!);
                     let productPrice = originalProductPrice;
                     let appliedDiscount = finalProduct.discount;
 
@@ -174,6 +175,16 @@ export default function ProductDetailPage() {
                         discount: null,
                      }
                 }
+
+                // Check for new arrival status
+                if (foundProduct.createdAt && foundProduct.createdAt instanceof Timestamp) {
+                    const productDate = foundProduct.createdAt.toDate();
+                    const sevenDaysAgo = new Date();
+                    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                    finalProduct.new = productDate > sevenDaysAgo;
+                }
+
+
                 setProduct(finalProduct);
             
                 const similar = allProducts.filter(p => p.category === foundProduct.category && p.id !== foundProduct.id);
@@ -364,15 +375,15 @@ export default function ProductDetailPage() {
               <Separator />
               
               <div className="grid grid-cols-2 gap-3">
-                  <Button variant="outline" size="lg" className="col-span-1" onClick={handleAddToCart}>
+                  <Button variant="outline" size="lg" className="flex-1" onClick={handleAddToCart}>
                       <ShoppingBag className="mr-2 h-5 w-5" /> Add to Cart
                   </Button>
-                  <Button variant="outline" size="lg" className="col-span-1 flex items-center gap-2" onClick={handleWishlistClick}>
+                  <Button size="lg" className="flex-1" onClick={handleBuyNow}>
+                      Buy Now
+                  </Button>
+                  <Button variant="outline" size="lg" className="col-span-2 flex items-center gap-2" onClick={handleWishlistClick}>
                       <Heart className={cn("h-5 w-5", user && isInWishlist(product.id) && "fill-destructive text-destructive")} />
                       Add to Wishlist
-                  </Button>
-                  <Button size="lg" className="col-span-2" onClick={handleBuyNow}>
-                      Buy Now
                   </Button>
               </div>
               </div>

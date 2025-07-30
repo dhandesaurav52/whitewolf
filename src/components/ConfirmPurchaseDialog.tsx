@@ -94,10 +94,12 @@ export default function ConfirmPurchaseDialog({
                 form.setValue('pincode', profileData.address?.pincode || '');
             } else {
                  setDefaultAddress(null);
+                 setAddressOption('new');
             }
         } catch (e) {
             console.error("Failed to load profile data", e);
             setDefaultAddress(null);
+            setAddressOption('new');
         }
     }
   }, [user, form, isOpen]);
@@ -215,18 +217,13 @@ export default function ConfirmPurchaseDialog({
   };
   
   const handlePayment = (method: "online" | "cod") => {
-    setPaymentMethod(method);
-    if (addressOption === 'new') {
-        form.handleSubmit(onFormSubmit)();
-    } else {
-        const defaultAddressData = form.getValues();
-        if(!defaultAddress?.address?.street || !defaultAddress?.mobile) {
-            toast({ title: "Missing Address", description: "Please add a default address in your profile or ship to a new address.", variant: "destructive"});
-            setPaymentMethod(null);
-            return;
-        }
-        onFormSubmit(defaultAddressData);
+    const isFormValid = form.trigger();
+    if (!isFormValid) {
+        toast({ title: "Invalid Address", description: "Please fill in all the required address fields.", variant: "destructive"});
+        return;
     }
+    setPaymentMethod(method);
+    form.handleSubmit(onFormSubmit)();
   }
 
   const hasDefaultAddress = defaultAddress && defaultAddress.address && defaultAddress.address.street && defaultAddress.mobile;
@@ -271,7 +268,7 @@ export default function ConfirmPurchaseDialog({
                 <div className="rounded-md border p-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <RadioGroupItem value="default" id="default-address" />
+                            <RadioGroupItem value="default" id="default-address" disabled={!hasDefaultAddress} />
                             <Label htmlFor="default-address" className="font-semibold">Use Default Address</Label>
                         </div>
                          {hasDefaultAddress && <Button variant="ghost" size="sm" onClick={() => router.push('/profile')}><Pencil className="mr-2 h-3 w-3" />Change</Button>}
