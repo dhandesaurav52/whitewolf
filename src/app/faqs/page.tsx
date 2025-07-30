@@ -115,7 +115,20 @@ export default function FaqsPage() {
     }
 
     if (!isMounted) {
-        return <div>Loading...</div>; // Or a skeleton loader
+        return (
+          <div className="container mx-auto py-12">
+            <div className="text-center mb-10">
+                <h1 className="text-4xl font-bold font-headline">Frequently Asked Questions</h1>
+            </div>
+             <div className="grid lg:grid-cols-3 gap-8 items-start">
+                <div className="lg:col-span-1 space-y-8">
+                     <Card><CardHeader><CardTitle>Rate Our App</CardTitle></CardHeader></Card>
+                     <Card><CardHeader><CardTitle>Community Rating</CardTitle></CardHeader></Card>
+                </div>
+                 <div className="lg:col-span-2"><Card/></div>
+             </div>
+          </div>
+        );
     }
 
     return (
