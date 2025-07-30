@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Truck, Package, CheckCircle, Ban, RefreshCw, Undo2, Check, Star, Search } from "lucide-react";
+import { MoreHorizontal, Truck, Package, CheckCircle, Ban, RefreshCw, Undo2, Check, Star, Search, MapPin, Phone } from "lucide-react";
 import type { Order, OrderStatus, Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -199,24 +199,42 @@ export default function ManageOrdersPage() {
                                     <CollapsibleTableRow
                                       key={order.id}
                                       content={
-                                          <div className="p-4 bg-muted/50">
-                                              <h4 className="font-semibold mb-2">Order Items:</h4>
-                                              <div className="space-y-2">
-                                                  {order.items.map(item => {
-                                                      const imageUrls = item.product.images?.length > 0 ? item.product.images : ["https://placehold.co/100x100.png"];
-                                                      return (
-                                                        <div key={item.product.id} className="flex items-center gap-4">
-                                                            <button onClick={() => setImagesInView(imageUrls)} className="cursor-pointer">
-                                                              <Image src={imageUrls[0]} alt={item.product.name} width={48} height={48} className="rounded-md border" />
-                                                            </button>
-                                                            <div className="flex-grow">
-                                                                <p className="font-medium">{item.product.name}</p>
-                                                                <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
-                                                            </div>
-                                                            <p className="font-medium">{(parseFloat(item.product.price) * item.quantity).toFixed(2)}</p>
+                                          <div className="p-4 bg-muted/50 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                              <div>
+                                                <h4 className="font-semibold mb-2">Order Items:</h4>
+                                                <div className="space-y-2">
+                                                    {order.items.map(item => {
+                                                        const imageUrls = item.product.images?.length > 0 ? item.product.images : ["https://placehold.co/100x100.png"];
+                                                        return (
+                                                          <div key={item.product.id} className="flex items-center gap-4">
+                                                              <button onClick={() => setImagesInView(imageUrls)} className="cursor-pointer">
+                                                                <Image src={imageUrls[0]} alt={item.product.name} width={48} height={48} className="rounded-md border" />
+                                                              </button>
+                                                              <div className="flex-grow">
+                                                                  <p className="font-medium">{item.product.name}</p>
+                                                                  <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+                                                              </div>
+                                                              <p className="font-medium">{(parseFloat(item.product.price) * item.quantity).toFixed(2)}</p>
+                                                          </div>
+                                                        )
+                                                    })}
+                                                </div>
+                                              </div>
+                                              <div>
+                                                <h4 className="font-semibold mb-2">Shipping Details:</h4>
+                                                <div className="space-y-2 text-sm">
+                                                   <div className="flex items-start gap-2">
+                                                        <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                                                        <div>
+                                                            <p className="font-medium">{order.customer.name}</p>
+                                                            <p className="text-muted-foreground">{order.customer.address}, {order.customer.city}, {order.customer.state} - {order.customer.pincode}</p>
                                                         </div>
-                                                      )
-                                                  })}
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <Phone className="h-4 w-4 text-muted-foreground" />
+                                                        <p className="text-muted-foreground">{order.customer.phone}</p>
+                                                    </div>
+                                                </div>
                                               </div>
                                           </div>
                                       }
