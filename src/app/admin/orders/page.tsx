@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Truck, Package, CheckCircle, Ban, RefreshCw, Undo2, Check, Star } from "lucide-react";
+import { MoreHorizontal, Truck, Package, CheckCircle, Ban, RefreshCw, Undo2, Check, Star, Search } from "lucide-react";
 import type { Order, OrderStatus, Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,7 +21,8 @@ import CollapsibleTableRow from "@/components/CollapsibleTableRow";
 import Link from "next/link";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const ORDERS_STORAGE_KEY = 'orders';
 
@@ -53,6 +54,8 @@ export default function ManageOrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [isMounted, setIsMounted] = useState(false);
     const [imagesInView, setImagesInView] = useState<string[] | null>(null);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [statusFilter, setStatusFilter] = useState("all");
 
     const loadOrders = useCallback(() => {
         try {
@@ -101,6 +104,19 @@ export default function ManageOrdersPage() {
         return (Object.keys(statusStyles) as OrderStatus[]).filter(s => !s.startsWith('Return'));
     }
 
+    const filteredOrders = orders.filter(order => {
+        const searchTermLower = searchTerm.toLowerCase();
+        const statusMatches = statusFilter === 'all' || order.status.toLowerCase() === statusFilter;
+        
+        const searchMatches = searchTermLower === '' ||
+            order.id.split('_')[1].toLowerCase().includes(searchTermLower) ||
+            order.customer.name.toLowerCase().includes(searchTermLower) ||
+            order.customer.email.toLowerCase().includes(searchTermLower) ||
+            order.status.toLowerCase().includes(searchTermLower);
+
+        return statusMatches && searchMatches;
+    });
+
     if (!isMounted) {
       return (
         <div className="container mx-auto py-10 space-y-8">
@@ -131,14 +147,36 @@ export default function ManageOrdersPage() {
     return (
         <>
             <div className="container mx-auto py-10">
-                <div className="flex justify-between items-center mb-8">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                     <div>
                         <h1 className="text-4xl font-bold font-headline text-accent">Manage Orders</h1>
                         <p className="text-muted-foreground mt-1">View and process customer orders.</p>
                     </div>
-                    <Button variant="outline" size="icon" onClick={loadOrders}>
-                        <RefreshCw className="h-4 w-4" />
-                    </Button>
+                     <div className="flex items-center gap-2">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                                placeholder="Search..." 
+                                className="pl-9" 
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                         <Select onValueChange={setStatusFilter} defaultValue="all">
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Filter by status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Statuses</SelectItem>
+                                {Object.keys(statusStyles).map(status => (
+                                    <SelectItem key={status} value={status.toLowerCase()}>{status}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Button variant="outline" size="icon" onClick={loadOrders}>
+                            <RefreshCw className="h-4 w-4" />
+                        </Button>
+                    </div>
                 </div>
                 
                 <Card>
@@ -157,7 +195,7 @@ export default function ManageOrdersPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {orders.length > 0 ? orders.map((order) => (
+                                {filteredOrders.length > 0 ? filteredOrders.map((order) => (
                                     <CollapsibleTableRow
                                       key={order.id}
                                       content={
@@ -258,3 +296,5 @@ export default function ManageOrdersPage() {
         </>
     );
 }
+
+    
