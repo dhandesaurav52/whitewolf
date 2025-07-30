@@ -221,7 +221,7 @@ export default function ProductDetailPage() {
                   <div className="space-y-2">
                       <h1 className="text-3xl md:text-4xl font-bold font-headline text-primary">{product.name}</h1>
                       <div className="flex items-center gap-4">
-                          <p className="text-2xl font-semibold text-accent">{product.price}</p>
+                          <p className="text-2xl font-semibold text-accent">Amount: {product.price}</p>
                           {product.originalPrice && (
                               <>
                                   <p className="text-xl text-muted-foreground line-through">{product.originalPrice}</p>
