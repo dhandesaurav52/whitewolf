@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
-import type { CustomerDetails, CartItem, Order, ProfileAddress } from "@/lib/types";
+import type { CustomerDetails, CartItem, Order, ProfileAddress, Product } from "@/lib/types";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -119,12 +119,16 @@ export default function ConfirmPurchaseDialog({
         toast({ title: "Not Authenticated", description: "You must be logged in to place an order.", variant: "destructive" });
         return;
     }
+
     const newOrderData: Omit<Order, 'id'> = {
         customer: { ...shippingDetails, userId: user.uid },
-        items: itemsToPurchase.map(item => ({
-            ...item,
-            product: { ...item.product, createdAt: undefined } // Remove timestamp before saving
-        })),
+        items: itemsToPurchase.map(item => {
+            const { createdAt, ...productData } = item.product;
+            return {
+                ...item,
+                product: productData as Product, // Assure TypeScript that this is a valid Product
+            }
+        }),
         total: totalAmount,
         status: 'Pending',
         orderDate: serverTimestamp(),
