@@ -98,6 +98,7 @@ export type Order = {
     orderDate: any; // For Firestore timestamp
     deliveryDate?: any; // For Firestore timestamp
     paymentId?: string;
+    paymentMethod?: 'Online' | 'COD';
 };
 
 export type ProfileAddress = {

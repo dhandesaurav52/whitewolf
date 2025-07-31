@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Truck, Package, CheckCircle, Ban, RefreshCw, Undo2, Check, Star, Search, MapPin, Phone, Loader2, XCircle } from "lucide-react";
+import { MoreHorizontal, Truck, Package, CheckCircle, Ban, RefreshCw, Undo2, Check, Star, Search, MapPin, Phone, Loader2, XCircle, CreditCard, Wallet } from "lucide-react";
 import type { Order, OrderStatus, Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -234,8 +234,8 @@ export default function ManageOrdersPage() {
                                     <CollapsibleTableRow
                                       key={order.id}
                                       content={
-                                          <div className="p-4 bg-muted/50 grid grid-cols-1 md:grid-cols-2 gap-6">
-                                              <div>
+                                          <div className="p-4 bg-muted/50 grid grid-cols-1 md:grid-cols-3 gap-6">
+                                              <div className="md:col-span-1">
                                                 <h4 className="font-semibold mb-2">Order Items:</h4>
                                                 <div className="space-y-2">
                                                     {order.items.map(item => {
@@ -258,7 +258,7 @@ export default function ManageOrdersPage() {
                                                     })}
                                                 </div>
                                               </div>
-                                              <div>
+                                              <div className="md:col-span-1">
                                                 <h4 className="font-semibold mb-2">Shipping Details:</h4>
                                                 <div className="space-y-2 text-sm">
                                                    <div className="flex items-start gap-2">
@@ -272,6 +272,20 @@ export default function ManageOrdersPage() {
                                                         <Phone className="h-4 w-4 text-muted-foreground" />
                                                         <p className="text-muted-foreground">{order.customer.phone}</p>
                                                     </div>
+                                                </div>
+                                              </div>
+                                              <div className="md:col-span-1">
+                                                <h4 className="font-semibold mb-2">Payment Details:</h4>
+                                                <div className="space-y-2 text-sm">
+                                                    <div className="flex items-center gap-2">
+                                                        {order.paymentMethod === 'Online' ? <CreditCard className="h-4 w-4 text-muted-foreground" /> : <Wallet className="h-4 w-4 text-muted-foreground" />}
+                                                        <p className="font-medium">{order.paymentMethod || "Not specified"}</p>
+                                                    </div>
+                                                    {order.paymentMethod === 'Online' && order.paymentId && (
+                                                        <div className="flex items-center gap-2">
+                                                            <p className="text-muted-foreground truncate">ID: {order.paymentId}</p>
+                                                        </div>
+                                                    )}
                                                 </div>
                                               </div>
                                           </div>

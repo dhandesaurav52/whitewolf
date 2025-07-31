@@ -56,7 +56,7 @@ export default function ConfirmPurchaseDialog({
   clearCart,
   productToBuy
 }: ConfirmPurchaseDialogProps) {
-  const [paymentMethod, setPaymentMethod] = useState<"online" | "cod" | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"Online" | "COD" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [addressOption, setAddressOption] = useState("default");
   const [profileAddress, setProfileAddress] = useState<ProfileAddress | null>(null);
@@ -114,7 +114,7 @@ export default function ConfirmPurchaseDialog({
     }
   }, [user, isOpen, form]);
   
-  const placeOrder = async (shippingDetails: CustomerDetails, paymentId?: string) => {
+  const placeOrder = async (shippingDetails: CustomerDetails, paymentMethod: 'Online' | 'COD', paymentId?: string) => {
     if (!user) {
         toast({ title: "Not Authenticated", description: "You must be logged in to place an order.", variant: "destructive" });
         return;
@@ -132,6 +132,7 @@ export default function ConfirmPurchaseDialog({
         total: totalAmount,
         status: 'Pending',
         orderDate: serverTimestamp(),
+        paymentMethod: paymentMethod,
         ...(paymentId && { paymentId }),
     };
 
@@ -194,7 +195,7 @@ export default function ConfirmPurchaseDialog({
         name: "White Wolf",
         description: `Purchase of ${productNames}`,
         handler: function (response: any) {
-            placeOrder(shippingDetails, response.razorpay_payment_id);
+            placeOrder(shippingDetails, 'Online', response.razorpay_payment_id);
         },
         prefill: {
             name: shippingDetails.name,
@@ -246,21 +247,21 @@ export default function ConfirmPurchaseDialog({
   
   const handleCashOnDelivery = (shippingDetails: CustomerDetails) => {
     setIsLoading(true);
-    placeOrder(shippingDetails).finally(() => {
+    placeOrder(shippingDetails, 'COD').finally(() => {
         setIsLoading(false);
         setPaymentMethod(null);
     });
   };
 
   const onFormSubmit = (data: CheckoutFormValues) => {
-    if (paymentMethod === 'online') {
+    if (paymentMethod === 'Online') {
       handleRazorpayPayment(data);
-    } else if (paymentMethod === 'cod') {
+    } else if (paymentMethod === 'COD') {
       handleCashOnDelivery(data);
     }
   };
   
-  const handlePayment = async (method: "online" | "cod") => {
+  const handlePayment = async (method: "Online" | "COD") => {
     const isFormValid = await form.trigger();
     if (!isFormValid) {
         toast({ title: "Invalid Address", description: "Please fill in all the required address fields.", variant: "destructive"});
@@ -451,18 +452,18 @@ export default function ConfirmPurchaseDialog({
         <DialogFooter className="p-6 bg-muted/50 flex-col sm:flex-row gap-2">
             <Button
                 className="flex-1"
-                onClick={() => handlePayment('online')}
+                onClick={() => handlePayment('Online')}
                 disabled={isLoading}
             >
-                {isLoading && paymentMethod === 'online' ? <Loader2 className="animate-spin" /> : "Pay Online"}
+                {isLoading && paymentMethod === 'Online' ? <Loader2 className="animate-spin" /> : "Pay Online"}
             </Button>
             <Button
                 variant={'secondary'}
                 className="flex-1"
-                onClick={() => handlePayment('cod')}
+                onClick={() => handlePayment('COD')}
                 disabled={isLoading}
             >
-                {isLoading && paymentMethod === 'cod' ? <Loader2 className="animate-spin" /> : "Cash on Delivery"}
+                {isLoading && paymentMethod === 'COD' ? <Loader2 className="animate-spin" /> : "Cash on Delivery"}
             </Button>
         </DialogFooter>
       </DialogContent>
