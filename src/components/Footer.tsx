@@ -60,23 +60,7 @@ export default function Footer() {
 
   const aboutLinks = [
     { href: "/about", label: "Our Story" },
-    { id: "contact-us", label: "Contact Us" },
   ];
-
-  const supportLinks = [
-    { id: "shipping", label: "Shipping & Returns" },
-    { href: "/size-guide", label: "Size Guide" },
-    { href: "https://merchant.razorpay.com/policy/QoAs3QqvUvUpdi/privacy", label: "Privacy Policy", isExternal: true },
-    { href: "https://merchant.razorpay.com/policy/QoAs3QqvUvUpdi/terms", label: "Terms & Conditions", isExternal: true },
-  ];
-
-  const handleLinkClick = (id?: string) => {
-    if (id === 'contact-us') {
-      setIsContactUsOpen(true);
-    } else if (id === 'shipping') {
-      setIsPolicyDialogOpen(true);
-    }
-  }
 
   return (
     <>
@@ -114,16 +98,15 @@ export default function Footer() {
               <h3 className="font-bold text-sm text-accent-foreground tracking-wider uppercase mb-4">About</h3>
               <ul className="space-y-2">
                 {aboutLinks.map(link => (
-                  <li key={link.id || link.href}>
-                    {link.href ? (
-                        <Link href={link.href} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors">{link.label}</Link>
-                    ) : (
-                        <button onClick={() => handleLinkClick(link.id)} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer">
-                            {link.label}
-                        </button>
-                    )}
+                  <li key={link.href}>
+                    <Link href={link.href} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors">{link.label}</Link>
                   </li>
                 ))}
+                 <li>
+                    <button onClick={() => setIsContactUsOpen(true)} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer">
+                        Contact Us
+                    </button>
+                  </li>
                 <li>
                   <Link href="/faqs" className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors flex items-center">
                     FAQs
@@ -140,21 +123,24 @@ export default function Footer() {
             <div className="col-span-1">
               <h3 className="font-bold text-sm text-accent-foreground tracking-wider uppercase mb-4">Support</h3>
               <ul className="space-y-2">
-                 {supportLinks.map(link => (
-                  <li key={link.id || link.href}>
-                    {link.isExternal ? (
-                       <a href={link.href} target="_blank" rel="noopener noreferrer" className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors">
-                        {link.label}
-                       </a>
-                    ) : link.href ? (
-                        <Link href={link.href} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors">{link.label}</Link>
-                    ) : (
-                      <button onClick={() => handleLinkClick(link.id)} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer">
-                        {link.label}
-                      </button>
-                    )}
+                  <li>
+                    <button onClick={() => setIsPolicyDialogOpen(true)} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer">
+                        Shipping & Returns
+                    </button>
                   </li>
-                ))}
+                  <li>
+                    <Link href="/size-guide" className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors">Size Guide</Link>
+                  </li>
+                  <li>
+                    <a href="https://merchant.razorpay.com/policy/QoAs3QqvUvUpdi/privacy" target="_blank" rel="noopener noreferrer" className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors">
+                    Privacy Policy
+                    </a>
+                  </li>
+                  <li>
+                    <a href="https://merchant.razorpay.com/policy/QoAs3QqvUvUpdi/terms" target="_blank" rel="noopener noreferrer" className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors">
+                    Terms & Conditions
+                    </a>
+                  </li>
               </ul>
             </div>
           </div>
