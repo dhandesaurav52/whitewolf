@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -7,7 +6,7 @@ import { updateProfile } from "firebase/auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { User, Mail, Phone, MapPin, Pencil, Loader2 } from "lucide-react";
+import { User, Mail, Phone, MapPin, Pencil, Loader2, LocateFixed } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -124,6 +123,49 @@ export default function ProfilePage() {
       setIsSaving(false);
     }
   }
+  
+  const fetchAddressFromLocation = () => {
+    if (!navigator.geolocation) {
+      toast({ title: "Geolocation not supported", description: "Your browser does not support this feature.", variant: "destructive" });
+      return;
+    }
+
+    setIsSaving(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
+          if (!response.ok) throw new Error("Failed to fetch address.");
+          
+          const data = await response.json();
+          const { address: apiAddress } = data;
+          
+          const street = [apiAddress.house_number, apiAddress.road, apiAddress.neighbourhood, apiAddress.suburb].filter(Boolean).join(', ');
+          
+          setAddress({
+            street: street,
+            city: apiAddress.city || apiAddress.town || apiAddress.village || "",
+            state: apiAddress.state || "",
+            pincode: apiAddress.postcode || ""
+          });
+
+          toast({ title: "Address updated", description: "Your address has been filled based on your location." });
+        } catch (error) {
+          console.error("Error fetching address:", error);
+          toast({ title: "Error", description: "Could not fetch address from location.", variant: "destructive" });
+        } finally {
+          setIsSaving(false);
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        toast({ title: "Location Error", description: error.message, variant: "destructive" });
+        setIsSaving(false);
+      }
+    );
+  };
+
 
   return (
     <div className="container mx-auto py-10">
@@ -160,7 +202,12 @@ export default function ProfilePage() {
                             <Input id="mobile" placeholder="Enter your mobile number" value={mobile} onChange={e => setMobile(e.target.value)} disabled={isSaving} />
                         </div>
                         <div className="space-y-4">
-                            <Label className="text-accent">Address</Label>
+                             <div className="flex justify-between items-center">
+                                <Label className="text-accent">Address</Label>
+                                <Button type="button" variant="link" size="sm" onClick={fetchAddressFromLocation} disabled={isSaving}>
+                                    <LocateFixed className="mr-2 h-4 w-4" /> Use Current Location
+                                </Button>
+                            </div>
                             <div className="space-y-2">
                                 <Input placeholder="Street" value={address.street} onChange={e => setAddress({...address, street: e.target.value})} disabled={isSaving}/>
                             </div>

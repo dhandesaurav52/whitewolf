@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -14,7 +13,7 @@ import type { CustomerDetails, CartItem, Order, ProfileAddress } from "@/lib/typ
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { Loader2, Pencil } from "lucide-react";
+import { Loader2, Pencil, LocateFixed } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import * as db from '@/lib/firestore';
@@ -236,6 +235,46 @@ export default function ConfirmPurchaseDialog({
     onClose();
     router.push('/profile');
   };
+  
+  const fetchAddressFromLocation = () => {
+    if (!navigator.geolocation) {
+      toast({ title: "Geolocation not supported", description: "Your browser does not support this feature.", variant: "destructive" });
+      return;
+    }
+
+    setIsLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
+          if (!response.ok) throw new Error("Failed to fetch address.");
+          
+          const data = await response.json();
+          const { address } = data;
+          
+          const street = [address.house_number, address.road, address.neighbourhood, address.suburb].filter(Boolean).join(', ');
+          
+          form.setValue("address", street);
+          form.setValue("city", address.city || address.town || address.village || "");
+          form.setValue("state", address.state || "");
+          form.setValue("pincode", address.postcode || "");
+          toast({ title: "Address updated", description: "Your address has been filled based on your location." });
+        } catch (error) {
+          console.error("Error fetching address:", error);
+          toast({ title: "Error", description: "Could not fetch address from location.", variant: "destructive" });
+        } finally {
+          setIsLoading(false);
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        toast({ title: "Location Error", description: error.message, variant: "destructive" });
+        setIsLoading(false);
+      }
+    );
+  };
+
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
@@ -316,9 +355,24 @@ export default function ConfirmPurchaseDialog({
                         <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input {...field} placeholder="10-digit mobile number" /></FormControl><FormMessage /></FormItem>
                     )} />
                     </div>
-                    <FormField control={form.control} name="address" render={({ field }) => (
-                        <FormItem><FormLabel>Street Address</FormLabel><FormControl><Input {...field} placeholder="House No, Street Name" /></FormControl><FormMessage /></FormItem>
-                    )} />
+
+                    <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                            <FormLabel>Street Address</FormLabel>
+                            <Button type="button" variant="link" size="sm" onClick={fetchAddressFromLocation} disabled={isLoading}>
+                                <LocateFixed className="mr-2 h-4 w-4" /> Use Current Location
+                            </Button>
+                        </div>
+                        <FormField control={form.control} name="address" render={({ field }) => (
+                            <FormItem className="!space-y-0">
+                                <FormControl>
+                                    <Input {...field} placeholder="House No, Street Name" />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                    </div>
+
                     <div className="grid md:grid-cols-3 gap-4">
                     <FormField control={form.control} name="city" render={({ field }) => (
                         <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} placeholder="City" /></FormControl><FormMessage /></FormItem>
