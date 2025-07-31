@@ -48,18 +48,24 @@ export default function SettingsPage() {
     }
   }, [user]);
 
-  const handleSaveChanges = async () => {
+  const handleNotificationChange = async (enabled: boolean) => {
     if (!user) return;
+    
+    // Optimistically update UI
+    setEmailNotifications(enabled);
     setIsSaving(true);
+
     try {
-        const profileData: Partial<ProfileAddress> = { emailNotifications };
+        const profileData: Partial<ProfileAddress> = { emailNotifications: enabled };
         await db.profiles.set(user.uid, profileData);
         toast({
             title: "Settings Saved",
             description: "Your notification preferences have been updated.",
         });
     } catch (error) {
-         toast({
+        // Revert UI on error
+        setEmailNotifications(!enabled);
+        toast({
             title: "Error",
             description: "Could not save your settings.",
             variant: "destructive",
@@ -104,12 +110,15 @@ export default function SettingsPage() {
                         <Label htmlFor="email-notifications" className="font-medium text-base text-primary">Email Notifications</Label>
                         <p className="text-sm text-muted-foreground">Receive updates on new products and offers.</p>
                     </div>
-                    <Switch 
-                        id="email-notifications" 
-                        checked={emailNotifications}
-                        onCheckedChange={setEmailNotifications}
-                        disabled={!user}
-                    />
+                    <div className='flex items-center gap-2'>
+                        {isSaving && <Loader2 className="animate-spin h-4 w-4" />}
+                        <Switch 
+                            id="email-notifications" 
+                            checked={emailNotifications}
+                            onCheckedChange={handleNotificationChange}
+                            disabled={!user || isSaving}
+                        />
+                    </div>
                 </div>
              )}
           </CardContent>
@@ -218,12 +227,6 @@ export default function SettingsPage() {
                 </CardContent>
             </Card>
         )}
-      </div>
-
-      <div className="flex justify-end mt-8">
-        <Button onClick={handleSaveChanges} disabled={isSaving || loading}>
-          {isSaving ? <Loader2 className="animate-spin" /> : "Save Changes"}
-        </Button>
       </div>
     </div>
   );
