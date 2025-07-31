@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -18,6 +19,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import * as db from '@/lib/firestore';
 import { serverTimestamp } from "firebase/firestore";
+import { sendEmail } from "@/lib/email";
 
 const checkoutSchema = z.object({
     name: z.string().min(1, "Full name is required"),
@@ -112,7 +114,7 @@ export default function ConfirmPurchaseDialog({
         toast({ title: "Not Authenticated", description: "You must be logged in to place an order.", variant: "destructive" });
         return;
     }
-    const newOrder: Omit<Order, 'id'> = {
+    const newOrderData: Omit<Order, 'id'> = {
         customer: { ...shippingDetails, userId: user.uid },
         items: itemsToPurchase,
         total: totalAmount,
@@ -122,12 +124,36 @@ export default function ConfirmPurchaseDialog({
     };
 
     try {
-        await db.orders.add(newOrder);
+        const newOrder = await db.orders.add(newOrderData);
         toast({
             title: "Order Placed!",
             description: `Thank you for your purchase. Your order is being processed.`,
         });
         
+        // Send confirmation email
+        try {
+            await sendEmail({
+                to: shippingDetails.email,
+                from: 'thewhitewolf0501@gmail.com', // Use your verified SendGrid sender
+                subject: `Order Confirmation - #${newOrder.id.substring(0, 6)}`,
+                html: `<h1>Thank you for your order!</h1>
+                       <p>Hi ${shippingDetails.name},</p>
+                       <p>We've received your order and will process it shortly.</p>
+                       <h3>Order Summary:</h3>
+                       <ul>
+                         ${itemsToPurchase.map(item => `<li>${item.quantity}x ${item.product.name} - ${item.product.price}</li>`).join('')}
+                       </ul>
+                       <p><b>Total: ₹${totalAmount.toFixed(2)}</b></p>
+                       <p><b>Shipping Address:</b></p>
+                       <p>${shippingDetails.address}, ${shippingDetails.city}, ${shippingDetails.state} - ${shippingDetails.pincode}</p>
+                       <p>Thanks for shopping with White Wolf!</p>`,
+                text: `Thank you for your order! Hi ${shippingDetails.name}, we've received your order #${newOrder.id.substring(0, 6)} and will process it shortly. Total: ₹${totalAmount.toFixed(2)}.`,
+            });
+        } catch (emailError) {
+             console.error("Failed to send confirmation email:", emailError);
+             // Don't block the user flow if email fails, just log it.
+        }
+
         if (!productToBuy) {
             clearCart();
         }
