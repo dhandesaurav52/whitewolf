@@ -60,38 +60,22 @@ export default function Footer() {
 
   const aboutLinks = [
     { href: "/about", label: "Our Story" },
-    { id: "contact-us", label: "Contact Us", action: () => setIsContactUsOpen(true) },
+    { id: "contact-us", label: "Contact Us" },
   ];
 
   const supportLinks = [
-    { id: "shipping", label: "Shipping & Returns", action: () => setIsPolicyDialogOpen(true) },
+    { id: "shipping", label: "Shipping & Returns" },
     { href: "/size-guide", label: "Size Guide" },
     { href: "https://merchant.razorpay.com/policy/QoAs3QqvUvUpdi/privacy", label: "Privacy Policy", isExternal: true },
     { href: "https://merchant.razorpay.com/policy/QoAs3QqvUvUpdi/terms", label: "Terms & Conditions", isExternal: true },
   ];
 
-  const handleLinkClick = (link: { href?: string, action?: () => void }) => {
-    if (link.href) {
-      router.push(link.href);
-    } else if (link.action) {
-      link.action();
+  const handleLinkClick = (id?: string) => {
+    if (id === 'contact-us') {
+      setIsContactUsOpen(true);
+    } else if (id === 'shipping') {
+      setIsPolicyDialogOpen(true);
     }
-  };
-
-  const renderLinks = (links: Array<{href?: string, id?: string, label: string, action?: () => void, isExternal?: boolean}>) => {
-    return links.map(link => (
-      <li key={link.id || link.href}>
-        {link.isExternal ? (
-           <a href={link.href} target="_blank" rel="noopener noreferrer" className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors">
-            {link.label}
-           </a>
-        ) : (
-          <button onClick={() => handleLinkClick(link)} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer">
-            {link.label}
-          </button>
-        )}
-      </li>
-    ));
   }
 
   return (
@@ -116,23 +100,39 @@ export default function Footer() {
             <div className="col-span-1">
               <h3 className="font-bold text-sm text-accent-foreground tracking-wider uppercase mb-4">Shop</h3>
               <ul className="space-y-2">
-                {renderLinks(shopLinks)}
+                {shopLinks.map(link => (
+                    <li key={link.href}>
+                        <Link href={link.href} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors">
+                            {link.label}
+                        </Link>
+                    </li>
+                ))}
               </ul>
             </div>
             
             <div className="col-span-1">
               <h3 className="font-bold text-sm text-accent-foreground tracking-wider uppercase mb-4">About</h3>
               <ul className="space-y-2">
-                {renderLinks(aboutLinks)}
+                {aboutLinks.map(link => (
+                  <li key={link.id || link.href}>
+                    {link.href ? (
+                        <Link href={link.href} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors">{link.label}</Link>
+                    ) : (
+                        <button onClick={() => handleLinkClick(link.id)} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer">
+                            {link.label}
+                        </button>
+                    )}
+                  </li>
+                ))}
                 <li>
-                  <button onClick={() => router.push('/faqs')} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer flex items-center">
+                  <Link href="/faqs" className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors flex items-center">
                     FAQs
                     {isMounted && averageRating > 0 && (
                         <span className="ml-2 flex items-center gap-1 text-yellow-400">
                           {averageRating.toFixed(1)} <Star className="w-4 h-4 fill-current" />
                         </span>
                     )}
-                  </button>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -140,7 +140,21 @@ export default function Footer() {
             <div className="col-span-1">
               <h3 className="font-bold text-sm text-accent-foreground tracking-wider uppercase mb-4">Support</h3>
               <ul className="space-y-2">
-                {renderLinks(supportLinks)}
+                 {supportLinks.map(link => (
+                  <li key={link.id || link.href}>
+                    {link.isExternal ? (
+                       <a href={link.href} target="_blank" rel="noopener noreferrer" className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors">
+                        {link.label}
+                       </a>
+                    ) : link.href ? (
+                        <Link href={link.href} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors">{link.label}</Link>
+                    ) : (
+                      <button onClick={() => handleLinkClick(link.id)} className="text-sm text-left text-muted-foreground hover:text-accent-foreground transition-colors bg-transparent border-none p-0 cursor-pointer">
+                        {link.label}
+                      </button>
+                    )}
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
