@@ -2,6 +2,8 @@
 "use server";
 
 import sgMail from '@sendgrid/mail';
+import * as db from '@/lib/firestore';
+import { User } from '@/lib/types';
 
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -35,6 +37,19 @@ async function sendSgEmail(options: MailOptions) {
     console.error("Email service is not configured. Missing SendGrid API Key or From Email.");
     return { success: false, error: "Email service is not configured on the server." };
   }
+
+  // Check user's notification preference before sending
+  try {
+    const userProfile = await db.profiles.getByEmail(options.to);
+    if (userProfile && userProfile.emailNotifications === false) {
+      console.log(`Email to ${options.to} blocked due to user preference.`);
+      return { success: true, message: "Email not sent due to user preference." };
+    }
+  } catch (e) {
+      console.error("Could not check user email preferences, sending email by default.", e);
+  }
+
+
   try {
     await sgMail.send(options);
     console.log(`Email sent to ${options.to}`);

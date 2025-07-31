@@ -110,6 +110,7 @@ export type ProfileAddress = {
     pincode: string;
   },
   wishlist?: string[];
+  emailNotifications?: boolean;
 }
 
 export type User = {

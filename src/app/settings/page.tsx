@@ -19,21 +19,55 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Trash2 } from 'lucide-react';
+import { Trash2, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from 'next-themes';
 import { Skeleton } from '@/components/ui/skeleton';
+import * as db from '@/lib/firestore';
+import type { ProfileAddress } from '@/lib/types';
+
 
 export default function SettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const { theme, setTheme } = useTheme();
-  const { user, isAdmin, deleteAccount } = useAuth();
+  const { user, isAdmin, deleteAccount, loading } = useAuth();
   const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    if (user) {
+      db.profiles.get(user.uid).then(profile => {
+        if (profile && typeof profile.emailNotifications === 'boolean') {
+          setEmailNotifications(profile.emailNotifications);
+        } else {
+          setEmailNotifications(true); // Default to true if not set
+        }
+      });
+    }
+  }, [user]);
+
+  const handleSaveChanges = async () => {
+    if (!user) return;
+    setIsSaving(true);
+    try {
+        const profileData: Partial<ProfileAddress> = { emailNotifications };
+        await db.profiles.set(user.uid, profileData);
+        toast({
+            title: "Settings Saved",
+            description: "Your notification preferences have been updated.",
+        });
+    } catch (error) {
+         toast({
+            title: "Error",
+            description: "Could not save your settings.",
+            variant: "destructive",
+        });
+    } finally {
+        setIsSaving(false);
+    }
+  };
 
   const handleDelete = async () => {
     try {
@@ -64,17 +98,20 @@ export default function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="rounded-lg border p-4 flex justify-between items-center">
-                <div>
-                    <Label htmlFor="email-notifications" className="font-medium text-base text-primary">Email Notifications</Label>
-                    <p className="text-sm text-muted-foreground">Receive updates on new products and offers.</p>
+             {loading ? <Skeleton className="h-14 w-full" /> : (
+                <div className="rounded-lg border p-4 flex justify-between items-center">
+                    <div>
+                        <Label htmlFor="email-notifications" className="font-medium text-base text-primary">Email Notifications</Label>
+                        <p className="text-sm text-muted-foreground">Receive updates on new products and offers.</p>
+                    </div>
+                    <Switch 
+                        id="email-notifications" 
+                        checked={emailNotifications}
+                        onCheckedChange={setEmailNotifications}
+                        disabled={!user}
+                    />
                 </div>
-                <Switch 
-                    id="email-notifications" 
-                    checked={emailNotifications}
-                    onCheckedChange={setEmailNotifications}
-                />
-            </div>
+             )}
           </CardContent>
         </Card>
 
@@ -183,8 +220,10 @@ export default function SettingsPage() {
         )}
       </div>
 
-      <div className="flex justify-end">
-        <Button>Save Changes</Button>
+      <div className="flex justify-end mt-8">
+        <Button onClick={handleSaveChanges} disabled={isSaving || loading}>
+          {isSaving ? <Loader2 className="animate-spin" /> : "Save Changes"}
+        </Button>
       </div>
     </div>
   );

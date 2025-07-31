@@ -45,7 +45,7 @@ async function update<T>(collectionName: string, id: string, data: Partial<T>): 
     await updateDoc(docRef, data);
 }
 
-async function set<T>(collectionName: string, id: string, data: T): Promise<void> {
+async function set<T>(collectionName: string, id: string, data: Partial<T>): Promise<void> {
     const docRef = doc(db, collectionName, id);
     await setDoc(docRef, data, { merge: true });
 }
@@ -102,5 +102,24 @@ export const reels = {
 
 export const profiles = {
     get: (userId: string) => getById<ProfileAddress>('profiles', userId),
-    set: (userId: string, data: ProfileAddress) => set<ProfileAddress>('profiles', userId, data),
+    set: (userId: string, data: Partial<ProfileAddress>) => set<ProfileAddress>('profiles', userId, data),
+    getByEmail: async (email: string) => {
+        const q = query(collection(db, "users"), where("email", "==", email), limit(1));
+        const userQuerySnapshot = await getDocs(q);
+        if (userQuerySnapshot.empty) {
+            // Fallback or specific logic for orders where user might not be in a 'users' collection
+            // For now, we assume we need to check the profile attached to the user ID
+            const ordersQuery = query(collection(db, "orders"), where("customer.email", "==", email), limit(1));
+            const orderQuerySnapshot = await getDocs(ordersQuery);
+            if(!orderQuerySnapshot.empty){
+                const order = orderQuerySnapshot.docs[0].data() as Order;
+                if(order.customer.userId){
+                    return getById<ProfileAddress>('profiles', order.customer.userId);
+                }
+            }
+            return null;
+        }
+        const userDoc = userQuerySnapshot.docs[0];
+        return getById<ProfileAddress>('profiles', userDoc.id);
+    }
 }
