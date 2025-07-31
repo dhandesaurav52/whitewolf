@@ -121,7 +121,10 @@ export default function ConfirmPurchaseDialog({
     }
     const newOrderData: Omit<Order, 'id'> = {
         customer: { ...shippingDetails, userId: user.uid },
-        items: itemsToPurchase,
+        items: itemsToPurchase.map(item => ({
+            ...item,
+            product: { ...item.product, createdAt: undefined } // Remove timestamp before saving
+        })),
         total: totalAmount,
         status: 'Pending',
         orderDate: serverTimestamp(),
@@ -137,24 +140,29 @@ export default function ConfirmPurchaseDialog({
         
         // Send confirmation email via Server Action
         try {
-            // Create a plain object for the email items to avoid serialization issues
             const emailItems = itemsToPurchase.map(item => ({
               quantity: item.quantity,
-              product: {
-                name: item.product.name,
-                price: item.product.price
-              }
+              product: { name: item.product.name, price: item.product.price }
             }));
 
-            await sendOrderConfirmationEmail({
+            const emailResult = await sendOrderConfirmationEmail({
                 shippingDetails,
                 itemsToPurchase: emailItems,
                 totalAmount,
                 orderId: newOrder.id,
             });
+
+            if (!emailResult.success) {
+                console.error("Failed to send confirmation email:", emailResult.error);
+                // Optionally show a non-blocking toast to the user
+                 toast({
+                    title: "Email Notice",
+                    description: "Your order was placed, but we couldn't send a confirmation email right now.",
+                    variant: "default",
+                });
+            }
         } catch (emailError) {
-             console.error("Failed to send confirmation email:", emailError);
-             // Don't block the user flow if email fails, just log it.
+             console.error("Caught an error while sending confirmation email:", emailError);
         }
 
         if (!productToBuy) {

@@ -28,22 +28,21 @@ interface EmailCartItem {
 
 
 async function sendSgEmail(options: MailOptions) {
-   if (!process.env.SENDGRID_API_KEY) {
-    console.error("Attempted to send email without an API key.");
-    throw new Error("Email service is not configured.");
+   if (!process.env.SENDGRID_API_KEY || !process.env.SENDGRID_FROM_EMAIL) {
+    console.error("Email service is not configured. Missing SendGrid API Key or From Email.");
+    return { success: false, error: "Email service is not configured on the server." };
   }
   try {
     await sgMail.send(options);
     console.log(`Email sent to ${options.to}`);
     return { success: true };
-  } catch (error) {
-    console.error('Error sending email:', error);
-    if ((error as any).response) {
-      console.error((error as any).response.body)
+  } catch (error: any) {
+    console.error('Error sending email via SendGrid:', error);
+    if (error.response) {
+      console.error(error.response.body)
     }
-    // Don't rethrow the error to the client to avoid exposing sensitive details.
-    // Just log it on the server.
-    return { success: false, error: 'Failed to send email.' };
+    // Return a structured error to the caller
+    return { success: false, error: 'Failed to send email. ' + (error.response?.body?.errors[0]?.message || 'Please check server logs.') };
   }
 }
 
@@ -58,9 +57,14 @@ export async function sendOrderConfirmationEmail({
     totalAmount: number,
     orderId: string,
 }) {
+    if (!process.env.SENDGRID_FROM_EMAIL) {
+        console.error("SENDGRID_FROM_EMAIL is not set in environment variables.");
+        return { success: false, error: "Sender email is not configured." };
+    }
+    
     const emailOptions = {
         to: shippingDetails.email,
-        from: 'thewhitewolf0501@gmail.com', // Your verified SendGrid sender
+        from: process.env.SENDGRID_FROM_EMAIL,
         subject: `Order Confirmation - #${orderId.substring(0, 6)}`,
         html: `<h1>Thank you for your order!</h1>
                 <p>Hi ${shippingDetails.name},</p>
