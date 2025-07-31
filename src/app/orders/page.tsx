@@ -25,6 +25,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import * as db from "@/lib/firestore";
 import { Timestamp } from "firebase/firestore";
+import { sendOrderStatusUpdateEmail } from "@/app/actions";
 
 const statusStyles: { [key in Order['status']]: { icon: React.ElementType, color: string, text: string } } = {
   Pending: { icon: Package, color: "bg-yellow-500", text: "text-yellow-50" },
@@ -87,14 +88,25 @@ export default function OrdersPage() {
         }
     }, [authLoading, loadUserOrders]);
     
-    const handleOrderStatusUpdate = async (orderId: string, newStatus: OrderStatus) => {
+    const handleOrderStatusUpdate = async (order: Order, newStatus: OrderStatus) => {
         try {
-            await db.orders.update(orderId, { status: newStatus });
+            await db.orders.update(order.id, { status: newStatus });
             loadUserOrders(); // Reload orders to reflect the change
             toast({
                 title: `Order Updated`,
                 description: `Your order status is now "${newStatus}".`,
             });
+            // Send email notification for cancellation
+            if(newStatus === 'Cancelled') {
+                await sendOrderStatusUpdateEmail({ email: order.customer.email, name: order.customer.name, orderId: order.id, status: newStatus });
+            }
+             // Send email notification for return request
+            if(newStatus === 'Return Requested') {
+                toast({
+                    title: `Return Requested`,
+                    description: `Your request to return the order has been submitted.`,
+                });
+            }
         } catch (error) {
             console.error(`Failed to update order to ${newStatus}`, error);
              toast({
@@ -197,7 +209,7 @@ export default function OrdersPage() {
                                             </AlertDialogHeader>
                                             <AlertDialogFooter>
                                             <AlertDialogCancel>Go Back</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => handleOrderStatusUpdate(order.id, 'Cancelled')}>
+                                            <AlertDialogAction onClick={() => handleOrderStatusUpdate(order, 'Cancelled')}>
                                                 Yes, Cancel Order
                                             </AlertDialogAction>
                                             </AlertDialogFooter>
@@ -218,7 +230,7 @@ export default function OrdersPage() {
                                             </AlertDialogHeader>
                                             <AlertDialogFooter>
                                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => handleOrderStatusUpdate(order.id, 'Return Requested')}>
+                                            <AlertDialogAction onClick={() => handleOrderStatusUpdate(order, 'Return Requested')}>
                                                 Confirm Return Request
                                             </AlertDialogAction>
                                             </AlertDialogFooter>

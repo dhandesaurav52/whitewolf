@@ -5,6 +5,7 @@ import { useState, useEffect, useContext, createContext, ReactNode, useCallback 
 import { onAuthStateChanged, User, signOut as firebaseSignOut, deleteUser } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
+import { sendAccountDeletionEmail } from "@/app/actions";
 
 const ADMIN_EMAILS = ["dhandesaurav37@gmail.com"];
 
@@ -57,9 +58,18 @@ function AuthManager({ children }: { children: ReactNode }) {
     };
     
     const deleteAccount = async () => {
-        if (auth?.currentUser) {
-            await deleteUser(auth.currentUser);
-            router.push("/");
+        const currentUser = auth?.currentUser;
+        if (currentUser) {
+            try {
+                // Send email first
+                await sendAccountDeletionEmail({ email: currentUser.email!, name: currentUser.displayName! });
+                // Then delete user
+                await deleteUser(currentUser);
+                router.push("/");
+            } catch (error) {
+                console.error("Error during account deletion process:", error);
+                throw error; // Re-throw to be caught by the calling component
+            }
         } else {
             throw new Error("No user is currently signed in or Firebase Auth is not initialized.");
         }

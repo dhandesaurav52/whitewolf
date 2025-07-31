@@ -37,6 +37,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import * as db from '@/lib/firestore';
 import { useToast } from "@/hooks/use-toast";
 import { Timestamp } from "firebase/firestore";
+import { sendOrderStatusUpdateEmail, sendReturnStatusEmail } from "@/app/actions";
 
 const statusStyles: { [key in OrderStatus]: { color: string, text: string } } = {
   Pending: "bg-yellow-100 text-yellow-800 border-yellow-300",
@@ -106,15 +107,23 @@ export default function ManageOrdersPage() {
         loadOrders();
     }, [loadOrders]);
 
-    const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
+    const handleStatusChange = async (order: Order, newStatus: OrderStatus) => {
         try {
             let updateData: Partial<Order> = { status: newStatus };
             if (newStatus === 'Delivered') {
                 updateData.deliveryDate = new Date();
             }
-            await db.orders.update(orderId, updateData);
-            setOrders(orders.map(order => order.id === orderId ? { ...order, ...updateData } : order));
+            await db.orders.update(order.id, updateData);
+            setOrders(orders.map(o => o.id === order.id ? { ...o, ...updateData } : o));
             toast({ title: "Status Updated", description: `Order marked as ${newStatus}.` });
+
+            // Send notification emails
+            if (newStatus === 'Delivered') {
+                 await sendOrderStatusUpdateEmail({ email: order.customer.email, name: order.customer.name, orderId: order.id, status: newStatus });
+            } else if (newStatus === 'Return Accepted' || newStatus === 'Return Request Rejected' || newStatus === 'Return Successful') {
+                 await sendReturnStatusEmail({ email: order.customer.email, name: order.customer.name, orderId: order.id, status: newStatus });
+            }
+
         } catch (error) {
             console.error("Failed to update order status", error);
             toast({ title: "Error", description: "Failed to update status.", variant: "destructive" });
@@ -298,7 +307,7 @@ export default function ManageOrdersPage() {
                                                         ) : (
                                                             <DropdownMenuItem 
                                                                 key={status} 
-                                                                onClick={() => handleStatusChange(order.id, status as OrderStatus)}
+                                                                onClick={() => handleStatusChange(order, status as OrderStatus)}
                                                                 disabled={order.status === status}
                                                             >
                                                                 Mark as {status}
@@ -361,7 +370,7 @@ export default function ManageOrdersPage() {
                             <AlertDialogAction
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                 onClick={() => {
-                                    handleStatusChange(rejectionTarget.id, 'Return Request Rejected');
+                                    handleStatusChange(rejectionTarget, 'Return Request Rejected');
                                     setRejectionTarget(null);
                                 }}
                             >

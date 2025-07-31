@@ -65,7 +65,7 @@ export async function sendOrderConfirmationEmail({
     const emailOptions = {
         to: shippingDetails.email,
         from: process.env.SENDGRID_FROM_EMAIL,
-        subject: `Order Confirmation - #${orderId.substring(0, 6)}`,
+        subject: `White Wolf Order Confirmation - #${orderId.substring(0, 6)}`,
         html: `<h1>Thank you for your order!</h1>
                 <p>Hi ${shippingDetails.name},</p>
                 <p>We've received your order and will process it shortly.</p>
@@ -80,5 +80,64 @@ export async function sendOrderConfirmationEmail({
         text: `Thank you for your order! Hi ${shippingDetails.name}, we've received your order #${orderId.substring(0, 6)} and will process it shortly. Total: ₹${totalAmount.toFixed(2)}.`,
     };
 
+    return await sendSgEmail(emailOptions);
+}
+
+export async function sendWelcomeEmail({ email, name }: { email: string; name: string }) {
+    if (!process.env.SENDGRID_FROM_EMAIL) return { success: false, error: "Sender email is not configured." };
+    const emailOptions = {
+        to: email,
+        from: process.env.SENDGRID_FROM_EMAIL,
+        subject: "Welcome to The White Wolf Pack!",
+        html: `<h1>Welcome, ${name}!</h1><p>Thank you for joining The White Wolf. We're excited to have you in the pack. Explore our latest collections and find your style.</p>`,
+        text: `Welcome, ${name}! Thank you for joining The White Wolf.`
+    };
+    return await sendSgEmail(emailOptions);
+}
+
+export async function sendOrderStatusUpdateEmail({ email, name, orderId, status }: { email: string; name: string; orderId: string; status: string }) {
+    if (!process.env.SENDGRID_FROM_EMAIL) return { success: false, error: "Sender email is not configured." };
+    
+    let subject = `Your White Wolf Order #${orderId.substring(0,6)} has been ${status}`;
+    let html = `<p>Hi ${name},</p><p>We're updating you that your order #${orderId.substring(0,6)} has been marked as ${status}.</p>`;
+
+    if (status === 'Delivered') {
+        html += `<p>We hope you love your new items! Thank you for shopping with us.</p>`;
+    }
+     if (status === 'Cancelled') {
+        html += `<p>Your order has been successfully cancelled. If you have any questions, feel free to contact us.</p>`;
+    }
+    
+    const emailOptions = { to: email, from: process.env.SENDGRID_FROM_EMAIL, subject, html, text: `Your order #${orderId.substring(0,6)} has been ${status}.` };
+    return await sendSgEmail(emailOptions);
+}
+
+export async function sendReturnStatusEmail({ email, name, orderId, status }: { email: string; name: string; orderId: string; status: 'Return Accepted' | 'Return Request Rejected' | 'Return Successful' }) {
+    if (!process.env.SENDGRID_FROM_EMAIL) return { success: false, error: "Sender email is not configured." };
+
+    let subject = `Update on your return for order #${orderId.substring(0,6)}`;
+    let html = `<p>Hi ${name},</p>`;
+    
+    if (status === 'Return Accepted') {
+        html += `<p>Your return request for order #${orderId.substring(0,6)} has been accepted. We will arrange for pickup shortly.</p>`;
+    } else if (status === 'Return Request Rejected') {
+         html += `<p>We regret to inform you that your return request for order #${orderId.substring(0,6)} has been rejected. Please contact support for more details.</p>`;
+    } else { // Return Successful
+         html += `<p>Your return for order #${orderId.substring(0,6)} is complete and your refund has been processed. Thank you.</p>`;
+    }
+
+    const emailOptions = { to: email, from: process.env.SENDGRID_FROM_EMAIL, subject, html, text: `Update on your return for order #${orderId.substring(0,6)}.` };
+    return await sendSgEmail(emailOptions);
+}
+
+export async function sendAccountDeletionEmail({ email, name }: { email: string; name: string }) {
+     if (!process.env.SENDGRID_FROM_EMAIL) return { success: false, error: "Sender email is not configured." };
+    const emailOptions = {
+        to: email,
+        from: process.env.SENDGRID_FROM_EMAIL,
+        subject: "Your White Wolf Account Has Been Deleted",
+        html: `<h1>Goodbye, ${name}</h1><p>This is a confirmation that your account with White Wolf has been permanently deleted as you requested. We're sorry to see you go.</p>`,
+        text: `Goodbye, ${name}. Your White Wolf account has been deleted.`
+    };
     return await sendSgEmail(emailOptions);
 }

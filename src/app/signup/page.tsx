@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Form, FormField, FormItem, FormControl, FormMessage, FormLabel } from "@/components/ui/form";
 import { Loader2, Eye, EyeOff, CheckCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { sendWelcomeEmail } from "@/app/actions";
 
 
 const signupSchema = z.object({
@@ -88,6 +89,9 @@ export default function SignupPage() {
       await updateProfile(userCredential.user, {
         displayName: data.fullName,
       });
+
+      // Send welcome email
+      await sendWelcomeEmail({ email: data.email, name: data.fullName });
 
       toast({
         title: "Account Created!",
