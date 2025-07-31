@@ -114,7 +114,7 @@ export default function ConfirmPurchaseDialog({
     }
   }, [user, isOpen, form]);
   
-  const placeOrder = async (shippingDetails: CustomerDetails, paymentMethod: 'Online' | 'COD', paymentId?: string) => {
+  const placeOrder = async (shippingDetails: CustomerDetails, paymentMethodValue: 'Online' | 'COD', paymentId?: string) => {
     if (!user) {
         toast({ title: "Not Authenticated", description: "You must be logged in to place an order.", variant: "destructive" });
         return;
@@ -132,7 +132,7 @@ export default function ConfirmPurchaseDialog({
         total: totalAmount,
         status: 'Pending',
         orderDate: serverTimestamp(),
-        paymentMethod: paymentMethod,
+        paymentMethod: paymentMethodValue,
         ...(paymentId && { paymentId }),
     };
 
@@ -262,12 +262,13 @@ export default function ConfirmPurchaseDialog({
   };
   
   const handlePayment = async (method: "Online" | "COD") => {
+    setPaymentMethod(method);
     const isFormValid = await form.trigger();
     if (!isFormValid) {
         toast({ title: "Invalid Address", description: "Please fill in all the required address fields.", variant: "destructive"});
+        setPaymentMethod(null);
         return;
     }
-    setPaymentMethod(method);
     form.handleSubmit(onFormSubmit)();
   }
 
