@@ -19,7 +19,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import * as db from '@/lib/firestore';
 import { serverTimestamp } from "firebase/firestore";
-import { sendEmail } from "@/lib/email";
+import { sendOrderConfirmationEmail } from "@/app/actions";
 
 const checkoutSchema = z.object({
     name: z.string().min(1, "Full name is required"),
@@ -130,24 +130,13 @@ export default function ConfirmPurchaseDialog({
             description: `Thank you for your purchase. Your order is being processed.`,
         });
         
-        // Send confirmation email
+        // Send confirmation email via Server Action
         try {
-            await sendEmail({
-                to: shippingDetails.email,
-                from: 'thewhitewolf0501@gmail.com', // Use your verified SendGrid sender
-                subject: `Order Confirmation - #${newOrder.id.substring(0, 6)}`,
-                html: `<h1>Thank you for your order!</h1>
-                       <p>Hi ${shippingDetails.name},</p>
-                       <p>We've received your order and will process it shortly.</p>
-                       <h3>Order Summary:</h3>
-                       <ul>
-                         ${itemsToPurchase.map(item => `<li>${item.quantity}x ${item.product.name} - ${item.product.price}</li>`).join('')}
-                       </ul>
-                       <p><b>Total: ₹${totalAmount.toFixed(2)}</b></p>
-                       <p><b>Shipping Address:</b></p>
-                       <p>${shippingDetails.address}, ${shippingDetails.city}, ${shippingDetails.state} - ${shippingDetails.pincode}</p>
-                       <p>Thanks for shopping with White Wolf!</p>`,
-                text: `Thank you for your order! Hi ${shippingDetails.name}, we've received your order #${newOrder.id.substring(0, 6)} and will process it shortly. Total: ₹${totalAmount.toFixed(2)}.`,
+            await sendOrderConfirmationEmail({
+                shippingDetails,
+                itemsToPurchase,
+                totalAmount,
+                orderId: newOrder.id,
             });
         } catch (emailError) {
              console.error("Failed to send confirmation email:", emailError);
