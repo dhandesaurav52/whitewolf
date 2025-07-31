@@ -98,6 +98,11 @@ export default function ConfirmPurchaseDialog({
             } else {
                  setProfileAddress(null);
                  setAddressOption('new');
+                 form.reset({
+                    name: user.displayName || '',
+                    email: user.email || '',
+                    phone: '', address: '', city: '', state: '', pincode: ''
+                 });
             }
         }).catch(e => {
             console.error("Failed to load profile data", e);
@@ -132,9 +137,18 @@ export default function ConfirmPurchaseDialog({
         
         // Send confirmation email via Server Action
         try {
+            // Create a plain object for the email items to avoid serialization issues
+            const emailItems = itemsToPurchase.map(item => ({
+              quantity: item.quantity,
+              product: {
+                name: item.product.name,
+                price: item.product.price
+              }
+            }));
+
             await sendOrderConfirmationEmail({
                 shippingDetails,
-                itemsToPurchase,
+                itemsToPurchase: emailItems,
                 totalAmount,
                 orderId: newOrder.id,
             });

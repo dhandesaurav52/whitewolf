@@ -1,7 +1,7 @@
+
 "use server";
 
 import sgMail from '@sendgrid/mail';
-import { CustomerDetails, CartItem } from '@/lib/types';
 
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -16,6 +16,16 @@ interface MailOptions {
   text: string;
   html: string;
 }
+
+// Simplified item type for the email action
+interface EmailCartItem {
+    quantity: number;
+    product: {
+        name: string;
+        price: string;
+    };
+}
+
 
 async function sendSgEmail(options: MailOptions) {
    if (!process.env.SENDGRID_API_KEY) {
@@ -43,8 +53,8 @@ export async function sendOrderConfirmationEmail({
     totalAmount,
     orderId,
 }: {
-    shippingDetails: CustomerDetails,
-    itemsToPurchase: CartItem[],
+    shippingDetails: { name: string; email: string; address: string; city: string; state: string; pincode: string },
+    itemsToPurchase: EmailCartItem[],
     totalAmount: number,
     orderId: string,
 }) {
@@ -57,7 +67,7 @@ export async function sendOrderConfirmationEmail({
                 <p>We've received your order and will process it shortly.</p>
                 <h3>Order Summary:</h3>
                 <ul>
-                    ${itemsToPurchase.map(item => `<li>${item.quantity}x ${item.product.name} - ${item.product.price}</li>`).join('')}
+                    ${itemsToPurchase.map(item => `<li>${item.quantity}x ${item.product.name} - ₹${item.product.price}</li>`).join('')}
                 </ul>
                 <p><b>Total: ₹${totalAmount.toFixed(2)}</b></p>
                 <p><b>Shipping Address:</b></p>
