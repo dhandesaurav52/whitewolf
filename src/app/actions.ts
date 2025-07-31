@@ -185,17 +185,18 @@ export async function sendReturnStatusEmail({ email, name, orderId, status }: { 
     if (!process.env.SENDGRID_FROM_EMAIL) return { success: false, error: "Sender email is not configured." };
 
     let subject = `Update on your return for order #${orderId.substring(0,6)}`;
-    let emailContent = `<h2 style="color: #111827;">Return Status Update</h2><p>Hi ${name},</p>`;
+    let bodyContent = `<h2 style="color: #111827;">Return Status Update</h2><p>Hi ${name},</p>`;
     
     if (status === 'Return Accepted') {
-        emailContent += `<p>Your return request for order #${orderId.substring(0,6)} has been <strong>accepted</strong>. We will arrange for pickup shortly and keep you updated.</p>`;
+        bodyContent += `<p>Your return request for order #${orderId.substring(0,6)} has been <strong>accepted</strong>. We will arrange for pickup shortly and keep you updated.</p>`;
     } else if (status === 'Return Request Rejected') {
-         emailContent += `<p>We regret to inform you that your return request for order #${orderId.substring(0,6)} has been <strong>rejected</strong>. Please refer to our return policy or contact support for more details.</p>`;
+         bodyContent += `<p>We regret to inform you that your return request for order #${orderId.substring(0,6)} has been <strong>rejected</strong>. Please refer to our return policy or contact support for more details.</p>`;
     } else { // Return Successful
-         emailContent += `<p>Your return for order #${orderId.substring(0,6)} is complete and your refund has been processed. It should reflect in your account within 5-7 business days. Thank you.</p>`;
+         bodyContent += `<p>Your return for order #${orderId.substring(0,6)} is complete and your refund has been processed. It should reflect in your account within 5-7 business days. Thank you.</p>`;
     }
 
-    const emailOptions: MailOptions = { to: email, from: { name: 'White Wolf', email: process.env.SENDGRID_FROM_EMAIL }, subject, html: createEmailHtml(emailContent), text: `Update on your return for order #${orderId.substring(0,6)}.` };
+    const emailHtml = createEmailHtml(bodyContent);
+    const emailOptions: MailOptions = { to: email, from: { name: 'White Wolf', email: process.env.SENDGRID_FROM_EMAIL }, subject, html: emailHtml, text: `Update on your return for order #${orderId.substring(0,6)}.` };
     return await sendSgEmail(emailOptions);
 }
 
