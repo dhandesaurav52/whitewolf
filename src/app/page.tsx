@@ -87,14 +87,25 @@ const HeroSection = () => {
                         index === currentSlide ? "opacity-100" : "opacity-0"
                     )}
                 >
-                    <Image
-                        src={slide.heroImageUrl || defaultHero.heroImageUrl!}
-                        alt={slide.heroHeadline || "Fashion display"}
-                        fill
-                        className="object-cover"
-                        data-ai-hint="storefront fashion"
-                        priority={index === 0}
-                    />
+                    {slide.heroVideoUrl ? (
+                        <video
+                            src={slide.heroVideoUrl}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <Image
+                            src={slide.heroImageUrl || defaultHero.heroImageUrl!}
+                            alt={slide.heroHeadline || "Fashion display"}
+                            fill
+                            className="object-cover"
+                            data-ai-hint="storefront fashion"
+                            priority={index === 0}
+                        />
+                    )}
                     <div className="absolute inset-0 bg-black/40" />
                     <div className="relative z-10 flex flex-col items-center justify-center h-full p-4">
                         <h1 className="text-5xl md:text-7xl font-bold font-headline drop-shadow-md">
@@ -466,5 +477,3 @@ export default function Home() {
     </div>
   );
 }
-
-    

@@ -132,9 +132,9 @@ export default function AdvertiseOffersPage() {
         }
     };
     
-    const handleSaveHero = async (heroData: Partial<Advertisement>, imageFile: File | null) => {
+    const handleSaveHero = async (heroData: Partial<Advertisement>, imageFile: File | null, videoFile: File | null) => {
         setIsSavingHero(true);
-        if (!storage && imageFile) {
+        if (!storage && (imageFile || videoFile)) {
             toast({
                 title: "Firebase Not Configured",
                 description: "Please set up your Firebase credentials in the .env file to upload media.",
@@ -149,8 +149,13 @@ export default function AdvertiseOffersPage() {
             if (imageFile) {
                 imageUrl = await uploadFile(imageFile, `hero-banners/${Date.now()}-${imageFile.name}`);
             }
+            
+            let videoUrl = heroData.heroVideoUrl;
+            if (videoFile) {
+                videoUrl = await uploadFile(videoFile, `hero-videos/${Date.now()}-${videoFile.name}`);
+            }
 
-            const finalHeroData = { ...heroData, heroImageUrl: imageUrl };
+            const finalHeroData = { ...heroData, heroImageUrl: imageUrl, heroVideoUrl: videoUrl };
 
             if (editingHero) { // Update existing
                 const updatedHero = { ...editingHero, ...finalHeroData, status: finalHeroData.status || editingHero.status };
@@ -232,7 +237,7 @@ export default function AdvertiseOffersPage() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="w-[100px]">Image</TableHead>
+                                <TableHead className="w-[100px]">Media</TableHead>
                                 <TableHead>Headline</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
@@ -244,7 +249,11 @@ export default function AdvertiseOffersPage() {
                             ) : heroAds.length > 0 ? heroAds.map((ad) => (
                                 <TableRow key={ad.id}>
                                     <TableCell>
-                                        <Image src={ad.heroImageUrl || "https://placehold.co/100x100.png"} alt={ad.heroHeadline || "Hero Image"} width={80} height={45} className="rounded-md object-cover" />
+                                        {ad.heroVideoUrl ? (
+                                            <video src={ad.heroVideoUrl} className="w-20 h-auto rounded-md" autoPlay loop muted playsInline />
+                                        ) : (
+                                            <Image src={ad.heroImageUrl || "https://placehold.co/100x100.png"} alt={ad.heroHeadline || "Hero Image"} width={80} height={45} className="rounded-md object-cover" />
+                                        )}
                                     </TableCell>
                                     <TableCell className="font-medium">{ad.heroHeadline}</TableCell>
                                     <TableCell>
@@ -368,4 +377,3 @@ export default function AdvertiseOffersPage() {
         </div>
     );
 }
-

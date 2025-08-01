@@ -15,7 +15,7 @@ import { Loader2, UploadCloud } from "lucide-react";
 interface CreateHeroDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: Partial<Advertisement>, imageFile: File | null) => void;
+  onSave: (data: Partial<Advertisement>, imageFile: File | null, videoFile: File | null) => void;
   hero: Advertisement | null;
   isSaving: boolean;
 }
@@ -25,8 +25,10 @@ export default function CreateHeroDialog({ isOpen, onClose, onSave, hero, isSavi
     const [subtext, setSubtext] = useState("");
     const [buttonText, setButtonText] = useState("");
     const [imageFile, setImageFile] = useState<File | null>(null);
+    const [videoFile, setVideoFile] = useState<File | null>(null);
     const [status, setStatus] = useState<'Active' | 'Inactive'>('Active');
     const [currentImageUrl, setCurrentImageUrl] = useState<string | undefined>("");
+    const [currentVideoUrl, setCurrentVideoUrl] = useState<string | undefined>("");
 
     useEffect(() => {
         if (hero) {
@@ -35,13 +37,17 @@ export default function CreateHeroDialog({ isOpen, onClose, onSave, hero, isSavi
             setButtonText(hero.heroButton || "");
             setStatus(hero.status || 'Inactive');
             setImageFile(null);
+            setVideoFile(null);
             setCurrentImageUrl(hero.heroImageUrl);
+            setCurrentVideoUrl(hero.heroVideoUrl);
         } else {
             setHeadline("");
             setSubtext("");
             setButtonText("");
             setImageFile(null);
+            setVideoFile(null);
             setCurrentImageUrl("");
+            setCurrentVideoUrl("");
             setStatus('Active');
         }
     }, [hero]);
@@ -52,8 +58,9 @@ export default function CreateHeroDialog({ isOpen, onClose, onSave, hero, isSavi
             heroSubtext: subtext,
             heroButton: buttonText,
             heroImageUrl: currentImageUrl,
+            heroVideoUrl: currentVideoUrl,
             status: status
-        }, imageFile);
+        }, imageFile, videoFile);
     };
 
     return (
@@ -82,6 +89,11 @@ export default function CreateHeroDialog({ isOpen, onClose, onSave, hero, isSavi
                         <Label htmlFor="image-file">Hero Image</Label>
                         <Input id="image-file" type="file" onChange={(e) => setImageFile(e.target.files?.[0] || null)} disabled={isSaving}/>
                         {currentImageUrl && !imageFile && <p className="text-sm text-muted-foreground mt-1">Current image is set. Upload a new one to replace it.</p>}
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="video-file">Hero Video (Optional)</Label>
+                        <Input id="video-file" type="file" accept="video/*" onChange={(e) => setVideoFile(e.target.files?.[0] || null)} disabled={isSaving}/>
+                        {currentVideoUrl && !videoFile && <p className="text-sm text-muted-foreground mt-1">Current video is set. Upload a new one to replace it.</p>}
                     </div>
                     <div className="flex items-center space-x-2">
                         <Switch id="status" checked={status === 'Active'} onCheckedChange={(checked) => setStatus(checked ? 'Active' : 'Inactive')} disabled={isSaving}/>

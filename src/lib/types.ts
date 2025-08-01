@@ -1,5 +1,4 @@
 
-
 export type Garment = {
     name: string;
     description: string;
@@ -28,6 +27,7 @@ export type Advertisement = {
     selectedCategories: string[];
     status: 'Active' | 'Inactive';
     heroImageUrl?: string;
+    heroVideoUrl?: string;
     heroHeadline?: string;
     heroSubtext?: string;
     heroButton?: string;
