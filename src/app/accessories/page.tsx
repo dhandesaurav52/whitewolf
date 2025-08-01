@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import Fuse from 'fuse.js';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -124,6 +125,17 @@ export default function AccessoriesPage() {
     const [selectedSize, setSelectedSize] = useState('all');
     const [sortOption, setSortOption] = useState('latest');
 
+    const fuse = useMemo(() => {
+        if (allProducts.length > 0) {
+            return new Fuse(allProducts, {
+                keys: ['name', 'brand', 'category'],
+                includeScore: true,
+                threshold: 0.4,
+            });
+        }
+        return null;
+    }, [allProducts]);
+
     const loadData = useCallback(async () => {
         setIsMounted(true);
         try {
@@ -184,13 +196,12 @@ export default function AccessoriesPage() {
 
             let processedProducts = productsWithDiscounts;
 
-            // Filtering
-            if (searchTerm) {
-                processedProducts = processedProducts.filter(p => 
-                    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                    (p.brand && p.brand.toLowerCase().includes(searchTerm.toLowerCase()))
-                );
+            // Fuzzy Search
+            if (searchTerm && fuse) {
+                processedProducts = fuse.search(searchTerm).map(result => result.item);
             }
+
+            // Filtering
             if (selectedCategory !== 'all') {
                 processedProducts = processedProducts.filter(p => p.category.toLowerCase() === selectedCategory);
             }
@@ -217,7 +228,7 @@ export default function AccessoriesPage() {
         };
 
         applyDiscountsAndFilters();
-    }, [allProducts, searchTerm, selectedCategory, selectedBrand, selectedColor, selectedSize, sortOption]);
+    }, [allProducts, searchTerm, selectedCategory, selectedBrand, selectedColor, selectedSize, sortOption, fuse]);
 
     const filterOptions = useMemo(() => {
         const categories = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
@@ -322,5 +333,3 @@ export default function AccessoriesPage() {
     </div>
   );
 }
-
-    

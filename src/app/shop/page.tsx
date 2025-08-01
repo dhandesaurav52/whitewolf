@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Fuse from 'fuse.js';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -124,6 +125,17 @@ export default function ShopPage() {
     const [selectedColor, setSelectedColor] = useState('all');
     const [selectedSize, setSelectedSize] = useState('all');
     const [sortOption, setSortOption] = useState('latest');
+    
+    const fuse = useMemo(() => {
+        if (allProducts.length > 0) {
+            return new Fuse(allProducts, {
+                keys: ['name', 'brand', 'category'],
+                includeScore: true,
+                threshold: 0.4, // Adjust for more or less strict matching
+            });
+        }
+        return null;
+    }, [allProducts]);
 
     const loadData = useCallback(async () => {
         setIsMounted(true);
@@ -197,13 +209,12 @@ export default function ShopPage() {
 
             let processedProducts = productsWithDiscounts;
 
-            // Filtering
-            if (searchTerm) {
-                processedProducts = processedProducts.filter(p => 
-                    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                    (p.brand && p.brand.toLowerCase().includes(searchTerm.toLowerCase()))
-                );
+            // Fuzzy Search
+            if (searchTerm && fuse) {
+                processedProducts = fuse.search(searchTerm).map(result => result.item);
             }
+
+            // Filtering
             if (selectedCategory !== 'all') {
                 processedProducts = processedProducts.filter(p => p.category.toLowerCase() === selectedCategory);
             }
@@ -231,7 +242,7 @@ export default function ShopPage() {
         
         applyDiscountsAndFilters();
         
-    }, [allProducts, searchTerm, selectedCategory, selectedBrand, selectedColor, selectedSize, sortOption]);
+    }, [allProducts, searchTerm, selectedCategory, selectedBrand, selectedColor, selectedSize, sortOption, fuse]);
 
     const filterOptions = useMemo(() => {
         const categories = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
@@ -275,7 +286,7 @@ export default function ShopPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
-              placeholder="Search products or brands..."
+              placeholder="Search for products, brands, or categories..."
               className="w-full pl-10 h-12 text-base"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -336,5 +347,3 @@ export default function ShopPage() {
     </div>
   );
 }
-
-    
