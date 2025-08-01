@@ -182,7 +182,9 @@ export async function sendOrderStatusUpdateEmail({ email, name, orderId, status 
 }
 
 export async function sendReturnStatusEmail({ email, name, orderId, status }: { email: string; name: string; orderId: string; status: 'Return Accepted' | 'Return Request Rejected' | 'Return Successful' }) {
-    if (!process.env.SENDGRID_FROM_EMAIL) return { success: false, error: "Sender email is not configured." };
+    if (!process.env.SENDGRID_FROM_EMAIL) {
+      return { success: false, error: "Sender email is not configured." };
+    }
 
     let subject = `Update on your return for order #${orderId.substring(0,6)}`;
     let bodyContent = `<h2 style="color: #111827;">Return Status Update</h2><p>Hi ${name},</p>`;
