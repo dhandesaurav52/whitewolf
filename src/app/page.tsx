@@ -286,7 +286,7 @@ export default function Home() {
             <section className="py-8 bg-background overflow-hidden group">
                 <div className="flex animate-marquee hover:[animation-play-state:paused]">
                     {[...topWear, ...topWear].map((product, index) => (
-                        <Link key={`${product.id}-${index}`} href={`/product/${product.id}`} className="block aspect-square w-48 h-48 shrink-0 relative overflow-hidden rounded-lg">
+                        <Link key={`${product.id}-${index}`} href={`/product/${product.id}`} className="block aspect-square w-48 h-48 shrink-0 relative overflow-hidden">
                             <Image
                                 src={(product.images && product.images.length > 0) ? product.images[0] : "https://placehold.co/300x300.png"}
                                 alt={product.name}
