@@ -178,7 +178,7 @@ export default function ShopPage() {
                 <Skeleton className="h-12 w-1/2 mx-auto" />
                 <Skeleton className="h-4 w-3/4 mx-auto mt-4" />
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {[...Array(8)].map((_, i) => (
                     <div key={i} className="space-y-2">
                         <Skeleton className="h-64 w-full" />
@@ -257,7 +257,7 @@ export default function ShopPage() {
             </Select>
         </div>
         
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredProducts.length > 0 ? filteredProducts.map((product, index) => (
             <ProductCard key={product.id || index} product={product} />
           )) : <p className="col-span-full text-center text-muted-foreground">No products found. Add some from the admin dashboard!</p>}
