@@ -233,3 +233,5 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
     </Dialog>
   );
 }
+
+    

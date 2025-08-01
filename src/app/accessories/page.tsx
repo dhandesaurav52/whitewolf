@@ -88,9 +88,9 @@ const ProductCard = ({ product }: { product: ProductType }) => {
         <h3 className="font-headline text-lg text-primary truncate">{product.name}</h3>
         <p className="text-sm text-muted-foreground">{product.category}</p>
         <div className="flex items-baseline gap-2 pt-1">
-          <p className="text-accent font-semibold text-base">Amount: {product.price}</p>
+          <p className="text-accent font-semibold text-base">₹{product.price}</p>
           {product.originalPrice && (
-            <p className="text-muted-foreground text-sm line-through">{product.originalPrice}</p>
+            <p className="text-muted-foreground text-sm line-through">₹{product.originalPrice}</p>
           )}
         </div>
       </CardContent>
@@ -145,7 +145,7 @@ export default function AccessoriesPage() {
                          if (applicableAd.discountType === 'percentage') {
                             productPrice = originalProductPrice * (1 - applicableAd.discountValue / 100);
                             appliedDiscount = `${applicableAd.discountValue}% OFF`;
-                        } else { // fixed
+                        } else if (applicableAd.discountType === 'fixed') { // fixed
                             productPrice = originalProductPrice - applicableAd.discountValue;
                              appliedDiscount = `₹${applicableAd.discountValue} OFF`;
                         }
@@ -310,3 +310,5 @@ export default function AccessoriesPage() {
     </div>
   );
 }
+
+    

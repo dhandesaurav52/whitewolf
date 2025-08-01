@@ -252,7 +252,7 @@ export default function ManageOrdersPage() {
                                                                     {item.size && <p>Size: {item.size}</p>}
                                                                   </div>
                                                               </div>
-                                                              <p className="font-medium">{(parseFloat(item.product.price) * item.quantity).toFixed(2)}</p>
+                                                              <p className="font-medium">₹{(parseFloat(item.product.price) * item.quantity).toFixed(2)}</p>
                                                           </div>
                                                         )
                                                     })}
@@ -298,7 +298,7 @@ export default function ManageOrdersPage() {
                                         </TableCell>
                                         <TableCell>{formatDate(order.orderDate)}</TableCell>
                                         <TableCell>{order.items.reduce((acc, item) => acc + item.quantity, 0)}</TableCell>
-                                        <TableCell>{order.total.toFixed(2)}</TableCell>
+                                        <TableCell>₹{order.total.toFixed(2)}</TableCell>
                                         <TableCell>
                                             <Badge variant="outline" className={cn("font-semibold", statusStyles[order.status])}>
                                                 {React.createElement(statusIcons[order.status], { className: "mr-1 h-3 w-3" })}
@@ -397,3 +397,5 @@ export default function ManageOrdersPage() {
         </>
     );
 }
+
+    

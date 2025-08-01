@@ -95,7 +95,7 @@ export default function AdminDashboardPage() {
     const totalUsers = new Set(orders.map(order => order.customer.email)).size;
 
     const stats = [
-        { title: "Total Revenue", value: `${totalRevenue.toFixed(2)}`, description: "Based on delivered orders", icon: DollarSign },
+        { title: "Total Revenue", value: `₹${totalRevenue.toFixed(2)}`, description: "Based on delivered orders", icon: DollarSign },
         { title: "New Orders", value: newOrdersCount.toString(), description: "Orders pending fulfillment", icon: ShoppingCart },
         { title: "Total Products", value: productsCount.toString(), description: "Total products in catalog", icon: Package },
         { title: "Total Users", value: totalUsers.toString(), description: "Unique customers with orders", icon: Users },
@@ -116,7 +116,7 @@ export default function AdminDashboardPage() {
                              {isDataLoading ? (
                                 <Skeleton className="h-8 w-1/2" />
                             ) : (
-                                <div className="text-2xl font-bold">{stat.title === 'Total Revenue' ? `₹${stat.value}` : stat.value}</div>
+                                <div className="text-2xl font-bold">{stat.value}</div>
                             )}
                             <p className="text-xs text-muted-foreground">{stat.description}</p>
                         </CardContent>
@@ -209,3 +209,5 @@ export default function AdminDashboardPage() {
         </div>
     );
 }
+
+    

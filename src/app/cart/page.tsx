@@ -69,7 +69,7 @@ export default function CartPage() {
                 <div className="flex-grow">
                   <h3 className="font-semibold text-lg">{product.name}</h3>
                   {size && <p className="text-muted-foreground text-sm">Size: {size}</p>}
-                  <p className="text-primary font-bold mt-1">{product.price}</p>
+                  <p className="text-primary font-bold mt-1">₹{product.price}</p>
                 </div>
                 <div className="flex items-center gap-4">
                    <div className="flex items-center gap-2 border rounded-md">
@@ -99,7 +99,7 @@ export default function CartPage() {
                 <div className="space-y-2">
                     <div className="flex justify-between">
                         <span>Subtotal</span>
-                        <span>{cartTotal.toFixed(2)}</span>
+                        <span>₹{cartTotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                         <span>Shipping</span>
@@ -108,7 +108,7 @@ export default function CartPage() {
                     <Separator className="my-2" />
                     <div className="flex justify-between font-bold text-lg">
                         <span>Total</span>
-                        <span>{cartTotal.toFixed(2)}</span>
+                        <span>₹{cartTotal.toFixed(2)}</span>
                     </div>
                 </div>
               </div>
@@ -133,3 +133,5 @@ export default function CartPage() {
     </>
   );
 }
+
+    
