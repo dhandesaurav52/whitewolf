@@ -174,22 +174,35 @@ export default function ShopPage() {
                 
                 productsWithDiscounts = allProducts.map(p => {
                     const originalProductPrice = parseFloat(p.originalPrice || p.price);
-                    let productPrice = originalProductPrice;
-                    let appliedDiscount = p.discount;
                     
                     const applicableAd = categoryAds.find(ad => ad.selectedCategories.map(c=>c.toLowerCase()).includes(p.category.toLowerCase()));
 
                     if (applicableAd) {
-                         if (applicableAd.discountType === 'percentage') {
-                            productPrice = originalProductPrice * (1 - applicableAd.discountValue / 100);
-                            appliedDiscount = `${applicableAd.discountValue}% OFF`;
-                             return { ...p, price: productPrice.toFixed(2), originalPrice: originalProductPrice.toString(), discount: appliedDiscount, offerType: 'percentage' };
-                        } else if (applicableAd.discountType === 'fixed') { // fixed
-                            productPrice = originalProductPrice - applicableAd.discountValue;
-                            appliedDiscount = `₹${applicableAd.discountValue} OFF`;
-                             return { ...p, price: productPrice.toFixed(2), originalPrice: originalProductPrice.toString(), discount: appliedDiscount, offerType: 'fixed' };
+                        if (applicableAd.discountType === 'percentage') {
+                            const productPrice = originalProductPrice * (1 - applicableAd.discountValue / 100);
+                            return { 
+                                ...p, 
+                                price: productPrice.toFixed(2), 
+                                originalPrice: originalProductPrice.toString(), 
+                                discount: `${applicableAd.discountValue}% OFF`, 
+                                offerType: 'percentage' 
+                            };
+                        } else if (applicableAd.discountType === 'fixed') {
+                            const productPrice = originalProductPrice - applicableAd.discountValue;
+                            return { 
+                                ...p, 
+                                price: productPrice.toFixed(2), 
+                                originalPrice: originalProductPrice.toString(), 
+                                discount: `₹${applicableAd.discountValue} OFF`, 
+                                offerType: 'fixed' 
+                            };
                         } else if (applicableAd.discountType === 'buy-x-get-y') {
-                            return { ...p, offerType: 'buy-x-get-y' };
+                            return { 
+                                ...p, 
+                                offerType: 'buy-x-get-y',
+                                originalPrice: null,
+                                discount: null,
+                            };
                         }
                     }
                     

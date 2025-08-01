@@ -172,28 +172,33 @@ export default function ProductDetailPage() {
 
                 if (applicableAd) {
                     const originalProductPrice = parseFloat(finalProduct.originalPrice!);
-                    let productPrice = originalProductPrice;
-                    let appliedDiscount = finalProduct.discount;
-                    let offerType = finalProduct.offerType;
-
-                    if (applicableAd.discountType === 'percentage') {
-                        productPrice = originalProductPrice * (1 - applicableAd.discountValue / 100);
-                        appliedDiscount = `${applicableAd.discountValue}% OFF`;
-                        offerType = 'percentage';
-                    } else if (applicableAd.discountType === 'fixed') { // fixed
-                        productPrice = originalProductPrice - applicableAd.discountValue;
-                        appliedDiscount = `₹${applicableAd.discountValue} OFF`;
-                        offerType = 'fixed';
-                    } else if (applicableAd.discountType === 'buy-x-get-y') {
-                        offerType = 'buy-x-get-y';
-                    }
                     
-                    finalProduct = {
-                        ...finalProduct,
-                        price: productPrice.toFixed(2),
-                        originalPrice: originalProductPrice.toFixed(2),
-                        discount: appliedDiscount,
-                        offerType: offerType
+                    if (applicableAd.discountType === 'percentage') {
+                        const productPrice = originalProductPrice * (1 - applicableAd.discountValue / 100);
+                        finalProduct = {
+                            ...finalProduct,
+                            price: productPrice.toFixed(2),
+                            originalPrice: originalProductPrice.toFixed(2),
+                            discount: `${applicableAd.discountValue}% OFF`,
+                            offerType: 'percentage'
+                        };
+                    } else if (applicableAd.discountType === 'fixed') {
+                        const productPrice = originalProductPrice - applicableAd.discountValue;
+                        finalProduct = {
+                            ...finalProduct,
+                            price: productPrice.toFixed(2),
+                            originalPrice: originalProductPrice.toFixed(2),
+                            discount: `₹${applicableAd.discountValue} OFF`,
+                            offerType: 'fixed'
+                        };
+                    } else if (applicableAd.discountType === 'buy-x-get-y') {
+                        finalProduct = {
+                            ...finalProduct,
+                            price: originalProductPrice.toFixed(2),
+                            originalPrice: null,
+                            discount: null,
+                            offerType: 'buy-x-get-y'
+                        };
                     }
                 } else {
                      finalProduct = {
@@ -455,5 +460,3 @@ export default function ProductDetailPage() {
     </>
   );
 }
-
-    
