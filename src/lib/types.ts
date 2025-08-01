@@ -20,8 +20,10 @@ export type Recommendation = {
 export type Advertisement = {
     id: string;
     text: string;
-    discountType: 'percentage' | 'fixed';
+    discountType: 'percentage' | 'fixed' | 'buy-x-get-y';
     discountValue: number;
+    buyQuantity?: number;
+    getQuantity?: number;
     appliesTo: 'categories' | 'products' | 'hero';
     selectedCategories: string[];
     status: 'Active' | 'Inactive';

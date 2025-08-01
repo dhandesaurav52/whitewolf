@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState } from "react";
@@ -26,6 +27,8 @@ export default function CreateOfferDialog({ isOpen, onClose, onSave, categories 
   const [offerName, setOfferName] = useState("");
   const [discountType, setDiscountType] = useState("percentage");
   const [discountValue, setDiscountValue] = useState("");
+  const [buyQuantity, setBuyQuantity] = useState("");
+  const [getQuantity, setGetQuantity] = useState("");
   const [appliesTo, setAppliesTo] = useState("categories");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [isActive, setIsActive] = useState(true);
@@ -39,6 +42,8 @@ export default function CreateOfferDialog({ isOpen, onClose, onSave, categories 
       text: offerName,
       discountType,
       discountValue,
+      buyQuantity,
+      getQuantity,
       appliesTo,
       selectedCategories,
       isActive,
@@ -65,24 +70,52 @@ export default function CreateOfferDialog({ isOpen, onClose, onSave, categories 
             />
           </div>
           
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label>Discount Type</Label>
-              <RadioGroup
-                className="flex items-center space-x-4 pt-2"
-                onValueChange={setDiscountType}
-                value={discountType}
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="percentage" id="r1" />
-                  <Label htmlFor="r1" className="font-normal">Percentage</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="fixed" id="r2" />
-                  <Label htmlFor="r2" className="font-normal">Fixed</Label>
-                </div>
-              </RadioGroup>
+          <div className="space-y-2">
+            <Label>Discount Type</Label>
+            <RadioGroup
+              className="grid grid-cols-3 gap-4 pt-2"
+              onValueChange={setDiscountType}
+              value={discountType}
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="percentage" id="r1" />
+                <Label htmlFor="r1" className="font-normal">Percentage</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="fixed" id="r2" />
+                <Label htmlFor="r2" className="font-normal">Fixed</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="buy-x-get-y" id="r3" />
+                <Label htmlFor="r3" className="font-normal">Buy X Get Y</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          {discountType === 'buy-x-get-y' ? (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="buy-quantity">Buy Quantity</Label>
+                <Input
+                  id="buy-quantity"
+                  type="number"
+                  placeholder="e.g., 2"
+                  value={buyQuantity}
+                  onChange={(e) => setBuyQuantity(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="get-quantity">Get Quantity</Label>
+                <Input
+                  id="get-quantity"
+                  type="number"
+                  placeholder="e.g., 1"
+                  value={getQuantity}
+                  onChange={(e) => setGetQuantity(e.target.value)}
+                />
+              </div>
             </div>
+          ) : (
             <div className="space-y-2">
               <Label htmlFor="discount-value">Discount Value</Label>
               <Input
@@ -93,7 +126,7 @@ export default function CreateOfferDialog({ isOpen, onClose, onSave, categories 
                 onChange={(e) => setDiscountValue(e.target.value)}
               />
             </div>
-          </div>
+          )}
           
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
@@ -104,12 +137,12 @@ export default function CreateOfferDialog({ isOpen, onClose, onSave, categories 
                 value={appliesTo}
               >
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="categories" id="r3" />
-                  <Label htmlFor="r3" className="font-normal">Categories</Label>
+                  <RadioGroupItem value="categories" id="r4" />
+                  <Label htmlFor="r4" className="font-normal">Categories</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="products" id="r4" />
-                  <Label htmlFor="r4" className="font-normal">Products</Label>
+                  <RadioGroupItem value="products" id="r5" />
+                  <Label htmlFor="r5" className="font-normal">Products</Label>
                 </div>
               </RadioGroup>
             </div>

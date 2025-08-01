@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -81,11 +82,13 @@ export default function AdvertiseOffersPage() {
         }
     };
 
-    const handleCreateOffer = async (newOfferData: { text: string; discountType: any; discountValue: string; appliesTo: any; selectedCategories: string[]; isActive: boolean; }) => {
+    const handleCreateOffer = async (newOfferData: { text: string; discountType: any; discountValue: string; buyQuantity: string, getQuantity: string, appliesTo: any; selectedCategories: string[]; isActive: boolean; }) => {
         const newAd: Omit<Advertisement, 'id'> = {
             text: newOfferData.text,
             discountType: newOfferData.discountType,
             discountValue: parseFloat(newOfferData.discountValue) || 0,
+            buyQuantity: parseInt(newOfferData.buyQuantity) || undefined,
+            getQuantity: parseInt(newOfferData.getQuantity) || undefined,
             appliesTo: newOfferData.appliesTo,
             selectedCategories: newOfferData.selectedCategories,
             status: newOfferData.isActive ? 'Active' : 'Inactive',
@@ -103,7 +106,7 @@ export default function AdvertiseOffersPage() {
         }
     };
 
-    const handleUpdateOffer = async (updatedOfferData: { text: string; discountType: any; discountValue: string; appliesTo: any; selectedCategories: string[]; isActive: boolean; }) => {
+    const handleUpdateOffer = async (updatedOfferData: { text: string; discountType: any; discountValue: string; buyQuantity: string, getQuantity: string, appliesTo: any; selectedCategories: string[]; isActive: boolean; }) => {
         if (!editingOffer) return;
 
         const updatedAd: Advertisement = {
@@ -111,6 +114,8 @@ export default function AdvertiseOffersPage() {
             text: updatedOfferData.text,
             discountType: updatedOfferData.discountType,
             discountValue: parseFloat(updatedOfferData.discountValue) || 0,
+            buyQuantity: parseInt(updatedOfferData.buyQuantity) || undefined,
+            getQuantity: parseInt(updatedOfferData.getQuantity) || undefined,
             appliesTo: updatedOfferData.appliesTo,
             selectedCategories: updatedOfferData.selectedCategories,
             status: updatedOfferData.isActive ? 'Active' : 'Inactive',
@@ -182,8 +187,11 @@ export default function AdvertiseOffersPage() {
     };
     
     const getDiscountDisplay = (ad: Advertisement) => {
+        if (ad.discountType === 'buy-x-get-y') {
+            return `Buy ${ad.buyQuantity || 'X'} Get ${ad.getQuantity || 'Y'}`;
+        }
         if (!ad.discountValue) return 'N/A';
-        return ad.discountType === 'percentage' ? `${ad.discountValue}%` : `${ad.discountValue}`;
+        return ad.discountType === 'percentage' ? `${ad.discountValue}%` : `₹${ad.discountValue}`;
     }
     
     const getAppliesToDisplay = (ad: Advertisement) => {

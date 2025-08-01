@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -26,8 +27,10 @@ interface EditOfferDialogProps {
 
 export default function EditOfferDialog({ isOpen, onClose, onSave, offer, categories }: EditOfferDialogProps) {
   const [offerName, setOfferName] = useState("");
-  const [discountType, setDiscountType] = useState<"percentage" | "fixed">("percentage");
+  const [discountType, setDiscountType] = useState<"percentage" | "fixed" | "buy-x-get-y">("percentage");
   const [discountValue, setDiscountValue] = useState("");
+  const [buyQuantity, setBuyQuantity] = useState("");
+  const [getQuantity, setGetQuantity] = useState("");
   const [appliesTo, setAppliesTo] = useState<"categories" | "products">("categories");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [isActive, setIsActive] = useState(true);
@@ -37,6 +40,8 @@ export default function EditOfferDialog({ isOpen, onClose, onSave, offer, catego
       setOfferName(offer.text);
       setDiscountType(offer.discountType);
       setDiscountValue(offer.discountValue.toString());
+      setBuyQuantity(offer.buyQuantity?.toString() || "");
+      setGetQuantity(offer.getQuantity?.toString() || "");
       setAppliesTo(offer.appliesTo);
       setSelectedCategories(offer.selectedCategories || []);
       setIsActive(offer.status === 'Active');
@@ -52,6 +57,8 @@ export default function EditOfferDialog({ isOpen, onClose, onSave, offer, catego
       text: offerName,
       discountType,
       discountValue,
+      buyQuantity,
+      getQuantity,
       appliesTo,
       selectedCategories,
       isActive,
@@ -78,12 +85,11 @@ export default function EditOfferDialog({ isOpen, onClose, onSave, offer, catego
             />
           </div>
           
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-2">
+          <div className="space-y-2">
               <Label>Discount Type</Label>
               <RadioGroup
-                className="flex items-center space-x-4 pt-2"
-                onValueChange={(value: "percentage" | "fixed") => setDiscountType(value)}
+                className="grid grid-cols-3 gap-4 pt-2"
+                onValueChange={(value: "percentage" | "fixed" | "buy-x-get-y") => setDiscountType(value)}
                 value={discountType}
               >
                 <div className="flex items-center space-x-2">
@@ -94,19 +100,48 @@ export default function EditOfferDialog({ isOpen, onClose, onSave, offer, catego
                   <RadioGroupItem value="fixed" id="r2-edit" />
                   <Label htmlFor="r2-edit" className="font-normal">Fixed</Label>
                 </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="buy-x-get-y" id="r3-edit" />
+                  <Label htmlFor="r3-edit" className="font-normal">Buy X Get Y</Label>
+                </div>
               </RadioGroup>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="discount-value-edit">Discount Value</Label>
-              <Input
-                id="discount-value-edit"
-                type="number"
-                placeholder="0"
-                value={discountValue}
-                onChange={(e) => setDiscountValue(e.target.value)}
-              />
-            </div>
-          </div>
+
+            {discountType === 'buy-x-get-y' ? (
+                <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="buy-quantity-edit">Buy Quantity</Label>
+                    <Input
+                    id="buy-quantity-edit"
+                    type="number"
+                    placeholder="e.g., 2"
+                    value={buyQuantity}
+                    onChange={(e) => setBuyQuantity(e.target.value)}
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="get-quantity-edit">Get Quantity</Label>
+                    <Input
+                    id="get-quantity-edit"
+                    type="number"
+                    placeholder="e.g., 1"
+                    value={getQuantity}
+                    onChange={(e) => setGetQuantity(e.target.value)}
+                    />
+                </div>
+                </div>
+            ) : (
+                <div className="space-y-2">
+                <Label htmlFor="discount-value-edit">Discount Value</Label>
+                <Input
+                    id="discount-value-edit"
+                    type="number"
+                    placeholder="0"
+                    value={discountValue}
+                    onChange={(e) => setDiscountValue(e.target.value)}
+                />
+                </div>
+            )}
           
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
@@ -117,12 +152,12 @@ export default function EditOfferDialog({ isOpen, onClose, onSave, offer, catego
                 value={appliesTo}
               >
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="categories" id="r3-edit" />
-                  <Label htmlFor="r3-edit" className="font-normal">Categories</Label>
+                  <RadioGroupItem value="categories" id="r4-edit" />
+                  <Label htmlFor="r4-edit" className="font-normal">Categories</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="products" id="r4-edit" />
-                  <Label htmlFor="r4-edit" className="font-normal">Products</Label>
+                  <RadioGroupItem value="products" id="r5-edit" />
+                  <Label htmlFor="r5-edit" className="font-normal">Products</Label>
                 </div>
               </RadioGroup>
             </div>
