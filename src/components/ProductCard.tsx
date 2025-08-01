@@ -22,15 +22,46 @@ const getSymbol = (currencyCode: string) => {
     return '₹';
 }
 
+function ProductCardCarousel({ product }: { product: ProductType }) {
+  const { scrollPrev, scrollNext } = useCarousel();
+  const productImages = product.images && product.images.length > 0 ? product.images : ["https://placehold.co/400x500.png"];
+
+  return (
+    <>
+      <Link href={`/product/${product.id}`} className="block">
+        <CarouselContent>
+          {productImages.map((imgSrc, index) => (
+            <CarouselItem key={index}>
+              <div className="relative aspect-[4/5] bg-muted">
+                <Image
+                  src={imgSrc}
+                  alt={`${product.name} image ${index + 1}`}
+                  fill
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  data-ai-hint={product.aiHint}
+                />
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Link>
+      {productImages.length > 1 && (
+        <>
+          <CarouselPrevious onClick={(e) => { e.preventDefault(); e.stopPropagation(); scrollPrev(); }} className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <CarouselNext onClick={(e) => { e.preventDefault(); e.stopPropagation(); scrollNext(); }} className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" />
+        </>
+      )}
+    </>
+  );
+}
+
+
 export default function ProductCard({ product }: { product: ProductType }) {
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
   const { user } = useAuth();
   const router = useRouter();
-  const { api, scrollPrev, scrollNext } = useCarousel();
-
-  const productImages = product.images && product.images.length > 0 ? product.images : ["https://placehold.co/400x500.png"];
-
+  
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -62,31 +93,9 @@ export default function ProductCard({ product }: { product: ProductType }) {
         </Button>
       </div>
 
-      <Carousel className="w-full" opts={{ loop: productImages.length > 1 }}>
-        <Link href={`/product/${product.id}`} className="block">
-            <CarouselContent>
-            {productImages.map((imgSrc, index) => (
-                <CarouselItem key={index}>
-                    <div className="relative aspect-[4/5] bg-muted">
-                    <Image
-                        src={imgSrc}
-                        alt={`${product.name} image ${index + 1}`}
-                        fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                        data-ai-hint={product.aiHint}
-                    />
-                    </div>
-                </CarouselItem>
-            ))}
-            </CarouselContent>
-        </Link>
-        {productImages.length > 1 && (
-            <>
-                <CarouselPrevious onClick={(e) => { e.preventDefault(); e.stopPropagation(); scrollPrev(); }} className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <CarouselNext onClick={(e) => { e.preventDefault(); e.stopPropagation(); scrollNext(); }} className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </>
-        )}
-         {product.offerType === 'buy-x-get-y' && (
+      <Carousel className="w-full" opts={{ loop: product.images.length > 1 }}>
+        <ProductCardCarousel product={product} />
+        {product.offerType === 'buy-x-get-y' && (
             <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground">
               Combo
             </Badge>
