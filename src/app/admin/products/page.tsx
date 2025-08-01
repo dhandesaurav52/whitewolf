@@ -61,6 +61,7 @@ export default function AdminProductsPage() {
     const [newProductName, setNewProductName] = useState('');
     const [newBrandName, setNewBrandName] = useState('');
     const [newPrice, setNewPrice] = useState('');
+    const [newCurrency, setNewCurrency] = useState('INR');
     const [newSelectedCategory, setNewSelectedCategory] = useState('');
     const [newDisplaySection, setNewDisplaySection] = useState<'shop' | 'accessories'>('shop');
     const [newDescription, setNewDescription] = useState('');
@@ -158,6 +159,7 @@ export default function AdminProductsPage() {
         setNewProductName('');
         setNewBrandName('');
         setNewPrice('');
+        setNewCurrency('INR');
         setNewSelectedCategory('');
         setNewDisplaySection('shop');
         setNewDescription('');
@@ -213,6 +215,7 @@ export default function AdminProductsPage() {
                 name: newProductName,
                 brand: newBrandName,
                 price: newPrice,
+                currency: newCurrency,
                 category: categoryLabel,
                 displaySection: newDisplaySection,
                 description: newDescription,
@@ -270,77 +273,89 @@ export default function AdminProductsPage() {
                             <Input id="brand-name" placeholder="e.g. White Wolf" value={newBrandName} onChange={(e) => setNewBrandName(e.target.value)} />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="space-y-2 col-span-2">
                                 <Label htmlFor="price" className="text-accent">Price</Label>
                                 <Input id="price" type="number" placeholder="e.g. 999" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} />
                             </div>
-                             <div className="space-y-2">
-                                <Label className="text-accent">Category</Label>
-                                 <Popover open={openCategoryPopover} onOpenChange={setOpenCategoryPopover}>
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        aria-expanded={openCategoryPopover}
-                                        className="w-full justify-between"
-                                        >
-                                        {newSelectedCategory
-                                            ? categories.find((cat) => cat.value === newSelectedCategory)?.label
-                                            : "Select or add category..."}
-                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                                        <Command>
-                                            <CommandInput 
-                                                placeholder="Search or add category..." 
-                                                value={categorySearch}
-                                                onValueChange={setCategorySearch}
-                                            />
-                                            <CommandList>
-                                                <CommandEmpty>
-                                                    <div className="p-2 text-center text-sm">
-                                                        No category found.
-                                                        {categorySearch && (
-                                                            <Button
-                                                                variant="ghost"
-                                                                className="w-full mt-2"
-                                                                onClick={() => addNewCategory(categorySearch)}
-                                                            >
-                                                                <PlusCircle className="mr-2 h-4 w-4" />
-                                                                Add "{categorySearch}"
-                                                            </Button>
-                                                        )}
-                                                    </div>
-                                                </CommandEmpty>
-                                                <CommandGroup>
-                                                {categories.map((cat) => (
-                                                    <CommandItem
-                                                        key={cat.value}
-                                                        value={cat.label}
-                                                        onSelect={(currentValue) => {
-                                                            const value = categories.find(c => c.label.toLowerCase() === currentValue.toLowerCase())?.value;
-                                                            setNewSelectedCategory(value === newSelectedCategory ? '' : value || '');
-                                                            setOpenCategoryPopover(false);
-                                                            setCategorySearch("");
-                                                        }}
-                                                    >
-                                                    <Check
-                                                        className={cn(
-                                                        "mr-2 h-4 w-4",
-                                                        newSelectedCategory === cat.value ? "opacity-100" : "opacity-0"
-                                                        )}
-                                                    />
-                                                    {cat.label}
-                                                    </CommandItem>
-                                                ))}
-                                                </CommandGroup>
-                                            </CommandList>
-                                        </Command>
-                                    </PopoverContent>
-                                </Popover>
+                            <div className="space-y-2">
+                                <Label htmlFor="currency" className="text-accent">Currency</Label>
+                                <Select value={newCurrency} onValueChange={setNewCurrency}>
+                                    <SelectTrigger id="currency">
+                                        <SelectValue placeholder="Select Currency" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="INR">INR (₹)</SelectItem>
+                                        <SelectItem value="USD">USD ($)</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
+                        </div>
+                         <div className="space-y-2">
+                            <Label className="text-accent">Category</Label>
+                             <Popover open={openCategoryPopover} onOpenChange={setOpenCategoryPopover}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={openCategoryPopover}
+                                    className="w-full justify-between"
+                                    >
+                                    {newSelectedCategory
+                                        ? categories.find((cat) => cat.value === newSelectedCategory)?.label
+                                        : "Select or add category..."}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                                    <Command>
+                                        <CommandInput 
+                                            placeholder="Search or add category..." 
+                                            value={categorySearch}
+                                            onValueChange={setCategorySearch}
+                                        />
+                                        <CommandList>
+                                            <CommandEmpty>
+                                                <div className="p-2 text-center text-sm">
+                                                    No category found.
+                                                    {categorySearch && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            className="w-full mt-2"
+                                                            onClick={() => addNewCategory(categorySearch)}
+                                                        >
+                                                            <PlusCircle className="mr-2 h-4 w-4" />
+                                                            Add "{categorySearch}"
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </CommandEmpty>
+                                            <CommandGroup>
+                                            {categories.map((cat) => (
+                                                <CommandItem
+                                                    key={cat.value}
+                                                    value={cat.label}
+                                                    onSelect={(currentValue) => {
+                                                        const value = categories.find(c => c.label.toLowerCase() === currentValue.toLowerCase())?.value;
+                                                        setNewSelectedCategory(value === newSelectedCategory ? '' : value || '');
+                                                        setOpenCategoryPopover(false);
+                                                        setCategorySearch("");
+                                                    }}
+                                                >
+                                                <Check
+                                                    className={cn(
+                                                    "mr-2 h-4 w-4",
+                                                    newSelectedCategory === cat.value ? "opacity-100" : "opacity-0"
+                                                    )}
+                                                />
+                                                {cat.label}
+                                                </CommandItem>
+                                            ))}
+                                            </CommandGroup>
+                                        </CommandList>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
                         </div>
 
                          <div className="space-y-2">

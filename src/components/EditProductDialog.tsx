@@ -102,12 +102,25 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
                   <Input id="brand" value={editedProduct.brand || ''} onChange={(e) => handleChange('brand', e.target.value)} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2 col-span-2">
                   <Label htmlFor="price" className="text-accent">Price</Label>
                   <Input id="price" type="number" value={editedProduct.price} onChange={(e) => handleChange('price', e.target.value)} />
                 </div>
-                <div className="space-y-2">
+                 <div className="space-y-2">
+                    <Label htmlFor="currency" className="text-accent">Currency</Label>
+                    <Select value={editedProduct.currency || 'INR'} onValueChange={(value) => handleChange('currency', value)}>
+                        <SelectTrigger id="currency">
+                            <SelectValue placeholder="Select Currency" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="INR">INR (₹)</SelectItem>
+                            <SelectItem value="USD">USD ($)</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+              </div>
+               <div className="space-y-2">
                     <Label className="text-accent">Category</Label>
                     <Popover open={openCategoryPopover} onOpenChange={setOpenCategoryPopover}>
                         <PopoverTrigger asChild>
@@ -173,7 +186,6 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
                         </PopoverContent>
                     </Popover>
                 </div>
-              </div>
               <div className="space-y-2">
                 <Label htmlFor="display-section" className="text-accent">Display In</Label>
                 <Select value={editedProduct.displaySection} onValueChange={(value) => handleChange('displaySection', value)}>

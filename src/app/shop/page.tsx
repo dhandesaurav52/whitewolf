@@ -26,6 +26,12 @@ import * as db from "@/lib/firestore";
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 
+const getSymbol = (currencyCode: string) => {
+    if (currencyCode === 'INR') return '₹';
+    if (currencyCode === 'USD') return '$';
+    return '₹';
+}
+
 const ProductCard = ({ product }: { product: ProductType }) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
@@ -89,9 +95,9 @@ const ProductCard = ({ product }: { product: ProductType }) => {
         <h3 className="font-headline text-lg text-primary truncate">{product.name}</h3>
         <p className="text-sm text-muted-foreground">{product.category}</p>
         <div className="flex items-baseline gap-2 pt-1">
-          <p className="text-accent font-semibold text-base">₹{product.price}</p>
+          <p className="text-accent font-semibold text-base">{getSymbol(product.currency)}{product.price}</p>
           {product.originalPrice && (
-            <p className="text-muted-foreground text-sm line-through">₹{product.originalPrice}</p>
+            <p className="text-muted-foreground text-sm line-through">{getSymbol(product.currency)}{product.originalPrice}</p>
           )}
         </div>
       </CardContent>

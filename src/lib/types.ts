@@ -40,6 +40,7 @@ export type Product = {
   aiHint: string;
   category: string;
   price: string;
+  currency: string; // e.g., 'INR', 'USD'
   originalPrice: string | null;
   stock: number;
   brand?: string;
