@@ -22,86 +22,8 @@ import * as db from '@/lib/firestore';
 import SizeGuideDialog from '@/components/SizeGuideDialog';
 import { useToast } from '@/hooks/use-toast';
 import { Timestamp } from 'firebase/firestore';
+import ProductCard from '@/components/ProductCard';
 
-const ProductCard = ({ product }: { product: ProductType }) => {
-  const { isInWishlist, toggleWishlist } = useWishlist();
-  const { addToCart } = useCart();
-  const { user } = useAuth();
-  const router = useRouter();
-
-  const handleWishlistClick = () => {
-    if (!user) {
-      router.push('/login');
-    } else {
-      toggleWishlist(product);
-    }
-  };
-
-  const handleAddToCartClick = () => {
-    if (!user) {
-      router.push('/login');
-    } else {
-      addToCart(product, 1);
-    }
-  };
-  
-  return (
-    <Card className="group overflow-hidden rounded-lg bg-card text-card-foreground border-border relative transition-all duration-300 hover:border-primary hover:shadow-md">
-       <Link href={`/product/${product.id}`} className="block">
-        <div className="relative aspect-[4/5] bg-muted">
-          <Image
-            src={product.images && product.images.length > 0 ? product.images[0] : "https://placehold.co/400x500.png"}
-            alt={product.name}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-            data-ai-hint={product.aiHint}
-          />
-           {product.offerType === 'buy-x-get-y' && (
-             <Badge
-              className="absolute top-3 left-3 bg-primary text-primary-foreground"
-            >
-              Combo
-            </Badge>
-          )}
-          {product.discount && (
-            <Badge
-              variant="destructive"
-              className={cn("absolute top-3", product.offerType === 'buy-x-get-y' ? "top-10" : "top-3", "left-3")}
-            >
-              {product.discount}
-            </Badge>
-          )}
-           {product.new && !product.discount && product.offerType !== 'buy-x-get-y' && (
-            <Badge
-              className="absolute top-3 left-3 bg-accent text-accent-foreground"
-            >
-              New
-            </Badge>
-          )}
-        </div>
-      </Link>
-      <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-        <Button size="icon" variant="outline" className="h-9 w-9 bg-background/80 hover:bg-background" onClick={handleWishlistClick}>
-          <Heart className={cn("h-4 w-4", user && isInWishlist(product.id) && "fill-destructive text-destructive")} />
-        </Button>
-        <Button size="icon" variant="outline" className="h-9 w-9 bg-background/80 hover:bg-background" onClick={handleAddToCartClick}>
-          <ShoppingBag className="h-4 w-4" />
-        </Button>
-      </div>
-      <CardContent className="p-4 space-y-1">
-        {product.brand && <p className="text-sm text-muted-foreground">{product.brand}</p>}
-        <h3 className="font-headline text-lg text-primary truncate">{product.name}</h3>
-        <p className="text-sm text-muted-foreground">{product.category}</p>
-        <div className="flex items-baseline gap-2 pt-1">
-          <p className="text-accent font-semibold text-base">₹{product.price}</p>
-          {product.originalPrice && (
-            <p className="text-muted-foreground text-sm line-through">₹{product.originalPrice}</p>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
 
 const ProductCarousel = ({ title, products }: { title: string, products: ProductType[] }) => {
   if (products.length === 0) return null;
