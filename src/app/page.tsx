@@ -185,6 +185,7 @@ export default function Home() {
   const [accessories, setAccessories] = useState<ProductType[]>([]);
   const [categories, setCategories] = useState<{name: string, href: string, image: string, aiHint: string}[]>([]);
   const [isMounted, setIsMounted] = useState(false);
+  const [topWear, setTopWear] = useState<ProductType[]>([]);
 
   const loadData = useCallback(async () => {
     try {
@@ -211,6 +212,10 @@ export default function Home() {
           };
       }).filter(c => c.name); // Filter out categories with no name
       setCategories(categoryData);
+
+      const topWearCategories = ['t-shirts', 'shirts', 'oversized t-shirts', 'sweater', 'jackets'];
+      const topWearProducts = allProducts.filter(p => topWearCategories.includes(p.category.toLowerCase()));
+      setTopWear(topWearProducts);
       
     } catch (error) {
       console.error("Failed to load data from Firestore", error);
@@ -275,6 +280,40 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* Scrolling Products Marquee */}
+        {topWear.length > 0 && (
+            <section className="py-8 bg-background overflow-hidden">
+                <div className="relative flex gap-8 overflow-hidden">
+                    <div className="flex min-w-full shrink-0 items-center gap-8 animate-marquee">
+                        {[...topWear, ...topWear].map((product, index) => (
+                           <Link key={`${product.id}-${index}`} href={`/product/${product.id}`} className="group aspect-square w-48 h-48 shrink-0 relative overflow-hidden rounded-lg">
+                                <Image
+                                    src={(product.images && product.images.length > 0) ? product.images[0] : "https://placehold.co/300x300.png"}
+                                    alt={product.name}
+                                    fill
+                                    className="object-cover transition-transform duration-300 group-hover:scale-110"
+                                    data-ai-hint={product.aiHint}
+                                />
+                           </Link>
+                        ))}
+                    </div>
+                     <div className="absolute top-0 flex min-w-full shrink-0 items-center gap-8 animate-marquee [animation-delay:15s]">
+                        {[...topWear, ...topWear].map((product, index) => (
+                           <Link key={`${product.id}-dup-${index}`} href={`/product/${product.id}`} className="group aspect-square w-48 h-48 shrink-0 relative overflow-hidden rounded-lg">
+                                <Image
+                                    src={(product.images && product.images.length > 0) ? product.images[0] : "https://placehold.co/300x300.png"}
+                                    alt={product.name}
+                                    fill
+                                    className="object-cover transition-transform duration-300 group-hover:scale-110"
+                                    data-ai-hint={product.aiHint}
+                                />
+                           </Link>
+                        ))}
+                    </div>
+                </div>
+            </section>
+        )}
 
         {/* New Arrivals Section */}
         {newArrivals.length > 0 && (
