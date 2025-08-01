@@ -56,6 +56,28 @@ const ProductCard = ({ product }: { product: ProductType }) => {
             className="object-cover transition-transform duration-300 group-hover:scale-105"
             data-ai-hint={product.aiHint}
           />
+           {product.offerType === 'buy-x-get-y' && (
+             <Badge
+              className="absolute top-3 left-3 bg-primary text-primary-foreground"
+            >
+              Combo
+            </Badge>
+          )}
+          {product.discount && (
+            <Badge
+              variant="destructive"
+              className={cn("absolute top-3", product.offerType === 'buy-x-get-y' ? "top-10" : "top-3", "left-3")}
+            >
+              {product.discount}
+            </Badge>
+          )}
+           {product.new && !product.discount && product.offerType !== 'buy-x-get-y' && (
+            <Badge
+              className="absolute top-3 left-3 bg-accent text-accent-foreground"
+            >
+              New
+            </Badge>
+          )}
         </div>
       </Link>
       <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
@@ -152,13 +174,18 @@ export default function ProductDetailPage() {
                     const originalProductPrice = parseFloat(finalProduct.originalPrice!);
                     let productPrice = originalProductPrice;
                     let appliedDiscount = finalProduct.discount;
+                    let offerType = finalProduct.offerType;
 
                     if (applicableAd.discountType === 'percentage') {
                         productPrice = originalProductPrice * (1 - applicableAd.discountValue / 100);
                         appliedDiscount = `${applicableAd.discountValue}% OFF`;
+                        offerType = 'percentage';
                     } else if (applicableAd.discountType === 'fixed') { // fixed
                         productPrice = originalProductPrice - applicableAd.discountValue;
                         appliedDiscount = `₹${applicableAd.discountValue} OFF`;
+                        offerType = 'fixed';
+                    } else if (applicableAd.discountType === 'buy-x-get-y') {
+                        offerType = 'buy-x-get-y';
                     }
                     
                     finalProduct = {
@@ -166,6 +193,7 @@ export default function ProductDetailPage() {
                         price: productPrice.toFixed(2),
                         originalPrice: originalProductPrice.toFixed(2),
                         discount: appliedDiscount,
+                        offerType: offerType
                     }
                 } else {
                      finalProduct = {
@@ -173,6 +201,7 @@ export default function ProductDetailPage() {
                         price: parseFloat(finalProduct.originalPrice!).toFixed(2),
                         originalPrice: null,
                         discount: null,
+                        offerType: undefined
                      }
                 }
 
@@ -328,6 +357,8 @@ export default function ProductDetailPage() {
                           </>
                       )}
                   </div>
+                  {product.new && !product.discount && <Badge>New Arrival</Badge>}
+                  {product.offerType === 'buy-x-get-y' && <Badge className="bg-primary text-primary-foreground">Combo Offer</Badge>}
               </div>
 
               <p className="text-muted-foreground text-base">
