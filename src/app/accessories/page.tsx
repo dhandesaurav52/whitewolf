@@ -64,15 +64,22 @@ const ProductCard = ({ product }: { product: ProductType }) => {
             className="object-cover transition-transform duration-300 group-hover:scale-105"
             data-ai-hint={product.aiHint}
           />
+          {product.offerType === 'buy-x-get-y' && (
+             <Badge
+              className="absolute top-3 left-3 bg-primary text-primary-foreground"
+            >
+              Combo
+            </Badge>
+          )}
           {product.discount && (
             <Badge
               variant="destructive"
-              className="absolute top-3 left-3"
+              className={cn("absolute top-3", product.offerType === 'buy-x-get-y' ? "top-10" : "top-3", "left-3")}
             >
               {product.discount}
             </Badge>
           )}
-           {product.new && !product.discount && (
+           {product.new && !product.discount && product.offerType !== 'buy-x-get-y' && (
             <Badge
               className="absolute top-3 left-3 bg-accent text-accent-foreground"
             >
@@ -151,15 +158,13 @@ export default function AccessoriesPage() {
                          if (applicableAd.discountType === 'percentage') {
                             productPrice = originalProductPrice * (1 - applicableAd.discountValue / 100);
                             appliedDiscount = `${applicableAd.discountValue}% OFF`;
+                             return { ...p, price: productPrice.toFixed(2), originalPrice: originalProductPrice.toString(), discount: appliedDiscount, offerType: 'percentage' };
                         } else if (applicableAd.discountType === 'fixed') { // fixed
                             productPrice = originalProductPrice - applicableAd.discountValue;
-                             appliedDiscount = `₹${applicableAd.discountValue} OFF`;
-                        }
-                        return {
-                            ...p,
-                            price: productPrice.toFixed(2),
-                            originalPrice: originalProductPrice.toString(),
-                            discount: appliedDiscount,
+                            appliedDiscount = `₹${applicableAd.discountValue} OFF`;
+                             return { ...p, price: productPrice.toFixed(2), originalPrice: originalProductPrice.toString(), discount: appliedDiscount, offerType: 'fixed' };
+                        } else if (applicableAd.discountType === 'buy-x-get-y') {
+                            return { ...p, offerType: 'buy-x-get-y' };
                         }
                     }
                     
@@ -169,6 +174,7 @@ export default function AccessoriesPage() {
                         price: originalProductPrice.toFixed(2),
                         originalPrice: null,
                         discount: null,
+                        offerType: undefined
                     };
                 });
 

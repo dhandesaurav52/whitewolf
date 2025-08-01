@@ -51,6 +51,7 @@ export type Product = {
   new?: boolean;
   displaySection: 'shop' | 'accessories';
   discount: string | null;
+  offerType?: 'percentage' | 'fixed' | 'buy-x-get-y';
   videoUrl?: string;
   createdAt?: any; // For Firestore timestamp
 };
