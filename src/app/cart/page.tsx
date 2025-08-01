@@ -14,7 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 
 export default function CartPage() {
-  const { cart, removeFromCart, updateQuantity, cartTotal, cartCount, isLoaded, clearCart } = useCart();
+  const { cart, removeFromCart, updateQuantity, subtotal, comboDiscount, cartTotal, cartCount, isLoaded, clearCart } = useCart();
   const [isConfirming, setIsConfirming] = useState(false);
   const { user } = useAuth();
   const router = useRouter();
@@ -99,8 +99,14 @@ export default function CartPage() {
                 <div className="space-y-2">
                     <div className="flex justify-between">
                         <span>Subtotal</span>
-                        <span>₹{cartTotal.toFixed(2)}</span>
+                        <span>₹{subtotal.toFixed(2)}</span>
                     </div>
+                    {comboDiscount > 0 && (
+                        <div className="flex justify-between text-green-600">
+                            <span>Combo Discount</span>
+                            <span>-₹{comboDiscount.toFixed(2)}</span>
+                        </div>
+                    )}
                     <div className="flex justify-between">
                         <span>Shipping</span>
                         <span className="text-green-600">Free</span>
@@ -133,5 +139,3 @@ export default function CartPage() {
     </>
   );
 }
-
-    

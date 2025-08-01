@@ -1,27 +1,38 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import type { CartItem, Product } from "@/lib/types";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import type { CartItem, Product, Advertisement } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
+import * as db from "@/lib/firestore";
 
 const CART_STORAGE_KEY = "cart";
 
 export function useCart() {
   const { toast } = useToast();
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [ads, setAds] = useState<Advertisement[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    try {
-      const items = window.localStorage.getItem(CART_STORAGE_KEY);
-      if (items) {
-        setCart(JSON.parse(items));
-      }
-    } catch (error) {
-      console.error("Failed to load cart from localStorage", error);
-    }
-    setIsLoaded(true);
+    const loadInitialData = async () => {
+        try {
+            const items = window.localStorage.getItem(CART_STORAGE_KEY);
+            if (items) {
+                setCart(JSON.parse(items));
+            }
+            
+            const adsData = await db.ads.getAll();
+            const activeAds = adsData.filter(ad => ad.status === 'Active');
+            setAds(activeAds);
+
+        } catch (error) {
+            console.error("Failed to load cart or ads from storage", error);
+        } finally {
+            setIsLoaded(true);
+        }
+    };
+    loadInitialData();
   }, []);
 
   const saveToLocalStorage = (items: CartItem[]) => {
@@ -104,8 +115,42 @@ export function useCart() {
     saveToLocalStorage([]);
   }, []);
   
-  const cartTotal = cart.reduce((total, item) => total + parseFloat(item.product.price) * item.quantity, 0);
+  const { subtotal, comboDiscount } = useMemo(() => {
+    let calculatedSubtotal = cart.reduce((total, item) => total + parseFloat(item.product.price) * item.quantity, 0);
+    let calculatedComboDiscount = 0;
+    
+    const comboAds = ads.filter(ad => ad.discountType === 'buy-x-get-y' && ad.appliesTo === 'categories');
+
+    for (const ad of comboAds) {
+        const eligibleItems: CartItem[] = [];
+        for (const cat of ad.selectedCategories) {
+            const itemsInCategory = cart.filter(item => item.product.category.toLowerCase() === cat.toLowerCase());
+            eligibleItems.push(...itemsInCategory);
+        }
+
+        const totalEligibleQuantity = eligibleItems.reduce((sum, item) => sum + item.quantity, 0);
+        const buyQuantity = ad.buyQuantity || 1;
+        const getQuantity = ad.getQuantity || 1;
+        const groupSize = buyQuantity + getQuantity;
+
+        if (totalEligibleQuantity >= groupSize) {
+            const numberOfTimesToApply = Math.floor(totalEligibleQuantity / groupSize);
+            const itemsToDiscount = eligibleItems.flatMap(item => Array(item.quantity).fill(item.product)).sort((a,b) => parseFloat(a.price) - parseFloat(b.price));
+            
+            for(let i = 0; i < numberOfTimesToApply * getQuantity; i++) {
+                if (itemsToDiscount[i]) {
+                    calculatedComboDiscount += parseFloat(itemsToDiscount[i].price);
+                }
+            }
+        }
+    }
+    
+    return { subtotal: calculatedSubtotal, comboDiscount: calculatedComboDiscount };
+  }, [cart, ads]);
+
+
+  const cartTotal = subtotal - comboDiscount;
   const cartCount = cart.reduce((count, item) => count + item.quantity, 0);
 
-  return { cart, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount, isLoaded };
+  return { cart, addToCart, removeFromCart, updateQuantity, clearCart, subtotal, comboDiscount, cartTotal, cartCount, isLoaded };
 }
