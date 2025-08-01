@@ -284,7 +284,7 @@ export default function Home() {
         {/* Scrolling Products Marquee */}
         {topWear.length > 0 && (
             <section className="py-8 bg-background overflow-hidden group">
-                <div className="flex gap-8 animate-marquee group-hover:[animation-play-state:paused]">
+                <div className="flex animate-marquee hover:[animation-play-state:paused]">
                     {[...topWear, ...topWear].map((product, index) => (
                         <Link key={`${product.id}-${index}`} href={`/product/${product.id}`} className="block aspect-square w-48 h-48 shrink-0 relative overflow-hidden rounded-lg">
                             <Image
