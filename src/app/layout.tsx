@@ -32,7 +32,7 @@ export default function RootLayout({
       <body className={cn("font-body antialiased", "h-full")}>
         <ThemeProvider
             attribute="class"
-            defaultTheme="system"
+            defaultTheme="light"
             enableSystem
             disableTransitionOnChange
         >
