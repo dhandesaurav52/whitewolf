@@ -27,6 +27,7 @@ export default function ProductCard({ product }: { product: ProductType }) {
   const { addToCart } = useCart();
   const { user } = useAuth();
   const router = useRouter();
+  const { api, scrollPrev, scrollNext } = useCarousel();
 
   const productImages = product.images && product.images.length > 0 ? product.images : ["https://placehold.co/400x500.png"];
 
@@ -81,8 +82,8 @@ export default function ProductCard({ product }: { product: ProductType }) {
         </Link>
         {productImages.length > 1 && (
             <>
-                <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <CarouselPrevious onClick={(e) => { e.preventDefault(); e.stopPropagation(); scrollPrev(); }} className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <CarouselNext onClick={(e) => { e.preventDefault(); e.stopPropagation(); scrollNext(); }} className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" />
             </>
         )}
          {product.offerType === 'buy-x-get-y' && (
@@ -103,9 +104,7 @@ export default function ProductCard({ product }: { product: ProductType }) {
       </Carousel>
       
       <CardContent className="p-4 space-y-1">
-        {product.brand && <p className="text-sm text-muted-foreground">{product.brand}</p>}
-        <h3 className="font-headline text-lg text-primary truncate">{product.name}</h3>
-        <p className="text-sm text-muted-foreground">{product.category}</p>
+        <p className="text-sm font-semibold text-primary truncate">{product.category}</p>
         <div className="flex items-baseline gap-2 pt-1">
           <p className="text-accent font-semibold text-base">{getSymbol(product.currency)}{product.price}</p>
           {product.originalPrice && (
