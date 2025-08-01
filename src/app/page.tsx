@@ -18,6 +18,7 @@ import type { Advertisement, Reel, Product as ProductType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import * as db from "@/lib/firestore";
+import ProductCard from "@/components/ProductCard";
 
 const defaultHero: Advertisement = {
     id: 'default-hero',
@@ -199,7 +200,7 @@ export default function Home() {
       
       setNewArrivals(allProducts.filter(p => p.new).slice(0, 4));
       setOversizeTees(allProducts.filter(p => p.category.toLowerCase() === 'oversized t-shirts').slice(0, 5));
-      setAccessories(allProducts.filter(p => p.displaySection === 'accessories').slice(0, 4));
+      setAccessories(allProducts.filter(p => p.displaySection === 'accessories'));
       
       const uniqueCategories = [...new Set(allProducts.map(p => p.category))];
       const categoryData = uniqueCategories.map(cat => {
@@ -299,6 +300,26 @@ export default function Home() {
                 </div>
             </section>
         )}
+        
+        {/* Scrolling Accessories Marquee */}
+        {accessories.length > 0 && (
+            <section className="py-8 bg-background overflow-hidden group">
+                <div className="flex animate-marquee-reverse hover:[animation-play-state:paused]">
+                    {[...accessories, ...accessories].map((product, index) => (
+                        <Link key={`${product.id}-${index}`} href={`/product/${product.id}`} className="block aspect-square w-48 h-48 shrink-0 relative overflow-hidden">
+                            <Image
+                                src={(product.images && product.images.length > 0) ? product.images[0] : "https://placehold.co/300x300.png"}
+                                alt={product.name}
+                                fill
+                                className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-110"
+                                data-ai-hint={product.aiHint}
+                            />
+                        </Link>
+                    ))}
+                </div>
+            </section>
+        )}
+
 
         {/* New Arrivals Section */}
         {newArrivals.length > 0 && (
@@ -310,23 +331,7 @@ export default function Home() {
               </div>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
                 {newArrivals.map((product) => (
-                  <Link key={product.id} href={`/product/${product.id}`} className="group block overflow-hidden rounded-lg border border-transparent hover:border-primary transition-colors duration-300">
-                    <div className="relative aspect-[4/5] bg-muted overflow-hidden">
-                      <Image
-                        src={(product.images && product.images.length > 0) ? product.images[0] : "https://placehold.co/400x500.png"}
-                        alt={product.name}
-                        fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                        data-ai-hint={product.aiHint}
-                      />
-                    </div>
-                    <div className="p-2 space-y-1">
-                      {product.brand && <p className="text-sm text-muted-foreground">{product.brand}</p>}
-                      <h3 className="font-headline text-lg text-primary truncate">{product.name}</h3>
-                      <p className="text-sm text-muted-foreground">{product.category}</p>
-                      <p className="text-accent font-semibold pt-1">₹{product.price}</p>
-                    </div>
-                  </Link>
+                  <ProductCard key={product.id} product={product} />
                 ))}
               </div>
               <div className="text-center mt-12">
@@ -360,27 +365,7 @@ export default function Home() {
                   {oversizeTees.map((tee, index) => (
                     <CarouselItem key={index} className="basis-1/2 md:basis-1/3 lg:basis-1/4">
                       <div className="p-1">
-                        <Card className="bg-card border-border overflow-hidden group transition-all duration-300 hover:border-primary hover:shadow-md">
-                          <CardContent className="p-0">
-                            <Link href={`/product/${tee.id}`}>
-                              <div className="relative aspect-[4/5] overflow-hidden">
-                                <Image
-                                    src={(tee.images && tee.images.length > 0) ? tee.images[0] : "https://placehold.co/400x500.png"}
-                                    alt={tee.name}
-                                    fill
-                                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                    data-ai-hint={tee.aiHint}
-                                  />
-                              </div>
-                            </Link>
-                            <div className="p-4 space-y-1">
-                                {tee.brand && <p className="text-sm text-muted-foreground">{tee.brand}</p>}
-                                <h3 className="text-lg font-headline text-primary truncate">{tee.name}</h3>
-                                <p className="text-sm text-muted-foreground">{tee.category}</p>
-                                <p className="text-accent font-bold pt-1">₹{tee.price}</p>
-                            </div>
-                          </CardContent>
-                        </Card>
+                        <ProductCard product={tee} />
                       </div>
                     </CarouselItem>
                   ))}
@@ -402,23 +387,7 @@ export default function Home() {
               </div>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
                 {accessories.map((item, i) => (
-                  <Link key={item.id || i} href={`/product/${item.id}`} className="group block overflow-hidden rounded-lg border border-transparent hover:border-primary transition-colors duration-300">
-                    <div className="relative aspect-[4/5] bg-muted overflow-hidden">
-                      <Image
-                        src={item.images && item.images.length > 0 ? item.images[0] : "https://placehold.co/400x500.png"}
-                        alt={item.name}
-                        fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                        data-ai-hint={item.aiHint}
-                      />
-                    </div>
-                    <div className="p-2 space-y-1">
-                      {item.brand && <p className="text-sm text-muted-foreground">{item.brand}</p>}
-                      <h3 className="font-headline text-lg text-primary truncate">{item.name}</h3>
-                      <p className="text-sm text-muted-foreground">{item.category}</p>
-                      <p className="text-accent font-semibold pt-1">₹{item.price}</p>
-                    </div>
-                  </Link>
+                  <ProductCard key={item.id || i} product={item} />
                 ))}
               </div>
               <div className="text-center mt-12">
