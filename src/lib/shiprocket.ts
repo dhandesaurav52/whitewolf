@@ -34,7 +34,6 @@ export const createShipment = async (order: Order) => {
 
     const orderItems = order.items.map(item => ({
         name: item.product.name,
-        sku: item.product.id,
         units: item.quantity,
         selling_price: Number(item.product.price),
         hsn: 6109, // HSN code for T-shirts/knitted apparel
