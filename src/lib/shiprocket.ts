@@ -27,8 +27,10 @@ const getAuthToken = async (): Promise<string> => {
 export const createShipment = async (order: Order) => {
     const token = await getAuthToken();
     
-    const [firstName, ...lastNameParts] = order.customer.name.split(' ');
-    const lastName = lastNameParts.join(' ') || firstName;
+    const nameParts = order.customer.name.split(' ');
+    const firstName = nameParts[0];
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : (firstName || "Customer");
+
 
     const orderItems = order.items.map(item => ({
         name: item.product.name,
@@ -38,7 +40,7 @@ export const createShipment = async (order: Order) => {
         hsn: 4911, // Example HSN code, should be configured per product if needed
     }));
     
-    // Ensure date is in 'YYYY-MM-DD' format
+    // Ensure date is in 'YYYY-MM-DD' format from a string
     const orderDate = new Date(order.orderDate);
     const formattedOrderDate = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}-${String(orderDate.getDate()).padStart(2, '0')}`;
 
@@ -46,7 +48,7 @@ export const createShipment = async (order: Order) => {
     const shipmentData = {
         order_id: order.id,
         order_date: formattedOrderDate,
-        pickup_location: "Primary", // This should match a pickup location name in your Shiprocket account
+        pickup_location: "Primary", // This MUST match a pickup location name in your Shiprocket account
         billing_customer_name: firstName,
         billing_last_name: lastName,
         billing_address: order.customer.address,
@@ -77,7 +79,15 @@ export const createShipment = async (order: Order) => {
         return response.data;
     } catch (error: any) {
         console.error('Shiprocket Shipment Creation Error:', error.response?.data || error.message);
-        const errorMessage = error.response?.data?.errors ? JSON.stringify(error.response.data.errors) : error.message;
+        let errorMessage = error.message;
+        if (error.response?.data?.errors) {
+            const errorDetail = JSON.stringify(error.response.data.errors);
+            if (errorDetail.toLowerCase().includes('pickup location')) {
+                errorMessage = "Invalid Pickup Location. Please ensure you have a pickup location named 'Primary' in your Shiprocket dashboard settings.";
+            } else {
+                 errorMessage = errorDetail;
+            }
+        }
         throw new Error(`Failed to create shipment: ${errorMessage}`);
     }
 };
