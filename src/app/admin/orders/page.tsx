@@ -8,11 +8,12 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Truck, Package, CheckCircle, Ban, RefreshCw, Undo2, Check, Star, Search, MapPin, Phone, Loader2, XCircle, CreditCard, Wallet } from "lucide-react";
+import { MoreHorizontal, Truck, Package, CheckCircle, Ban, RefreshCw, Undo2, Check, Star, Search, MapPin, Phone, Loader2, XCircle, CreditCard, Wallet, Send } from "lucide-react";
 import type { Order, OrderStatus, Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -37,7 +38,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import * as db from '@/lib/firestore';
 import { useToast } from "@/hooks/use-toast";
 import { Timestamp } from "firebase/firestore";
-import { sendOrderStatusUpdateEmail, sendReturnStatusEmail } from "@/app/actions";
+import { sendOrderStatusUpdateEmail, sendReturnStatusEmail, createShipmentAction } from "@/app/actions";
 
 const statusStyles: { [key in OrderStatus]: { color: string, text: string } } = {
   Pending: "bg-yellow-100 text-yellow-800 border-yellow-300",
@@ -130,6 +131,15 @@ export default function ManageOrdersPage() {
         }
     };
     
+    const handleSendToShiprocket = async (order: Order) => {
+        const result = await createShipmentAction(order);
+        if (result.success) {
+            toast({ title: "Success", description: "Order sent to Shiprocket successfully." });
+        } else {
+            toast({ title: "Error", description: `Failed to send to Shiprocket: ${result.error}`, variant: "destructive", duration: 8000 });
+        }
+    };
+
     const getActionableStatuses = (currentStatus: OrderStatus): OrderStatus[] => {
         if (currentStatus === 'Return Requested') return ['Return Accepted', 'Return Request Rejected'];
         if (currentStatus === 'Return Accepted') return ['Return Confirmed'];
@@ -328,6 +338,11 @@ export default function ManageOrdersPage() {
                                                             </DropdownMenuItem>
                                                         )
                                                     ))}
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem onClick={() => handleSendToShiprocket(order)}>
+                                                        <Send className="mr-2 h-4 w-4" />
+                                                        Send to Shiprocket
+                                                    </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>
