@@ -28,19 +28,18 @@ export const createShipment = async (order: Order) => {
     const token = await getAuthToken();
     
     const nameParts = order.customer.name.split(' ');
-    const firstName = nameParts[0];
-    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : (firstName || "Customer");
+    const firstName = nameParts[0] || 'Customer';
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : (firstName || " ");
 
 
     const orderItems = order.items.map(item => ({
         name: item.product.name,
         sku: item.product.id,
         units: item.quantity,
-        selling_price: item.product.price,
-        hsn: 4911, // Example HSN code, should be configured per product if needed
+        selling_price: Number(item.product.price),
+        hsn: 6109, // HSN code for T-shirts/knitted apparel
     }));
     
-    // Ensure date is in 'YYYY-MM-DD' format from a string
     const orderDate = new Date(order.orderDate);
     const formattedOrderDate = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}-${String(orderDate.getDate()).padStart(2, '0')}`;
 
@@ -61,11 +60,11 @@ export const createShipment = async (order: Order) => {
         shipping_is_billing: true,
         order_items: orderItems,
         payment_method: order.paymentMethod === 'Online' ? 'Prepaid' : 'COD',
-        sub_total: order.total,
-        length: 10, // These dimensions can be customized
+        sub_total: Number(order.total),
+        length: 10,
         breadth: 10,
         height: 10,
-        weight: 0.5, // Weight in kgs
+        weight: Number(0.5),
     };
 
     try {
