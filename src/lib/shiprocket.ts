@@ -37,10 +37,15 @@ export const createShipment = async (order: Order) => {
         selling_price: item.product.price,
         hsn: 4911, // Example HSN code, should be configured per product if needed
     }));
+    
+    // Ensure date is in 'YYYY-MM-DD' format
+    const orderDate = new Date(order.orderDate);
+    const formattedOrderDate = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}-${String(orderDate.getDate()).padStart(2, '0')}`;
+
 
     const shipmentData = {
         order_id: order.id,
-        order_date: new Date(order.orderDate).toISOString().split('T')[0], // format YYYY-MM-DD
+        order_date: formattedOrderDate,
         pickup_location: "Primary", // This should match a pickup location name in your Shiprocket account
         billing_customer_name: firstName,
         billing_last_name: lastName,
