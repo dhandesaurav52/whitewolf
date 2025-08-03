@@ -15,36 +15,28 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-let app: FirebaseApp | null = null;
-let auth: Auth | null = null;
+let app: FirebaseApp;
+let auth: Auth;
 let storage: FirebaseStorage | null = null;
-let db = null;
+let db: any;
 
-function initializeFirebase() {
-    if (firebaseConfig.apiKey && !getApps().length) {
-        try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            storage = getStorage(app);
-            db = getFirestore(app);
-        } catch (error) {
-            console.error("Firebase initialization error:", error);
-            app = null;
-            auth = null;
-            storage = null;
-            db = null;
-        }
-    } else if (getApps().length > 0) {
-        app = getApp();
+if (firebaseConfig.apiKey && !getApps().length) {
+    try {
+        app = initializeApp(firebaseConfig);
         auth = getAuth(app);
         storage = getStorage(app);
         db = getFirestore(app);
-    } else {
-        console.warn("Firebase API key is not defined. Firebase services will be disabled.");
+    } catch (error) {
+        console.error("Firebase initialization error:", error);
     }
+} else if (getApps().length > 0) {
+    app = getApp();
+    auth = getAuth(app);
+    storage = getStorage(app);
+    db = getFirestore(app);
+} else {
+    console.warn("Firebase API key is not defined. Firebase services will be disabled.");
 }
-
-initializeFirebase();
 
 
 // New function to upload files to Firebase Storage

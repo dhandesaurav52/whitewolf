@@ -144,7 +144,7 @@ export default function ConfirmPurchaseDialog({
         });
         
         // Send order to Shiprocket
-        const shipmentResult = await createShipmentAction(newOrder);
+        const shipmentResult = await createShipmentAction({ ...newOrderData, id: newOrder.id });
         if (shipmentResult.success) {
           toast({ title: "Shipment Created", description: "Your order has been sent to our shipping partner." });
         } else {

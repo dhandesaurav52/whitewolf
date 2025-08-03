@@ -17,40 +17,48 @@ import {
 import { app } from "./firebase";
 import type { Product, Order, Advertisement, Reel, User, ProfileAddress } from './types';
 
-if (!app) {
-  throw new Error("Firebase is not initialized. Cannot use Firestore services.");
+let db: any;
+if (app) {
+    db = getFirestore(app);
+} else {
+    console.error("Firebase is not initialized. Cannot use Firestore services.");
 }
-
-const db = getFirestore(app);
 
 // Generic Firestore Functions
 async function getAll<T>(collectionName: string): Promise<T[]> {
+    if (!db) throw new Error("Firestore is not initialized.");
     const querySnapshot = await getDocs(collection(db, collectionName));
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as T));
 }
 
 async function getById<T>(collectionName:string, id: string): Promise<T | null> {
+    if (!db) throw new Error("Firestore is not initialized.");
     const docRef = doc(db, collectionName, id);
     const docSnap = await getDoc(docRef);
     return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as T : null;
 }
 
 async function add<T>(collectionName: string, data: Omit<T, 'id'>): Promise<T> {
+    if (!db) throw new Error("Firestore is not initialized.");
     const docRef = await addDoc(collection(db, collectionName), data);
-    return { id: docRef.id, ...data } as T;
+    const docSnap = await getDoc(docRef);
+    return { id: docRef.id, ...docSnap.data() } as T;
 }
 
 async function update<T>(collectionName: string, id: string, data: Partial<T>): Promise<void> {
+    if (!db) throw new Error("Firestore is not initialized.");
     const docRef = doc(db, collectionName, id);
     await updateDoc(docRef, data);
 }
 
 async function set<T>(collectionName: string, id: string, data: Partial<T>): Promise<void> {
+    if (!db) throw new Error("Firestore is not initialized.");
     const docRef = doc(db, collectionName, id);
     await setDoc(docRef, data, { merge: true });
 }
 
 async function remove(collectionName: string, id: string): Promise<void> {
+    if (!db) throw new Error("Firestore is not initialized.");
     const docRef = doc(db, collectionName, id);
     await deleteDoc(docRef);
 }
@@ -63,11 +71,13 @@ export const products = {
     update: (id: string, data: Partial<Product>) => update<Product>('products', id, data),
     remove: (id: string) => remove('products', id),
     getNewArrivals: async () => {
+        if (!db) throw new Error("Firestore is not initialized.");
         const q = query(collection(db, "products"), where("new", "==", true), limit(4));
         const querySnapshot = await getDocs(q);
         return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
     },
     getByCategory: async (category: string) => {
+        if (!db) throw new Error("Firestore is not initialized.");
         const q = query(collection(db, "products"), where("category", "==", category));
         const querySnapshot = await getDocs(q);
         return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
@@ -78,6 +88,7 @@ export const orders = {
     getAll: () => getAll<Order>('orders'),
     getById: (id: string) => getById<Order>('orders', id),
     getByUser: async (userId: string) => {
+        if (!db) throw new Error("Firestore is not initialized.");
         const q = query(collection(db, "orders"), where("customer.userId", "==", userId));
         const querySnapshot = await getDocs(q);
         return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
@@ -104,6 +115,7 @@ export const profiles = {
     get: (userId: string) => getById<ProfileAddress>('profiles', userId),
     set: (userId: string, data: Partial<ProfileAddress>) => set<ProfileAddress>('profiles', userId, data),
     getByEmail: async (email: string) => {
+        if (!db) throw new Error("Firestore is not initialized.");
         const q = query(collection(db, "users"), where("email", "==", email), limit(1));
         const userQuerySnapshot = await getDocs(q);
         if (userQuerySnapshot.empty) {
