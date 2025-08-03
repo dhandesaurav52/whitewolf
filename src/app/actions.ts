@@ -9,7 +9,7 @@ import { createShipment } from '@/lib/shiprocket';
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 } else {
-  console.warn("SendGrid API Key not found in server action. Email sending will be disabled.");
+  console.warn("SendGrid API Key not found. Email sending will be disabled.");
 }
 
 interface MailOptions {
@@ -236,3 +236,5 @@ export async function createShipmentAction(order: Order) {
     return { success: false, error: error.message };
   }
 }
+
+    
