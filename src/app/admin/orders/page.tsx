@@ -73,6 +73,9 @@ const formatDate = (timestamp: any): string => {
     if (typeof timestamp === 'string') {
         return new Date(timestamp).toLocaleDateString();
     }
+     if (timestamp && typeof timestamp.seconds === 'number') {
+        return new Date(timestamp.seconds * 1000).toLocaleDateString();
+    }
     return 'N/A';
 };
 
@@ -91,9 +94,9 @@ export default function ManageOrdersPage() {
         try {
             const allOrders = await db.orders.getAll();
             setOrders(allOrders.sort((a, b) => {
-                const dateA = a.orderDate instanceof Timestamp ? a.orderDate.toMillis() : new Date(a.orderDate).getTime();
-                const dateB = b.orderDate instanceof Timestamp ? b.orderDate.toMillis() : new Date(b.orderDate).getTime();
-                return dateB - dateA;
+                const dateAValue = a.orderDate?.seconds ? a.orderDate.seconds * 1000 : new Date(a.orderDate).getTime();
+                const dateBValue = b.orderDate?.seconds ? b.orderDate.seconds * 1000 : new Date(b.orderDate).getTime();
+                return dateBValue - dateAValue;
             }));
         } catch (error) {
             console.error("Failed to load orders", error);
@@ -132,7 +135,9 @@ export default function ManageOrdersPage() {
     };
     
     const handleSendToShiprocket = async (order: Order) => {
-        const result = await createShipmentAction(order);
+        // Convert the order object with Firestore Timestamps to a plain JSON-serializable object
+        const plainOrder = JSON.parse(JSON.stringify(order));
+        const result = await createShipmentAction(plainOrder);
         if (result.success) {
             toast({ title: "Success", description: "Order sent to Shiprocket successfully." });
         } else {

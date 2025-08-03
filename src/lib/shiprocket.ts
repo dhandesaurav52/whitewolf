@@ -40,7 +40,7 @@ export const createShipment = async (order: Order) => {
 
     const shipmentData = {
         order_id: order.id,
-        order_date: new Date(order.orderDate.seconds * 1000).toISOString().split('T')[0], // format YYYY-MM-DD
+        order_date: new Date(order.orderDate).toISOString().split('T')[0], // format YYYY-MM-DD
         pickup_location: "Primary", // This should match a pickup location name in your Shiprocket account
         billing_customer_name: firstName,
         billing_last_name: lastName,
