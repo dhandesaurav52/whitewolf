@@ -3,7 +3,7 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { getAuth, Auth } from "firebase/auth";
 import { getStorage, ref, uploadBytes, getDownloadURL, FirebaseStorage } from "firebase/storage";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, Firestore } from "firebase/firestore";
 
 
 const firebaseConfig = {
@@ -18,24 +18,25 @@ const firebaseConfig = {
 let app: FirebaseApp;
 let auth: Auth;
 let storage: FirebaseStorage | null = null;
-let db: any;
+let db: Firestore;
 
-if (firebaseConfig.apiKey && !getApps().length) {
-    try {
-        app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        storage = getStorage(app);
-        db = getFirestore(app);
-    } catch (error) {
-        console.error("Firebase initialization error:", error);
+if (firebaseConfig.apiKey) {
+    if (!getApps().length) {
+        try {
+            app = initializeApp(firebaseConfig);
+        } catch (error) {
+            console.error("Firebase initialization error:", error);
+        }
+    } else {
+        app = getApp();
     }
-} else if (getApps().length > 0) {
-    app = getApp();
     auth = getAuth(app);
     storage = getStorage(app);
     db = getFirestore(app);
 } else {
     console.warn("Firebase API key is not defined. Firebase services will be disabled.");
+    // Assign null or handle the uninitialized state as needed
+    // For now, this will cause errors if firebase services are used, which is intended.
 }
 
 

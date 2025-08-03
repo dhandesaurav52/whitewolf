@@ -1,6 +1,5 @@
 
 import { 
-    getFirestore, 
     collection, 
     getDocs, 
     doc, 
@@ -14,15 +13,8 @@ import {
     limit,
     setDoc
 } from "firebase/firestore";
-import { app } from "./firebase";
+import { db } from "./firebase";
 import type { Product, Order, Advertisement, Reel, User, ProfileAddress } from './types';
-
-let db: any;
-if (app) {
-    db = getFirestore(app);
-} else {
-    console.error("Firebase is not initialized. Cannot use Firestore services.");
-}
 
 // Generic Firestore Functions
 async function getAll<T>(collectionName: string): Promise<T[]> {
