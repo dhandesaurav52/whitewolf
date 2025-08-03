@@ -40,7 +40,9 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID,
     SENDGRID_API_KEY: process.env.SENDGRID_API_KEY,
-    SENDGRID_FROM_EMAIL: process.env.SENDGRID_FROM_EMAIL
+    SENDGRID_FROM_EMAIL: process.env.SENDGRID_FROM_EMAIL,
+    SHIPROCKET_EMAIL: process.env.SHIPROCKET_EMAIL,
+    SHIPROCKET_PASSWORD: process.env.SHIPROCKET_PASSWORD,
   },
   devIndicators: {
     allowedDevOrigins: [

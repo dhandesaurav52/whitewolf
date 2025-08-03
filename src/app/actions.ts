@@ -3,7 +3,8 @@
 
 import sgMail from '@sendgrid/mail';
 import * as db from '@/lib/firestore';
-import { User } from '@/lib/types';
+import { User, Order } from '@/lib/types';
+import { createShipment } from '@/lib/shiprocket';
 
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -223,4 +224,15 @@ export async function sendAccountDeletionEmail({ email, name }: { email: string;
         text: `Goodbye, ${name}. Your White Wolf account has been deleted.`
     };
     return await sendSgEmail(emailOptions);
+}
+
+
+export async function createShipmentAction(order: Order) {
+  try {
+    const response = await createShipment(order);
+    return { success: true, data: response };
+  } catch (error: any) {
+    console.error("Error creating shipment via server action:", error.message);
+    return { success: false, error: error.message };
+  }
 }

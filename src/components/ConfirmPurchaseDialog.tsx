@@ -19,7 +19,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import * as db from '@/lib/firestore';
 import { serverTimestamp } from "firebase/firestore";
-import { sendOrderConfirmationEmail } from "@/app/actions";
+import { sendOrderConfirmationEmail, createShipmentAction } from "@/app/actions";
 
 const checkoutSchema = z.object({
     name: z.string().min(1, "Full name is required"),
@@ -143,6 +143,14 @@ export default function ConfirmPurchaseDialog({
             description: `Thank you for your purchase. Your order is being processed.`,
         });
         
+        // Send order to Shiprocket
+        const shipmentResult = await createShipmentAction(newOrder);
+        if (shipmentResult.success) {
+          toast({ title: "Shipment Created", description: "Your order has been sent to our shipping partner." });
+        } else {
+          toast({ title: "Shipment Error", description: `Could not send order to shipping partner. Please contact support. Error: ${shipmentResult.error}`, variant: "destructive", duration: 10000 });
+        }
+
         // Send confirmation email via Server Action
         try {
             const emailItems = itemsToPurchase.map(item => ({
