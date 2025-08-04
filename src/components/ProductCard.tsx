@@ -93,7 +93,7 @@ export default function ProductCard({ product }: { product: ProductType }) {
         </Button>
       </div>
 
-      <Carousel className="w-full" opts={{ loop: product.images.length > 1 }}>
+      <Carousel className="w-full" opts={{ loop: product.images && product.images.length > 1 }}>
         <ProductCardCarousel product={product} />
         {product.offerType === 'buy-x-get-y' && (
             <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground">
@@ -101,7 +101,7 @@ export default function ProductCard({ product }: { product: ProductType }) {
             </Badge>
           )}
           {product.discount && (
-            <Badge variant="destructive" className={cn("absolute top-3", product.offerType === 'buy-x-get-y' ? "top-10" : "top-3", "left-3")}>
+            <Badge variant="destructive" className={cn("absolute left-3", product.offerType === 'buy-x-get-y' ? "top-10" : "top-3")}>
               {product.discount}
             </Badge>
           )}
