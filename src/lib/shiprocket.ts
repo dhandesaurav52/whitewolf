@@ -31,7 +31,6 @@ export const createShipment = async (order: Order) => {
     const firstName = nameParts[0] || 'Customer';
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : firstName;
 
-
     const orderItems = order.items.map(item => ({
         name: item.product.name,
         sku: item.product.id.substring(0, 10), // Use first 10 chars of product ID as SKU
@@ -43,8 +42,8 @@ export const createShipment = async (order: Order) => {
     const orderDate = order.orderDate.seconds ? new Date(order.orderDate.seconds * 1000) : new Date(order.orderDate);
     const formattedOrderDate = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}-${String(orderDate.getDate()).padStart(2, '0')} ${String(orderDate.getHours()).padStart(2, '0')}:${String(orderDate.getMinutes()).padStart(2, '0')}`;
 
-
     const shipmentData = {
+        channel_id: process.env.SHIPROCKET_CHANNEL_ID,
         order_id: order.id,
         order_date: formattedOrderDate,
         pickup_location: "Primary",

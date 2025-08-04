@@ -43,6 +43,7 @@ const nextConfig: NextConfig = {
     SENDGRID_FROM_EMAIL: process.env.SENDGRID_FROM_EMAIL,
     SHIPROCKET_EMAIL: process.env.SHIPROCKET_EMAIL,
     SHIPROCKET_PASSWORD: process.env.SHIPROCKET_PASSWORD,
+    SHIPROCKET_CHANNEL_ID: process.env.SHIPROCKET_CHANNEL_ID,
   },
   devIndicators: {
     allowedDevOrigins: [
