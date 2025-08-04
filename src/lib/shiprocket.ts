@@ -28,7 +28,7 @@ export const createShipment = async (order: Order) => {
     const token = await getAuthToken();
     
     const nameParts = order.customer.name.trim().split(/\s+/);
-    const firstName = nameParts[0] || 'Customer';
+    const firstName = nameParts.length > 0 ? nameParts[0] : 'Customer';
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
 
     const orderItems = order.items.map(item => ({
