@@ -27,9 +27,9 @@ const getAuthToken = async (): Promise<string> => {
 export const createShipment = async (order: Order) => {
     const token = await getAuthToken();
     
-    const nameParts = order.customer.name.split(' ');
+    const nameParts = order.customer.name.trim().split(/\s+/);
     const firstName = nameParts[0] || 'Customer';
-    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : (firstName || " ");
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : firstName;
 
 
     const orderItems = order.items.map(item => ({
@@ -40,8 +40,8 @@ export const createShipment = async (order: Order) => {
         hsn: 6109,
     }));
     
-    const now = new Date();
-    const formattedOrderDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const orderDate = order.orderDate.seconds ? new Date(order.orderDate.seconds * 1000) : new Date(order.orderDate);
+    const formattedOrderDate = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}-${String(orderDate.getDate()).padStart(2, '0')} ${String(orderDate.getHours()).padStart(2, '0')}:${String(orderDate.getMinutes()).padStart(2, '0')}`;
 
 
     const shipmentData = {
@@ -66,6 +66,8 @@ export const createShipment = async (order: Order) => {
         height: 10,
         weight: Number(0.5),
     };
+
+    console.log("Sending the following data to Shiprocket:", JSON.stringify(shipmentData, null, 2));
 
     try {
         const response = await axios.post(`${API_URL}/orders/create/adhoc`, shipmentData, {
