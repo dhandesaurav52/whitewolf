@@ -42,8 +42,8 @@ export const createShipment = async (order: Order) => {
     const orderDate = order.orderDate.seconds ? new Date(order.orderDate.seconds * 1000) : new Date(order.orderDate);
     const formattedOrderDate = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}-${String(orderDate.getDate()).padStart(2, '0')} ${String(orderDate.getHours()).padStart(2, '0')}:${String(orderDate.getMinutes()).padStart(2, '0')}`;
 
-    // Correctly calculate subtotal from items, not the grand total.
-    const sub_total = orderItems.reduce((acc, item) => acc + (item.selling_price * item.units), 0);
+    // Correctly calculate subtotal from items. This IS the discounted total.
+    const sub_total = order.total;
 
     // Calculate total weight and find max dimensions from all products in the order
     let totalWeight = 0;
