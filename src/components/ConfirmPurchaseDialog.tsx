@@ -119,6 +119,9 @@ export default function ConfirmPurchaseDialog({
         toast({ title: "Not Authenticated", description: "You must be logged in to place an order.", variant: "destructive" });
         return;
     }
+    
+    // Always use the latest form values for shipping details
+    const finalShippingDetails = form.getValues();
 
     const cleanItemsForOrder = itemsToPurchase.map(item => {
       const { product, quantity, size } = item;
@@ -150,7 +153,7 @@ export default function ConfirmPurchaseDialog({
     });
 
     const orderPayload: Omit<Order, 'id' | 'deliveryDate'> = {
-        customer: { ...shippingDetails, userId: user.uid },
+        customer: { ...finalShippingDetails, userId: user.uid },
         items: cleanItemsForOrder,
         total: totalAmount,
         status: 'Pending',
@@ -163,7 +166,6 @@ export default function ConfirmPurchaseDialog({
     try {
         const newOrderRef = await db.orders.add(orderPayload as Omit<Order, 'id'>);
         
-        // Fetch the created order to get the server-generated timestamp
         const newOrder = await db.orders.getById(newOrderRef.id);
         if (!newOrder) {
             throw new Error("Could not retrieve the newly created order.");
@@ -174,7 +176,6 @@ export default function ConfirmPurchaseDialog({
             description: `Thank you for your purchase. Your order is being processed.`,
         });
         
-        // Convert the order object to a plain, serializable object before sending to the server action
         const plainOrder = JSON.parse(JSON.stringify(newOrder));
         const shipmentResult = await createShipmentAction(plainOrder);
         
@@ -191,7 +192,7 @@ export default function ConfirmPurchaseDialog({
             }));
 
             const emailResult = await sendOrderConfirmationEmail({
-                shippingDetails,
+                shippingDetails: finalShippingDetails,
                 itemsToPurchase: emailItems,
                 totalAmount,
                 orderId: newOrder.id,
