@@ -44,7 +44,7 @@ const createEmailHtml = (content: string) => `
       </div>
       <div style="background-color: #f4f4f4; text-align: center; padding: 15px; font-size: 12px; color: #777;">
         <p>&copy; ${new Date().getFullYear()} White Wolf Co. All Rights Reserved.</p>
-        <p><a href="https://your-store-url.com/shop" style="color: #111827;">Shop</a> | <a href="https://your-store-url.com/profile" style="color: #111827;">My Account</a></p>
+        <p><a href="/shop" style="color: #111827;">Shop</a> | <a href="/profile" style="color: #111827;">My Account</a></p>
       </div>
     </div>
   </div>
@@ -146,7 +146,7 @@ export async function sendWelcomeEmail({ email, name }: { email: string; name: s
         <p>We're excited to have you join The White Wolf community. Your account is all set up.</p>
         <p>Now you can explore our latest collections, build your wishlist, and experience a seamless checkout.</p>
         <div style="text-align: center; margin: 30px 0;">
-          <a href="https://your-store-url.com/shop" style="background-color: #111827; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Shop Now</a>
+          <a href="/shop" style="background-color: #111827; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Shop Now</a>
         </div>
         <p>Walk your own path.</p>
         <p>The White Wolf Team</p>
@@ -236,5 +236,3 @@ export async function createShipmentAction(order: Order) {
     return { success: false, error: error.message };
   }
 }
-
-    

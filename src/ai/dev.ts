@@ -1,4 +1,6 @@
+
 import { config } from 'dotenv';
 config();
 
-// AI flows have been removed.
+// This file is used for development and testing of AI flows.
+// It is not included in the production build.
