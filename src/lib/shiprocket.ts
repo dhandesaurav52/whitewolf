@@ -36,7 +36,7 @@ export const createShipment = async (order: Order) => {
         sku: item.product.id.substring(0, 10), // Use first 10 chars of product ID as SKU
         units: item.quantity,
         selling_price: Number(item.product.price),
-        hsn: 6109,
+        hsn: 6109, // A default HSN code for apparel, can be customized per product
     }));
     
     const orderDate = order.orderDate.seconds ? new Date(order.orderDate.seconds * 1000) : new Date(order.orderDate);
@@ -45,11 +45,25 @@ export const createShipment = async (order: Order) => {
     // Correctly calculate subtotal from items, not the grand total.
     const sub_total = orderItems.reduce((acc, item) => acc + (item.selling_price * item.units), 0);
 
+    // Calculate total weight and find max dimensions from all products in the order
+    let totalWeight = 0;
+    let maxLength = 0;
+    let maxBreadth = 0;
+    let maxHeight = 0;
+
+    order.items.forEach(item => {
+        const productWeight = item.product.weight || 0.5; // Default to 0.5kg if not set
+        totalWeight += productWeight * item.quantity;
+        maxLength = Math.max(maxLength, item.product.length || 10); // Default to 10cm
+        maxBreadth = Math.max(maxBreadth, item.product.breadth || 10);
+        maxHeight = Math.max(maxHeight, item.product.height || 10);
+    });
+
     const shipmentData = {
         channel_id: process.env.SHIPROCKET_CHANNEL_ID,
         order_id: order.id,
         order_date: formattedOrderDate,
-        pickup_location: "Home",
+        pickup_location: "Home", // This must match the Nickname in your Shiprocket pickup addresses
         billing_customer_name: firstName,
         billing_last_name: lastName,
         billing_address: order.customer.address,
@@ -63,10 +77,10 @@ export const createShipment = async (order: Order) => {
         order_items: orderItems,
         payment_method: order.paymentMethod === 'Online' ? 'Prepaid' : 'COD',
         sub_total: sub_total,
-        length: 10,
-        breadth: 10,
-        height: 10,
-        weight: Number(0.5),
+        length: maxLength,
+        breadth: maxBreadth,
+        height: maxHeight,
+        weight: totalWeight, // Use calculated total weight
     };
 
     console.log("Sending the following data to Shiprocket:", JSON.stringify(shipmentData, null, 2));

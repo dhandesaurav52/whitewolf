@@ -226,6 +226,24 @@ export default function EditProductDialog({ product, onSave, onClose }: EditProd
                     <Input id="stock" type="number" value={editedProduct.stock} onChange={(e) => handleChange('stock', Number(e.target.value))} />
                 </div>
               </div>
+               <div className="grid grid-cols-4 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="weight" className="text-accent">Weight (kg)</Label>
+                        <Input id="weight" type="number" value={editedProduct.weight || 0} onChange={(e) => handleChange('weight', Number(e.target.value))} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="length" className="text-accent">Length (cm)</Label>
+                        <Input id="length" type="number" value={editedProduct.length || 0} onChange={(e) => handleChange('length', Number(e.target.value))} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="breadth" className="text-accent">Breadth (cm)</Label>
+                        <Input id="breadth" type="number" value={editedProduct.breadth || 0} onChange={(e) => handleChange('breadth', Number(e.target.value))} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="height" className="text-accent">Height (cm)</Label>
+                        <Input id="height" type="number" value={editedProduct.height || 0} onChange={(e) => handleChange('height', Number(e.target.value))} />
+                    </div>
+                </div>
                 <div className="space-y-2">
                     <Label htmlFor="product-video" className="text-accent">Product Video</Label>
                     <Input id="product-video" value={editedProduct.videoUrl || ''} onChange={(e) => handleChange('videoUrl', e.target.value)} placeholder="Enter video URL..."/>

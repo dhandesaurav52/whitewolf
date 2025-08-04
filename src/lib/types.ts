@@ -1,4 +1,5 @@
 
+
 export type Garment = {
     name: string;
     description: string;
@@ -54,6 +55,10 @@ export type Product = {
   offerType?: 'percentage' | 'fixed' | 'buy-x-get-y';
   videoUrl?: string;
   createdAt?: any; // For Firestore timestamp
+  weight?: number; // in kg
+  length?: number; // in cm
+  breadth?: number; // in cm
+  height?: number; // in cm
 };
 
 export type CartItem = {

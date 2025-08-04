@@ -74,6 +74,10 @@ export default function AdminProductsPage() {
     const [newVideoFile, setNewVideoFile] = useState<File | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isDataLoading, setIsDataLoading] = useState(true);
+    const [newWeight, setNewWeight] = useState(0.5);
+    const [newLength, setNewLength] = useState(10);
+    const [newBreadth, setNewBreadth] = useState(10);
+    const [newHeight, setNewHeight] = useState(10);
 
     const loadData = useCallback(async () => {
         setIsDataLoading(true);
@@ -170,6 +174,10 @@ export default function AdminProductsPage() {
         setNewStock(0);
         setNewImageFiles([]);
         setNewVideoFile(null);
+        setNewWeight(0.5);
+        setNewLength(10);
+        setNewBreadth(10);
+        setNewHeight(10);
     };
 
     const handleAddProduct = async () => {
@@ -230,6 +238,10 @@ export default function AdminProductsPage() {
                 originalPrice: null,
                 discount: null,
                 createdAt: serverTimestamp(),
+                weight: newWeight,
+                length: newLength,
+                breadth: newBreadth,
+                height: newHeight,
             };
             
             const addedProduct = await db.products.add(newProductData);
@@ -394,6 +406,25 @@ export default function AdminProductsPage() {
                          <div className="space-y-2">
                             <Label htmlFor="stock" className="text-accent">Stock Quantity</Label>
                             <Input id="stock" type="number" placeholder="e.g., 100" value={newStock} onChange={(e) => setNewStock(Number(e.target.value))} />
+                        </div>
+
+                        <div className="grid grid-cols-4 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="weight" className="text-accent">Weight (kg)</Label>
+                                <Input id="weight" type="number" value={newWeight} onChange={(e) => setNewWeight(Number(e.target.value))} />
+                            </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="length" className="text-accent">Length (cm)</Label>
+                                <Input id="length" type="number" value={newLength} onChange={(e) => setNewLength(Number(e.target.value))} />
+                            </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="breadth" className="text-accent">Breadth (cm)</Label>
+                                <Input id="breadth" type="number" value={newBreadth} onChange={(e) => setNewBreadth(Number(e.target.value))} />
+                            </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="height" className="text-accent">Height (cm)</Label>
+                                <Input id="height" type="number" value={newHeight} onChange={(e) => setNewHeight(Number(e.target.value))} />
+                            </div>
                         </div>
 
                          <div className="space-y-2">
