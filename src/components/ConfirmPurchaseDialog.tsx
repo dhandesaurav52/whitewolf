@@ -120,17 +120,15 @@ export default function ConfirmPurchaseDialog({
         return;
     }
 
-    // Create a clean item list for the order, removing any complex objects or undefined fields
     const cleanItems = itemsToPurchase.map(item => {
         const { createdAt, ...productData } = item.product;
-        const cleanItem: Omit<CartItem, 'product'> & { product: Partial<Product> } = {
-            product: productData,
+        const cleanProduct: Partial<Product> = productData;
+        
+        return {
+            product: cleanProduct,
             quantity: item.quantity,
-        };
-        if (item.size) {
-            cleanItem.size = item.size;
-        }
-        return cleanItem as CartItem;
+            size: item.size || null, // Explicitly set to null if undefined
+        } as CartItem;
     });
 
     const orderPayload: Omit<Order, 'id'> = {
@@ -140,11 +138,8 @@ export default function ConfirmPurchaseDialog({
         status: 'Pending',
         orderDate: serverTimestamp(),
         paymentMethod: paymentMethodValue,
+        ...(paymentId && { paymentId }), // Only add paymentId if it exists
     };
-    
-    if (paymentId) {
-        orderPayload.paymentId = paymentId;
-    }
 
 
     try {
