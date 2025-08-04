@@ -42,6 +42,9 @@ export const createShipment = async (order: Order) => {
     const orderDate = order.orderDate.seconds ? new Date(order.orderDate.seconds * 1000) : new Date(order.orderDate);
     const formattedOrderDate = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}-${String(orderDate.getDate()).padStart(2, '0')} ${String(orderDate.getHours()).padStart(2, '0')}:${String(orderDate.getMinutes()).padStart(2, '0')}`;
 
+    // Correctly calculate subtotal from items, not the grand total.
+    const sub_total = orderItems.reduce((acc, item) => acc + (item.selling_price * item.units), 0);
+
     const shipmentData = {
         channel_id: process.env.SHIPROCKET_CHANNEL_ID,
         order_id: order.id,
@@ -59,7 +62,7 @@ export const createShipment = async (order: Order) => {
         shipping_is_billing: true,
         order_items: orderItems,
         payment_method: order.paymentMethod === 'Online' ? 'Prepaid' : 'COD',
-        sub_total: Number(order.total),
+        sub_total: sub_total,
         length: 10,
         breadth: 10,
         height: 10,
