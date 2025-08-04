@@ -120,30 +120,48 @@ export default function ConfirmPurchaseDialog({
         return;
     }
 
-    const cleanItems = itemsToPurchase.map(item => {
-        const { createdAt, ...productData } = item.product;
-        const cleanProduct: Partial<Product> = productData;
-        
+    // Meticulously create a clean item list for Firestore
+    const cleanItemsForOrder = itemsToPurchase.map(item => {
+        // Create a 'clean' product object with only the fields we need, ensuring no 'undefined' values.
+        const cleanProduct: Partial<Product> = {
+            id: item.product.id,
+            name: item.product.name,
+            price: item.product.price,
+            images: item.product.images || [],
+            category: item.product.category,
+            brand: item.product.brand || null,
+            aiHint: item.product.aiHint || null,
+            currency: item.product.currency || 'INR',
+            description: item.product.description || null,
+            colors: item.product.colors || null,
+            textSizes: item.product.textSizes || null,
+            numericSizes: item.product.numericSizes || null,
+            displaySection: item.product.displaySection || 'shop',
+            stock: item.product.stock || 0,
+            originalPrice: item.product.originalPrice || null,
+            discount: item.product.discount || null,
+        };
+
         return {
             product: cleanProduct,
             quantity: item.quantity,
-            size: item.size || null, // Explicitly set to null if undefined
-        } as CartItem;
+            size: item.size || null,
+        };
     });
 
-    const orderPayload: Omit<Order, 'id'> = {
+    const orderPayload: Omit<Order, 'id' | 'deliveryDate'> = {
         customer: { ...shippingDetails, userId: user.uid },
-        items: cleanItems,
+        items: cleanItemsForOrder,
         total: totalAmount,
         status: 'Pending',
         orderDate: serverTimestamp(),
         paymentMethod: paymentMethodValue,
-        ...(paymentId && { paymentId }), // Only add paymentId if it exists
+        ...(paymentId && { paymentId }),
     };
 
 
     try {
-        const newOrder = await db.orders.add(orderPayload);
+        const newOrder = await db.orders.add(orderPayload as Omit<Order, 'id'>);
         toast({
             title: "Order Placed!",
             description: `Thank you for your purchase. Your order is being processed.`,
