@@ -114,26 +114,28 @@ export default function ConfirmPurchaseDialog({
     }
   }, [user, isOpen, form]);
   
-  const placeOrder = async (shippingDetails: CustomerDetails, paymentMethodValue: 'Online' | 'COD', paymentId?: string) => {
+ const placeOrder = async (shippingDetails: CustomerDetails, paymentMethodValue: 'Online' | 'COD', paymentId?: string) => {
     if (!user) {
         toast({ title: "Not Authenticated", description: "You must be logged in to place an order.", variant: "destructive" });
         return;
     }
 
+    // Create a clean item list for the order, removing any complex objects or undefined fields
+    const cleanItems = itemsToPurchase.map(item => {
+        const { createdAt, ...productData } = item.product;
+        const cleanItem: Omit<CartItem, 'product'> & { product: Partial<Product> } = {
+            product: productData,
+            quantity: item.quantity,
+        };
+        if (item.size) {
+            cleanItem.size = item.size;
+        }
+        return cleanItem as CartItem;
+    });
+
     const orderPayload: Omit<Order, 'id'> = {
         customer: { ...shippingDetails, userId: user.uid },
-        items: itemsToPurchase.map(item => {
-            // Create a clean product object for the order
-            const { createdAt, ...productData } = item.product;
-            const cleanItem: CartItem = {
-                product: productData as Product,
-                quantity: item.quantity,
-            };
-            if (item.size) {
-                cleanItem.size = item.size;
-            }
-            return cleanItem;
-        }),
+        items: cleanItems,
         total: totalAmount,
         status: 'Pending',
         orderDate: serverTimestamp(),
@@ -201,6 +203,7 @@ export default function ConfirmPurchaseDialog({
         });
     }
   };
+
 
   const handleRazorpayPayment = (shippingDetails: CustomerDetails) => {
     setIsLoading(true);
@@ -488,5 +491,3 @@ export default function ConfirmPurchaseDialog({
     </Dialog>
   );
 }
-
-    
