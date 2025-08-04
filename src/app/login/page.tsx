@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormField, FormItem, FormControl, FormMessage, FormLabel } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
+import { sendPasswordResetEmailAction } from "@/app/actions";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -28,6 +29,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isPasswordResetting, setIsPasswordResetting] = useState(false);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -73,13 +75,19 @@ export default function LoginPage() {
       return;
     }
     if (!auth) return;
-    setIsLoading(true);
+    setIsPasswordResetting(true);
     try {
-      await sendPasswordResetEmail(auth, email);
-      toast({
-        title: "Password Reset Email Sent",
-        description: "Check your inbox for a link to reset your password.",
-      });
+      const resetLink = await sendPasswordResetEmail(auth, email);
+      const result = await sendPasswordResetEmailAction({ email, resetLink: window.location.origin }); // Using a placeholder link for now
+      
+      if (result.success) {
+          toast({
+            title: "Password Reset Email Sent",
+            description: "Check your inbox for a link to reset your password.",
+          });
+      } else {
+          throw new Error(result.error || "Failed to send reset email.");
+      }
     } catch (error: any) {
        toast({
         variant: "destructive",
@@ -87,7 +95,7 @@ export default function LoginPage() {
         description: error.message,
       });
     } finally {
-      setIsLoading(false);
+      setIsPasswordResetting(false);
     }
   };
 
@@ -125,8 +133,9 @@ export default function LoginPage() {
                         type="button" 
                         onClick={handlePasswordReset} 
                         className="text-sm font-semibold text-accent hover:underline focus:outline-none"
+                        disabled={isPasswordResetting}
                       >
-                        Forgot Password?
+                        {isPasswordResetting ? <Loader2 className="animate-spin h-4 w-4" /> : "Forgot Password?"}
                       </button>
                     </div>
                     <FormControl>

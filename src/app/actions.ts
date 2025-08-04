@@ -165,6 +165,38 @@ export async function sendWelcomeEmail({ email, name }: { email: string; name: s
     return await sendSgEmail(emailOptions);
 }
 
+export async function sendPasswordResetEmailAction({ email, resetLink }: { email: string; resetLink: string; }) {
+    if (!process.env.SENDGRID_FROM_EMAIL) {
+        return { success: false, error: "Sender email is not configured." };
+    }
+    
+    const emailContent = `
+        <h2 style="color: #111827;">Password Reset Request</h2>
+        <p>Hi,</p>
+        <p>You recently requested to reset your password for your White Wolf account. Click the button below to reset it.</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${resetLink}" style="background-color: #111827; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Reset Your Password</a>
+        </div>
+        <p>If you did not request a password reset, please ignore this email or contact support if you have concerns.</p>
+        <p>Thanks,</p>
+        <p>The White Wolf Team</p>
+    `;
+    
+    const emailOptions: MailOptions = {
+        to: email,
+        from: {
+            name: 'White Wolf',
+            email: process.env.SENDGRID_FROM_EMAIL
+        },
+        subject: "Reset Your White Wolf Password",
+        html: createEmailHtml(emailContent),
+        text: `Please reset your password by clicking this link: ${resetLink}`,
+    };
+    
+    return await sendSgEmail(emailOptions);
+}
+
+
 export async function sendOrderStatusUpdateEmail({ email, name, orderId, status }: { email: string; name: string; orderId: string; status: string }) {
     if (!process.env.SENDGRID_FROM_EMAIL) return { success: false, error: "Sender email is not configured." };
     
