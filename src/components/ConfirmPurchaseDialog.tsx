@@ -120,33 +120,33 @@ export default function ConfirmPurchaseDialog({
         return;
     }
 
-    // Meticulously create a clean item list for Firestore
     const cleanItemsForOrder = itemsToPurchase.map(item => {
-        // Create a 'clean' product object with only the fields we need, ensuring no 'undefined' values.
-        const cleanProduct: Partial<Product> = {
-            id: item.product.id,
-            name: item.product.name,
-            price: item.product.price,
-            images: item.product.images || [],
-            category: item.product.category,
-            brand: item.product.brand || null,
-            aiHint: item.product.aiHint || null,
-            currency: item.product.currency || 'INR',
-            description: item.product.description || null,
-            colors: item.product.colors || null,
-            textSizes: item.product.textSizes || null,
-            numericSizes: item.product.numericSizes || null,
-            displaySection: item.product.displaySection || 'shop',
-            stock: item.product.stock || 0,
-            originalPrice: item.product.originalPrice || null,
-            discount: item.product.discount || null,
-        };
-
-        return {
-            product: cleanProduct,
-            quantity: item.quantity,
-            size: item.size || null,
-        };
+      const { product, quantity, size } = item;
+      const cleanProduct: Partial<Product> = {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          images: product.images || [],
+          category: product.category,
+          brand: product.brand || null,
+          aiHint: product.aiHint || null,
+          currency: product.currency || 'INR',
+          description: product.description || null,
+          colors: product.colors || null,
+          textSizes: product.textSizes || null,
+          numericSizes: product.numericSizes || null,
+          displaySection: product.displaySection || 'shop',
+          stock: product.stock || 0,
+          originalPrice: product.originalPrice || null,
+          discount: product.discount || null,
+          videoUrl: product.videoUrl || null,
+      };
+      
+      return {
+        product: cleanProduct,
+        quantity: quantity,
+        size: size || null,
+      };
     });
 
     const orderPayload: Omit<Order, 'id' | 'deliveryDate'> = {
@@ -161,21 +161,29 @@ export default function ConfirmPurchaseDialog({
 
 
     try {
-        const newOrder = await db.orders.add(orderPayload as Omit<Order, 'id'>);
+        const newOrderRef = await db.orders.add(orderPayload as Omit<Order, 'id'>);
+        
+        // Fetch the created order to get the server-generated timestamp
+        const newOrder = await db.orders.getById(newOrderRef.id);
+        if (!newOrder) {
+            throw new Error("Could not retrieve the newly created order.");
+        }
+
         toast({
             title: "Order Placed!",
             description: `Thank you for your purchase. Your order is being processed.`,
         });
         
-        // Send order to Shiprocket
-        const shipmentResult = await createShipmentAction({ ...newOrder, id: newOrder.id });
+        // Convert the order object to a plain, serializable object before sending to the server action
+        const plainOrder = JSON.parse(JSON.stringify(newOrder));
+        const shipmentResult = await createShipmentAction(plainOrder);
+        
         if (shipmentResult.success) {
           toast({ title: "Shipment Created", description: "Your order has been sent to our shipping partner." });
         } else {
           toast({ title: "Shipment Error", description: `Could not send order to shipping partner. Please contact support. Error: ${shipmentResult.error}`, variant: "destructive", duration: 10000 });
         }
 
-        // Send confirmation email via Server Action
         try {
             const emailItems = itemsToPurchase.map(item => ({
               quantity: item.quantity,
@@ -191,7 +199,6 @@ export default function ConfirmPurchaseDialog({
 
             if (!emailResult.success) {
                 console.error("Failed to send confirmation email:", emailResult.error);
-                // Optionally show a non-blocking toast to the user
                  toast({
                     title: "Email Notice",
                     description: "Your order was placed, but we couldn't send a confirmation email right now.",
