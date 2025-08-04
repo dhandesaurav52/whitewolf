@@ -42,7 +42,6 @@ export const createShipment = async (order: Order) => {
     const orderDate = order.orderDate.seconds ? new Date(order.orderDate.seconds * 1000) : new Date(order.orderDate);
     const formattedOrderDate = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}-${String(orderDate.getDate()).padStart(2, '0')} ${String(orderDate.getHours()).padStart(2, '0')}:${String(orderDate.getMinutes()).padStart(2, '0')}`;
 
-    // Correctly calculate subtotal from items. This IS the discounted total.
     const sub_total = order.total;
 
     // Calculate total weight and find max dimensions from all products in the order
@@ -63,7 +62,7 @@ export const createShipment = async (order: Order) => {
         channel_id: process.env.SHIPROCKET_CHANNEL_ID,
         order_id: order.id,
         order_date: formattedOrderDate,
-        pickup_location: "Home", // This must match the Nickname in your Shiprocket pickup addresses
+        pickup_location: "Home",
         billing_customer_name: firstName,
         billing_last_name: lastName,
         billing_address: order.customer.address,
@@ -74,6 +73,15 @@ export const createShipment = async (order: Order) => {
         billing_email: order.customer.email,
         billing_phone: order.customer.phone,
         shipping_is_billing: true,
+        shipping_customer_name: firstName,
+        shipping_last_name: lastName,
+        shipping_address: order.customer.address,
+        shipping_city: order.customer.city,
+        shipping_pincode: order.customer.pincode,
+        shipping_state: order.customer.state,
+        shipping_country: "India",
+        shipping_email: order.customer.email,
+        shipping_phone: order.customer.phone,
         order_items: orderItems,
         payment_method: order.paymentMethod === 'Online' ? 'Prepaid' : 'COD',
         sub_total: sub_total,
