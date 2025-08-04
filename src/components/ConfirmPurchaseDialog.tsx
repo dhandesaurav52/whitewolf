@@ -126,7 +126,7 @@ export default function ConfirmPurchaseDialog({
             const { createdAt, ...productData } = item.product;
             return {
                 ...item,
-                product: productData as Product, // Assure TypeScript that this is a valid Product
+                product: productData as Product,
             }
         }),
         total: totalAmount,
@@ -479,3 +479,5 @@ export default function ConfirmPurchaseDialog({
     </Dialog>
   );
 }
+
+    
