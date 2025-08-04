@@ -120,31 +120,40 @@ export default function ConfirmPurchaseDialog({
         return;
     }
 
-    const newOrderData: Omit<Order, 'id'> = {
+    const orderPayload: Omit<Order, 'id'> = {
         customer: { ...shippingDetails, userId: user.uid },
         items: itemsToPurchase.map(item => {
+            // Create a clean product object for the order
             const { createdAt, ...productData } = item.product;
-            return {
-                ...item,
+            const cleanItem: CartItem = {
                 product: productData as Product,
+                quantity: item.quantity,
+            };
+            if (item.size) {
+                cleanItem.size = item.size;
             }
+            return cleanItem;
         }),
         total: totalAmount,
         status: 'Pending',
         orderDate: serverTimestamp(),
         paymentMethod: paymentMethodValue,
-        ...(paymentId && { paymentId }),
     };
+    
+    if (paymentId) {
+        orderPayload.paymentId = paymentId;
+    }
+
 
     try {
-        const newOrder = await db.orders.add(newOrderData);
+        const newOrder = await db.orders.add(orderPayload);
         toast({
             title: "Order Placed!",
             description: `Thank you for your purchase. Your order is being processed.`,
         });
         
         // Send order to Shiprocket
-        const shipmentResult = await createShipmentAction({ ...newOrderData, id: newOrder.id });
+        const shipmentResult = await createShipmentAction({ ...newOrder, id: newOrder.id });
         if (shipmentResult.success) {
           toast({ title: "Shipment Created", description: "Your order has been sent to our shipping partner." });
         } else {
