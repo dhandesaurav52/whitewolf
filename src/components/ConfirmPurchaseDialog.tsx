@@ -66,7 +66,7 @@ export default function ConfirmPurchaseDialog({
   
   const itemsToPurchase = productToBuy ? [productToBuy] : cartItems;
   const totalToCharge = productToBuy ? (parseFloat(productToBuy.product.price) * productToBuy.quantity) : cartTotal;
-  const shippingCost = 100.00;
+  const shippingCost = 50.00; // Standard shipping fee
   const totalAmount = totalToCharge + shippingCost;
   const productNames = itemsToPurchase.map(item => item.product.name).join(', ');
 
