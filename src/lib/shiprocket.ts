@@ -49,7 +49,7 @@ export const createShipment = async (order: Order) => {
         channel_id: process.env.SHIPROCKET_CHANNEL_ID,
         order_id: order.id,
         order_date: formattedOrderDate,
-        pickup_location: "Primary",
+        pickup_location: "Home",
         billing_customer_name: firstName,
         billing_last_name: lastName,
         billing_address: order.customer.address,
@@ -81,12 +81,11 @@ export const createShipment = async (order: Order) => {
         console.log('Shiprocket Shipment Creation Response:', response.data);
         return response.data;
     } catch (error: any) {
-        console.error('Shiprocket Shipment Creation Error:', error.response?.data || error.message);
-        let errorMessage = error.message;
+        let errorMessage = 'An unknown error occurred.';
         if (error.response?.data?.errors) {
             const errorDetail = JSON.stringify(error.response.data.errors);
             if (errorDetail.toLowerCase().includes('pickup location')) {
-                errorMessage = "Invalid Pickup Location. Please ensure you have a pickup location named 'Primary' in your Shiprocket dashboard settings.";
+                errorMessage = "Invalid Pickup Location. Please ensure you have a pickup location named 'Home' in your Shiprocket dashboard settings.";
             } else {
                  errorMessage = errorDetail;
             }
