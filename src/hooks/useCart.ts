@@ -116,26 +116,34 @@ export function useCart() {
   }, []);
   
   const { subtotal, comboDiscount } = useMemo(() => {
-    let calculatedSubtotal = cart.reduce((total, item) => total + parseFloat(item.product.price) * item.quantity, 0);
+    let calculatedSubtotal = cart.reduce((total, item) => {
+        // Use originalPrice for calculation if available, otherwise use price.
+        // This ensures discounts aren't applied on top of already discounted prices from product page.
+        const basePrice = item.product.originalPrice ? parseFloat(item.product.originalPrice) : parseFloat(item.product.price);
+        return total + basePrice * item.quantity;
+    }, 0);
+    
     let calculatedComboDiscount = 0;
     
     const comboAds = ads.filter(ad => ad.discountType === 'buy-x-get-y' && ad.appliesTo === 'categories');
+    let itemsEligibleForStandardDiscount = [...cart];
 
+    // Calculate combo discounts first, as they take precedence
     for (const ad of comboAds) {
-        const eligibleItems: CartItem[] = [];
-        for (const cat of ad.selectedCategories) {
-            const itemsInCategory = cart.filter(item => item.product.category.toLowerCase() === cat.toLowerCase());
-            eligibleItems.push(...itemsInCategory);
-        }
-
-        const totalEligibleQuantity = eligibleItems.reduce((sum, item) => sum + item.quantity, 0);
+        const categoriesForAd = ad.selectedCategories.map(c => c.toLowerCase());
+        const itemsForAd = cart.filter(item => categoriesForAd.includes(item.product.category.toLowerCase()));
+        
+        // Remove these items from being eligible for other discounts
+        itemsEligibleForStandardDiscount = itemsEligibleForStandardDiscount.filter(item => !categoriesForAd.includes(item.product.category.toLowerCase()));
+        
+        const totalEligibleQuantity = itemsForAd.reduce((sum, item) => sum + item.quantity, 0);
         const buyQuantity = ad.buyQuantity || 1;
         const getQuantity = ad.getQuantity || 1;
         const groupSize = buyQuantity + getQuantity;
 
         if (totalEligibleQuantity >= groupSize) {
             const numberOfTimesToApply = Math.floor(totalEligibleQuantity / groupSize);
-            const itemsToDiscount = eligibleItems.flatMap(item => Array(item.quantity).fill(item.product)).sort((a,b) => parseFloat(a.price) - parseFloat(b.price));
+            const itemsToDiscount = itemsForAd.flatMap(item => Array(item.quantity).fill(item.product)).sort((a,b) => parseFloat(a.price) - parseFloat(b.price));
             
             for(let i = 0; i < numberOfTimesToApply * getQuantity; i++) {
                 if (itemsToDiscount[i]) {
@@ -145,7 +153,23 @@ export function useCart() {
         }
     }
     
-    return { subtotal: calculatedSubtotal, comboDiscount: calculatedComboDiscount };
+    // Calculate standard discounts (percentage/fixed) on remaining items
+    const standardAds = ads.filter(ad => (ad.discountType === 'percentage' || ad.discountType === 'fixed') && ad.appliesTo === 'categories');
+    let standardDiscountTotal = 0;
+    for (const item of itemsEligibleForStandardDiscount) {
+        const applicableAd = standardAds.find(ad => ad.selectedCategories.map(c => c.toLowerCase()).includes(item.product.category.toLowerCase()));
+        const basePrice = item.product.originalPrice ? parseFloat(item.product.originalPrice) : parseFloat(item.product.price);
+        
+        if(applicableAd) {
+            if (applicableAd.discountType === 'percentage') {
+                standardDiscountTotal += (basePrice * (applicableAd.discountValue / 100)) * item.quantity;
+            } else if (applicableAd.discountType === 'fixed') {
+                standardDiscountTotal += applicableAd.discountValue * item.quantity;
+            }
+        }
+    }
+
+    return { subtotal: calculatedSubtotal, comboDiscount: calculatedComboDiscount + standardDiscountTotal };
   }, [cart, ads]);
 
 
