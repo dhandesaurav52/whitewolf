@@ -34,19 +34,20 @@ export const createShipment = async (order: Order) => {
 
     const orderItems = order.items.map(item => ({
         name: item.product.name,
+        sku: item.product.id.substring(0, 10), // Use first 10 chars of product ID as SKU
         units: item.quantity,
         selling_price: Number(item.product.price),
-        hsn: 6109, // HSN code for T-shirts/knitted apparel
+        hsn: 6109,
     }));
     
-    const orderDate = new Date(order.orderDate);
-    const formattedOrderDate = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}-${String(orderDate.getDate()).padStart(2, '0')}`;
+    const now = new Date();
+    const formattedOrderDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
 
     const shipmentData = {
         order_id: order.id,
         order_date: formattedOrderDate,
-        pickup_location: "Primary", // This MUST match a pickup location name in your Shiprocket account
+        pickup_location: "Primary",
         billing_customer_name: firstName,
         billing_last_name: lastName,
         billing_address: order.customer.address,
