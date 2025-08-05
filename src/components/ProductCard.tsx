@@ -32,7 +32,7 @@ function ProductCardCarousel({ product }: { product: ProductType }) {
         <CarouselContent>
           {productImages.map((imgSrc, index) => (
             <CarouselItem key={index}>
-              <div className="relative aspect-square bg-muted">
+              <div className="relative aspect-[4/5] bg-muted">
                 <Image
                   src={imgSrc}
                   alt={`${product.name} image ${index + 1}`}

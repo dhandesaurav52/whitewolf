@@ -257,7 +257,7 @@ export default function ShopPageClient() {
             </Select>
         </div>
         
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredProducts.length > 0 ? filteredProducts.map((product, index) => (
             <ProductCard key={product.id || index} product={product} />
           )) : <p className="col-span-full text-center text-muted-foreground">No products found. Add some from the admin dashboard!</p>}
