@@ -83,7 +83,7 @@ export default function ProductCard({ product }: { product: ProductType }) {
   };
 
   return (
-    <Card className="group overflow-hidden rounded-lg bg-card text-card-foreground border-border relative transition-all duration-300 hover:border-primary hover:shadow-md">
+    <Card className="group overflow-hidden bg-card text-card-foreground border-border relative transition-all duration-300 hover:border-primary hover:shadow-md">
       <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
         <Button size="icon" variant="outline" className="h-9 w-9 bg-background/80 hover:bg-background" onClick={handleWishlistClick}>
           <Heart className={cn("h-4 w-4", user && isInWishlist(product.id) && "fill-destructive text-destructive")} />
