@@ -183,6 +183,7 @@ export default function Home() {
   const [newArrivals, setNewArrivals] = useState<ProductType[]>([]);
   const [oversizeTees, setOversizeTees] = useState<ProductType[]>([]);
   const [accessories, setAccessories] = useState<ProductType[]>([]);
+  const [topWear, setTopWear] = useState<ProductType[]>([]);
   const [categories, setCategories] = useState<{name: string, href: string, image: string, aiHint: string}[]>([]);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -199,6 +200,8 @@ export default function Home() {
       setNewArrivals(allProducts.filter(p => p.new).slice(0, 4));
       setOversizeTees(allProducts.filter(p => p.category.toLowerCase() === 'oversized t-shirts').slice(0, 5));
       setAccessories(allProducts.filter(p => p.displaySection === 'accessories'));
+      const topWearCategories = ['t-shirts', 'shirts', 'oversized t-shirts', 'jackets', 'sweater'];
+      setTopWear(allProducts.filter(p => topWearCategories.includes(p.category.toLowerCase())));
       
       const uniqueCategories = [...new Set(allProducts.map(p => p.category))];
       const categoryData = uniqueCategories.map(cat => {
@@ -243,6 +246,9 @@ export default function Home() {
     );
   }
 
+  const duplicatedTopWear = topWear.length > 0 ? [...topWear, ...topWear] : [];
+  const duplicatedAccessories = accessories.length > 0 ? [...accessories, ...accessories] : [];
+
   return (
     <div className="flex flex-col">
         <HeroSection />
@@ -275,6 +281,34 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* Scrolling Top Wear */}
+        {duplicatedTopWear.length > 0 && (
+          <section className="py-8 bg-background overflow-hidden">
+              <h2 className="text-center text-2xl font-headline font-bold text-accent mb-4">Top Wear</h2>
+              <div className="flex animate-marquee hover:[animation-play-state:paused] space-x-4">
+                  {duplicatedTopWear.map((product, i) => (
+                      <div key={`topwear-${i}`} className="w-64 flex-shrink-0">
+                          <ProductCard product={product} />
+                      </div>
+                  ))}
+              </div>
+          </section>
+        )}
+
+        {/* Scrolling Accessories */}
+        {duplicatedAccessories.length > 0 && (
+          <section className="py-8 bg-background overflow-hidden">
+              <h2 className="text-center text-2xl font-headline font-bold text-accent mb-4">Accessories</h2>
+              <div className="flex animate-marquee-reverse hover:[animation-play-state:paused] space-x-4">
+                  {duplicatedAccessories.map((product, i) => (
+                      <div key={`accessory-${i}`} className="w-64 flex-shrink-0">
+                          <ProductCard product={product} />
+                      </div>
+                  ))}
+              </div>
+          </section>
+        )}
 
         {/* New Arrivals Section */}
         {newArrivals.length > 0 && (
@@ -328,28 +362,6 @@ export default function Home() {
                 <CarouselPrevious className="hidden md:flex" />
                 <CarouselNext className="hidden md:flex" />
               </Carousel>
-            </div>
-          </section>
-        )}
-
-        {/* Our Accessories Section */}
-        {accessories.length > 0 && (
-          <section className="py-16">
-            <div className="container mx-auto">
-              <div className="text-center mb-12">
-                <h2 className="text-4xl font-headline font-bold">Our Accessories</h2>
-                <p className="text-muted-foreground mt-2">Complete your look with our curated selection of accessories.</p>
-              </div>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-                {accessories.map((item, i) => (
-                  <ProductCard key={item.id || i} product={item} />
-                ))}
-              </div>
-              <div className="text-center mt-12">
-                <Button asChild variant="outline">
-                  <Link href="/accessories">View All <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                </Button>
-              </div>
             </div>
           </section>
         )}
