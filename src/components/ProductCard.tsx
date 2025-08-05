@@ -16,10 +16,10 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import * as React from 'react';
 
-const getSymbol = (currencyCode: string) => {
+const getSymbol = (currencyCode?: string) => {
     if (currencyCode === 'INR') return '₹';
     if (currencyCode === 'USD') return '$';
-    return '₹';
+    return '₹'; // Default to INR
 }
 
 function ProductCardCarousel({ product }: { product: ProductType }) {
