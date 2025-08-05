@@ -179,18 +179,16 @@ const WatchAndShopItem = ({ reel, product }: { reel: Reel, product?: ProductType
 };
 
 const ImageOnlyCard = ({ product }: { product: ProductType }) => (
-    <Link href={`/product/${product.id}`} className="group block">
-        <Card className="overflow-hidden border-none">
-            <div className="relative aspect-[3/4] bg-muted">
-                <Image
-                    src={product.images?.[0] || "https://placehold.co/400x500.png"}
-                    alt={product.name}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    data-ai-hint={product.aiHint}
-                />
-            </div>
-        </Card>
+    <Link href={`/product/${product.id}`} className="group block overflow-hidden">
+        <div className="relative aspect-[3/4] bg-muted">
+            <Image
+                src={product.images?.[0] || "https://placehold.co/400x500.png"}
+                alt={product.name}
+                fill
+                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                data-ai-hint={product.aiHint}
+            />
+        </div>
     </Link>
 );
 
