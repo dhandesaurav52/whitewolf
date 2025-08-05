@@ -77,8 +77,10 @@ export default function LoginPage() {
     if (!auth) return;
     setIsPasswordResetting(true);
     try {
-      const resetLink = await sendPasswordResetEmail(auth, email);
-      const result = await sendPasswordResetEmailAction({ email, resetLink: window.location.origin }); // Using a placeholder link for now
+      await sendPasswordResetEmail(auth, email);
+      // We call our custom email action as well to send a branded email.
+      // Firebase handles sending the actual link separately.
+      const result = await sendPasswordResetEmailAction({ email, resetLink: window.location.origin }); 
       
       if (result.success) {
           toast({
@@ -86,7 +88,13 @@ export default function LoginPage() {
             description: "Check your inbox for a link to reset your password.",
           });
       } else {
-          throw new Error(result.error || "Failed to send reset email.");
+          // If our custom email fails, we don't need to block the user,
+          // as the Firebase email should have still been sent.
+          console.warn("Custom password reset email failed to send:", result.error);
+           toast({
+            title: "Password Reset Email Sent",
+            description: "Check your inbox for a link to reset your password. If you don't see it, check your spam folder.",
+          });
       }
     } catch (error: any) {
        toast({
