@@ -177,6 +177,23 @@ const WatchAndShopItem = ({ reel, product }: { reel: Reel, product?: ProductType
   );
 };
 
+const ImageOnlyCard = ({ product }: { product: ProductType }) => (
+    <Link href={`/product/${product.id}`} className="group block">
+        <Card className="overflow-hidden rounded-lg border-none">
+            <div className="relative aspect-[3/4] bg-muted">
+                <Image
+                    src={product.images?.[0] || "https://placehold.co/400x500.png"}
+                    alt={product.name}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    data-ai-hint={product.aiHint}
+                />
+            </div>
+        </Card>
+    </Link>
+);
+
+
 export default function Home() {
   const [reels, setReels] = useState<Reel[]>([]);
   const [products, setProducts] = useState<ProductType[]>([]);
@@ -288,7 +305,7 @@ export default function Home() {
               <div className="flex animate-marquee hover:[animation-play-state:paused] space-x-4">
                   {duplicatedTopWear.map((product, i) => (
                       <div key={`topwear-${i}`} className="w-64 flex-shrink-0">
-                          <ProductCard product={product} />
+                          <ImageOnlyCard product={product} />
                       </div>
                   ))}
               </div>
@@ -301,7 +318,7 @@ export default function Home() {
               <div className="flex animate-marquee-reverse hover:[animation-play-state:paused] space-x-4">
                   {duplicatedAccessories.map((product, i) => (
                       <div key={`accessory-${i}`} className="w-64 flex-shrink-0">
-                          <ProductCard product={product} />
+                          <ImageOnlyCard product={product} />
                       </div>
                   ))}
               </div>
