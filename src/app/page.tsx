@@ -285,7 +285,6 @@ export default function Home() {
         {/* Scrolling Top Wear */}
         {duplicatedTopWear.length > 0 && (
           <section className="py-8 bg-background overflow-hidden">
-              <h2 className="text-center text-2xl font-headline font-bold text-accent mb-4">Top Wear</h2>
               <div className="flex animate-marquee hover:[animation-play-state:paused] space-x-4">
                   {duplicatedTopWear.map((product, i) => (
                       <div key={`topwear-${i}`} className="w-64 flex-shrink-0">
@@ -299,7 +298,6 @@ export default function Home() {
         {/* Scrolling Accessories */}
         {duplicatedAccessories.length > 0 && (
           <section className="py-8 bg-background overflow-hidden">
-              <h2 className="text-center text-2xl font-headline font-bold text-accent mb-4">Accessories</h2>
               <div className="flex animate-marquee-reverse hover:[animation-play-state:paused] space-x-4">
                   {duplicatedAccessories.map((product, i) => (
                       <div key={`accessory-${i}`} className="w-64 flex-shrink-0">
