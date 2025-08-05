@@ -303,7 +303,7 @@ export default function Home() {
           <section className="py-8 bg-background overflow-hidden">
               <div className="flex animate-marquee hover:[animation-play-state:paused]">
                   {duplicatedTopWear.map((product, i) => (
-                      <div key={`topwear-${i}`} className="w-64 flex-shrink-0">
+                      <div key={`topwear-${i}`} className="w-48 flex-shrink-0">
                           <ImageOnlyCard product={product} />
                       </div>
                   ))}
@@ -316,7 +316,7 @@ export default function Home() {
           <section className="py-8 bg-background overflow-hidden">
               <div className="flex animate-marquee-reverse hover:[animation-play-state:paused]">
                   {duplicatedAccessories.map((product, i) => (
-                      <div key={`accessory-${i}`} className="w-64 flex-shrink-0">
+                      <div key={`accessory-${i}`} className="w-48 flex-shrink-0">
                           <ImageOnlyCard product={product} />
                       </div>
                   ))}
