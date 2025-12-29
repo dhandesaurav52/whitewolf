@@ -1,43 +1,42 @@
-
-import type {NextConfig} from 'next';
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: 'export', // ⭐ REQUIRED for EC2 + Nginx static hosting
+
   typescript: {
     ignoreBuildErrors: true,
   },
+
   eslint: {
     ignoreDuringBuilds: true,
   },
+
   images: {
     unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'placehold.co',
-        port: '',
         pathname: '/**',
       },
       {
         protocol: 'https',
         hostname: 'firebasestorage.googleapis.com',
-        port: '',
         pathname: '/**',
       },
       {
         protocol: 'https',
         hostname: 'images.pexels.com',
-        port: '',
         pathname: '/**',
       },
       {
         protocol: 'https',
         hostname: 'www.pexels.com',
-        port: '',
         pathname: '/**',
       }
     ],
   },
+
   env: {
     NEXT_PUBLIC_RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID,
     SENDGRID_API_KEY: process.env.SENDGRID_API_KEY,
@@ -46,10 +45,9 @@ const nextConfig: NextConfig = {
     SHIPROCKET_PASSWORD: process.env.SHIPROCKET_PASSWORD,
     SHIPROCKET_CHANNEL_ID: process.env.SHIPROCKET_CHANNEL_ID,
   },
+
   devIndicators: {
-    allowedDevOrigins: [
-        "*.cloudworkstations.dev"
-    ],
+    allowedDevOrigins: ['*.cloudworkstations.dev'],
   },
 };
 
